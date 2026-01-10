@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_audit_log: {
+        Row: {
+          action_type: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          new_values: Json | null
+          old_values: Json | null
+          org_id: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          org_id: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          org_id?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       bog_tier_config: {
         Row: {
           car_requirement: number | null
@@ -181,6 +226,95 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      field_collections: {
+        Row: {
+          amount_collected: number
+          client_confirmation: boolean | null
+          client_id: string
+          collected_by: string
+          collection_date: string
+          collection_method: string | null
+          created_at: string
+          id: string
+          latitude: number | null
+          loan_id: string
+          location_accuracy: number | null
+          location_address: string | null
+          longitude: number | null
+          mobile_money_reference: string | null
+          notes: string | null
+          org_id: string
+          receipt_photo_url: string | null
+          rejection_reason: string | null
+          repayment_id: string | null
+          signature_url: string | null
+          status: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          amount_collected: number
+          client_confirmation?: boolean | null
+          client_id: string
+          collected_by: string
+          collection_date?: string
+          collection_method?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          loan_id: string
+          location_accuracy?: number | null
+          location_address?: string | null
+          longitude?: number | null
+          mobile_money_reference?: string | null
+          notes?: string | null
+          org_id: string
+          receipt_photo_url?: string | null
+          rejection_reason?: string | null
+          repayment_id?: string | null
+          signature_url?: string | null
+          status?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          amount_collected?: number
+          client_confirmation?: boolean | null
+          client_id?: string
+          collected_by?: string
+          collection_date?: string
+          collection_method?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          loan_id?: string
+          location_accuracy?: number | null
+          location_address?: string | null
+          longitude?: number | null
+          mobile_money_reference?: string | null
+          notes?: string | null
+          org_id?: string
+          receipt_photo_url?: string | null
+          rejection_reason?: string | null
+          repayment_id?: string | null
+          signature_url?: string | null
+          status?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_collections_repayment_id_fkey"
+            columns: ["repayment_id"]
+            isOneToOne: false
+            referencedRelation: "repayments"
+            referencedColumns: ["repayment_id"]
+          },
+        ]
       }
       group_members: {
         Row: {
@@ -550,11 +684,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          org_id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          org_id: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          org_id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      has_any_role: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _org_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       user_belongs_to_org: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
@@ -588,6 +758,7 @@ export type Database = {
         | "PERCENT_INSTALLMENT"
         | "DAILY_RATE"
       repayment_frequency: "DAILY" | "WEEKLY" | "FORTNIGHTLY" | "MONTHLY"
+      user_role: "ADMIN" | "MANAGER" | "FIELD_OFFICER" | "TELLER"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -745,6 +916,7 @@ export const Constants = {
         "DAILY_RATE",
       ],
       repayment_frequency: ["DAILY", "WEEKLY", "FORTNIGHTLY", "MONTHLY"],
+      user_role: ["ADMIN", "MANAGER", "FIELD_OFFICER", "TELLER"],
     },
   },
 } as const
