@@ -49,6 +49,7 @@ export function ClientDocumentUpload() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const { register, handleSubmit, setValue, watch, reset } = useForm<UploadFormData>();
   const selectedClientId = watch('client_id');
@@ -56,13 +57,26 @@ export function ClientDocumentUpload() {
 
   const selectedClient = clients.find(c => c.client_id === selectedClientId);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+  const ACCEPTED_TYPES = [
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ];
+
+  const addFiles = (files: File[]) => {
     const validFiles: FileWithStatus[] = [];
     
     for (const file of files) {
       if (file.size > 20 * 1024 * 1024) {
         toast.error(`${file.name} exceeds 20MB limit`);
+        continue;
+      }
+      // Check file type
+      if (!ACCEPTED_TYPES.includes(file.type)) {
+        toast.error(`${file.name} is not a supported file type`);
         continue;
       }
       // Check for duplicates
@@ -73,9 +87,41 @@ export function ClientDocumentUpload() {
       validFiles.push({ file, status: 'pending' });
     }
     
-    setSelectedFiles(prev => [...prev, ...validFiles]);
+    if (validFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...validFiles]);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    addFiles(files);
     // Reset input so same file can be selected again
     e.target.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isUploading) {
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    
+    if (isUploading) return;
+    
+    const files = Array.from(e.dataTransfer.files);
+    addFiles(files);
   };
 
   const removeFile = (index: number) => {
@@ -243,7 +289,16 @@ export function ClientDocumentUpload() {
           {/* File Upload */}
           <div className="space-y-2">
             <Label>Files * (Multiple allowed)</Label>
-            <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+            <div 
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                isDragOver 
+                  ? 'border-primary bg-primary/5' 
+                  : 'hover:border-primary/50'
+              } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <input
                 type="file"
                 onChange={handleFileChange}
@@ -253,10 +308,10 @@ export function ClientDocumentUpload() {
                 multiple
                 disabled={isUploading}
               />
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  Click to upload or drag and drop
+              <label htmlFor="file-upload" className={isUploading ? 'cursor-not-allowed' : 'cursor-pointer'}>
+                <Upload className={`h-10 w-10 mx-auto mb-2 transition-colors ${isDragOver ? 'text-primary' : 'text-muted-foreground'}`} />
+                <p className={`text-sm transition-colors ${isDragOver ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                  {isDragOver ? 'Drop files here' : 'Click to upload or drag and drop'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   PDF, JPG, PNG, DOCX (max 20MB each)
