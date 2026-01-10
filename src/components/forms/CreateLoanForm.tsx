@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ import { useOrganisation } from '@/contexts/OrganisationContext';
 import { Loader2, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { LOAN_CATEGORIES, getLoanProduct, getLoanProductsByCategory } from '@/data/ghanaLoanTypes';
+import { LoanCalculatorPreview } from './LoanCalculatorPreview';
 
 const loanSchema = z.object({
   client_id: z.string().min(1, 'Please select a client'),
@@ -73,6 +74,14 @@ export function CreateLoanForm() {
   });
 
   const watchLoanProduct = form.watch('loan_product');
+  
+  // Watch form values for calculator preview
+  const watchedValues = useWatch({
+    control: form.control,
+    name: ['principal', 'interest_rate', 'term_months', 'repayment_frequency', 'disbursement_date'],
+  });
+  
+  const [watchedPrincipal, watchedInterestRate, watchedTermMonths, watchedFrequency, watchedDisbursementDate] = watchedValues;
   
   const productOptions = useMemo(() => {
     return selectedCategory ? getLoanProductsByCategory(selectedCategory) : [];
@@ -397,6 +406,17 @@ export function CreateLoanForm() {
                   <FormMessage />
                 </FormItem>
               )}
+            />
+          </div>
+
+          {/* Section: Loan Calculator Preview */}
+          <div className="space-y-4 pt-4 border-t">
+            <LoanCalculatorPreview
+              principal={watchedPrincipal || 0}
+              interestRate={watchedInterestRate || 0}
+              termMonths={watchedTermMonths || 0}
+              repaymentFrequency={watchedFrequency || 'MONTHLY'}
+              disbursementDate={watchedDisbursementDate || ''}
             />
           </div>
 
