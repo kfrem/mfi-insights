@@ -8,16 +8,40 @@ export interface Organisation {
   created_at?: string;
 }
 
+// Risk categories per BoG AML/CFT&P guidelines
+export type RiskCategory = 'LOW' | 'MEDIUM' | 'HIGH';
+
+// Gender per Ghana Card
+export type Gender = 'M' | 'F';
+
+// Proof of residence types per BoG requirements
+export type ProofOfResidenceType = 'UTILITY_BILL' | 'GPS_ADDRESS' | 'LEASE_AGREEMENT' | 'BANK_STATEMENT';
+
 export interface Client {
   client_id: string;
   org_id: string;
+  // Basic identification (from Ghana Card - MANDATORY per BoG)
   first_name: string;
   last_name: string;
-  id_number?: string;
+  ghana_card_number: string; // 13-digit, mandatory per BoG AML/CFT&P 2022
+  ghana_card_expiry: string; // Required per BoG
+  date_of_birth: string; // From Ghana Card
+  gender: Gender;
+  nationality: string;
+  // Contact information
   phone?: string;
   email?: string;
+  // Address & residence
   address?: string;
+  proof_of_residence_type?: ProofOfResidenceType;
+  // KYC/AML fields
+  occupation: string; // Required for risk classification
+  risk_category: RiskCategory; // LOW/MEDIUM/HIGH per BoG
+  source_of_funds: string; // Required for AML
+  // System fields
+  status: 'ACTIVE' | 'INACTIVE' | 'DECEASED' | 'MERGED';
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface Loan {
@@ -83,12 +107,22 @@ export interface RepaymentDaily {
 // Form input types
 export interface CreateClientInput {
   org_id: string;
+  // Mandatory fields per BoG
   first_name: string;
   last_name: string;
-  id_number?: string;
+  ghana_card_number: string;
+  ghana_card_expiry: string;
+  date_of_birth: string;
+  gender: Gender;
+  nationality: string;
+  occupation: string;
+  risk_category: RiskCategory;
+  source_of_funds: string;
+  // Optional fields
   phone?: string;
   email?: string;
   address?: string;
+  proof_of_residence_type?: ProofOfResidenceType;
 }
 
 export interface CreateLoanInput {
