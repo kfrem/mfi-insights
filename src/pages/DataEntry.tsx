@@ -7,7 +7,8 @@ import { ClientListView } from '@/components/clients/ClientListView';
 import { ClientDocumentUpload } from '@/components/documents/ClientDocumentUpload';
 import { ClientDocumentSearch } from '@/components/documents/ClientDocumentSearch';
 import { OrganisationTierSettings } from '@/components/settings/OrganisationTierSettings';
-import { UserPlus, FileText, DollarSign, Users, Upload, Search, Settings } from 'lucide-react';
+import { LoanWorkflowPanel } from '@/components/loans/LoanWorkflowPanel';
+import { UserPlus, FileText, DollarSign, Users, Upload, Search, Settings, GitBranch } from 'lucide-react';
 
 export default function DataEntry() {
   const [activeTab, setActiveTab] = useState('clients');
@@ -19,8 +20,8 @@ export default function DataEntry() {
         <p className="page-subtitle">Manage clients, disburse loans, and post repayments</p>
       </header>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-4xl">
-        <TabsList className="grid w-full grid-cols-7 mb-8">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-6xl">
+        <TabsList className="grid w-full grid-cols-8 mb-8">
           <TabsTrigger value="clients" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Clients</span>
@@ -32,6 +33,10 @@ export default function DataEntry() {
           <TabsTrigger value="loan" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span className="hidden sm:inline">Loan</span>
+          </TabsTrigger>
+          <TabsTrigger value="workflow" className="flex items-center gap-2">
+            <GitBranch className="h-4 w-4" />
+            <span className="hidden sm:inline">Workflow</span>
           </TabsTrigger>
           <TabsTrigger value="repayment" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
@@ -61,6 +66,10 @@ export default function DataEntry() {
 
         <TabsContent value="loan" className="animate-fade-in">
           <CreateLoanForm />
+        </TabsContent>
+
+        <TabsContent value="workflow" className="animate-fade-in">
+          <LoanWorkflowPanel />
         </TabsContent>
 
         <TabsContent value="repayment" className="animate-fade-in">

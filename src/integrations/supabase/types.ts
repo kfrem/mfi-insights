@@ -268,6 +268,53 @@ export type Database = {
           },
         ]
       }
+      loan_status_audit: {
+        Row: {
+          approval_amount: number | null
+          changed_at: string
+          changed_by: string | null
+          id: string
+          loan_id: string
+          new_status: string
+          notes: string | null
+          org_id: string
+          previous_status: string | null
+          rejection_reason: string | null
+        }
+        Insert: {
+          approval_amount?: number | null
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          loan_id: string
+          new_status: string
+          notes?: string | null
+          org_id: string
+          previous_status?: string | null
+          rejection_reason?: string | null
+        }
+        Update: {
+          approval_amount?: number | null
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          loan_id?: string
+          new_status?: string
+          notes?: string | null
+          org_id?: string
+          previous_status?: string | null
+          rejection_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_status_audit_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["loan_id"]
+          },
+        ]
+      }
       loans: {
         Row: {
           actual_end_date: string | null
