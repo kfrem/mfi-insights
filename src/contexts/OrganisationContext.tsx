@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Organisation } from '@/types/mfi';
-import { supabase } from '@/integrations/supabase/client';
+import { externalSupabase, isExternalSupabaseConfigured } from '@/integrations/external-supabase/client';
 
 interface OrganisationContextType {
   organisations: Organisation[];
@@ -17,13 +17,40 @@ export function OrganisationProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Using demo data since external schemas (mfi/mfi_reporting) are not available in Lovable Cloud
-    // Connect your external Supabase project to use real data
-    setOrganisations([
-      { org_id: 'org-1', name: 'MFI Demo Organisation' },
-    ]);
-    setSelectedOrgId('org-1');
-    setIsLoading(false);
+    async function fetchOrganisations() {
+      if (!isExternalSupabaseConfigured()) {
+        // Fallback to demo data if external Supabase not configured
+        setOrganisations([{ org_id: 'org-1', name: 'MFI Demo Organisation' }]);
+        setSelectedOrgId('org-1');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await (externalSupabase as any)
+          .schema('mfi')
+          .from('organisations')
+          .select('org_id, name')
+          .order('name');
+
+        if (error) throw error;
+
+        const orgs = data as Organisation[];
+        setOrganisations(orgs);
+        if (orgs.length > 0) {
+          setSelectedOrgId(orgs[0].org_id);
+        }
+      } catch (err) {
+        console.error('Failed to fetch organisations:', err);
+        // Fallback to demo
+        setOrganisations([{ org_id: 'org-1', name: 'MFI Demo Organisation' }]);
+        setSelectedOrgId('org-1');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchOrganisations();
   }, []);
 
   return (
