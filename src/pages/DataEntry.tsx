@@ -8,7 +8,8 @@ import { ClientDocumentUpload } from '@/components/documents/ClientDocumentUploa
 import { ClientDocumentSearch } from '@/components/documents/ClientDocumentSearch';
 import { OrganisationTierSettings } from '@/components/settings/OrganisationTierSettings';
 import { LoanWorkflowPanel } from '@/components/loans/LoanWorkflowPanel';
-import { UserPlus, FileText, DollarSign, Users, Upload, Search, Settings, GitBranch } from 'lucide-react';
+import { BulkImportTemplates } from '@/components/data-entry/BulkImportTemplates';
+import { UserPlus, FileText, DollarSign, Users, Upload, Search, Settings, GitBranch, Download } from 'lucide-react';
 
 export default function DataEntry() {
   const [activeTab, setActiveTab] = useState('clients');
@@ -21,7 +22,7 @@ export default function DataEntry() {
       </header>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-6xl">
-        <TabsList className="grid w-full grid-cols-8 mb-8">
+        <TabsList className="grid w-full grid-cols-9 mb-8">
           <TabsTrigger value="clients" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Clients</span>
@@ -29,6 +30,10 @@ export default function DataEntry() {
           <TabsTrigger value="new-client" className="flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
             <span className="hidden sm:inline">New Client</span>
+          </TabsTrigger>
+          <TabsTrigger value="templates" className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Templates</span>
           </TabsTrigger>
           <TabsTrigger value="loan" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -62,6 +67,10 @@ export default function DataEntry() {
 
         <TabsContent value="new-client" className="animate-fade-in">
           <CreateClientForm />
+        </TabsContent>
+
+        <TabsContent value="templates" className="animate-fade-in">
+          <BulkImportTemplates />
         </TabsContent>
 
         <TabsContent value="loan" className="animate-fade-in">
