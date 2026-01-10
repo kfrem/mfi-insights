@@ -17,9 +17,16 @@ export type Gender = 'M' | 'F';
 // Proof of residence types per BoG requirements
 export type ProofOfResidenceType = 'UTILITY_BILL' | 'GPS_ADDRESS' | 'LEASE_AGREEMENT' | 'BANK_STATEMENT';
 
+// Client types for different account structures
+export type ClientType = 'INDIVIDUAL' | 'GROUP' | 'COOPERATIVE' | 'SME';
+
+// Group member roles
+export type GroupMemberRole = 'LEADER' | 'SECRETARY' | 'MEMBER';
+
 export interface Client {
   client_id: string;
   org_id: string;
+  client_type: ClientType;
   // Basic identification (from Ghana Card - MANDATORY per BoG)
   first_name: string;
   last_name: string;
@@ -41,8 +48,39 @@ export interface Client {
   // Financial information for affordability assessment
   monthly_income?: number;
   monthly_expenses?: number;
+  // Group/Cooperative/SME specific fields
+  group_name?: string;
+  registration_number?: string;
+  registration_date?: string;
   // System fields
   status: 'ACTIVE' | 'INACTIVE' | 'DECEASED' | 'MERGED';
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface GroupMember {
+  member_id: string;
+  org_id: string;
+  client_id: string;
+  role: GroupMemberRole;
+  // Full KYC for each member
+  first_name: string;
+  last_name: string;
+  ghana_card_number: string;
+  ghana_card_expiry: string;
+  date_of_birth: string;
+  gender: Gender;
+  nationality: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  proof_of_residence_type?: ProofOfResidenceType;
+  occupation: string;
+  risk_category: RiskCategory;
+  source_of_funds: string;
+  monthly_income?: number;
+  monthly_expenses?: number;
+  is_active: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -110,6 +148,7 @@ export interface RepaymentDaily {
 // Form input types
 export interface CreateClientInput {
   org_id: string;
+  client_type: ClientType;
   // Mandatory fields per BoG
   first_name: string;
   last_name: string;
@@ -126,6 +165,30 @@ export interface CreateClientInput {
   email?: string;
   address?: string;
   proof_of_residence_type?: ProofOfResidenceType;
+  // Group/Cooperative/SME fields
+  group_name?: string;
+  registration_number?: string;
+  registration_date?: string;
+}
+
+export interface GroupMemberInput {
+  role: GroupMemberRole;
+  first_name: string;
+  last_name: string;
+  ghana_card_number: string;
+  ghana_card_expiry: string;
+  date_of_birth: string;
+  gender: Gender;
+  nationality: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  proof_of_residence_type?: ProofOfResidenceType;
+  occupation: string;
+  risk_category: RiskCategory;
+  source_of_funds: string;
+  monthly_income?: number;
+  monthly_expenses?: number;
 }
 
 export interface CreateLoanInput {
