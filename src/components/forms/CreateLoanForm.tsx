@@ -810,6 +810,7 @@ export function CreateLoanForm() {
             )}
           </div>
 
+          {/* Section: Loan Calculator Preview */}
           <div className="space-y-4 pt-4 border-t">
             <LoanCalculatorPreview
               principal={watchedPrincipal || 0}
@@ -817,6 +818,11 @@ export function CreateLoanForm() {
               termMonths={watchedTermMonths || 0}
               repaymentFrequency={watchedFrequency || 'MONTHLY'}
               disbursementDate={watchedDisbursementDate || ''}
+              interestCalcFrequency={form.watch('interest_calc_frequency') || 'MONTHLY'}
+              interestMethod={form.watch('interest_method') || 'FLAT'}
+              penaltyType={form.watch('penalty_type') || 'NONE'}
+              penaltyValue={form.watch('penalty_value') || 0}
+              penaltyGraceDays={form.watch('penalty_grace_days') || 0}
             />
           </div>
 
