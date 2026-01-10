@@ -268,6 +268,113 @@ export type Database = {
           },
         ]
       }
+      loans: {
+        Row: {
+          actual_end_date: string | null
+          application_date: string
+          approval_date: string | null
+          approved_by: string | null
+          client_id: string
+          created_at: string
+          disbursed_amount: number | null
+          disbursed_by: string | null
+          disbursement_date: string | null
+          expected_end_date: string | null
+          interest_calc_frequency: Database["public"]["Enums"]["interest_calc_frequency"]
+          interest_method: Database["public"]["Enums"]["interest_method"]
+          interest_rate: number
+          loan_id: string
+          loan_type: string
+          notes: string | null
+          org_id: string
+          outstanding_interest: number | null
+          outstanding_principal: number | null
+          penalty_grace_days: number | null
+          penalty_type: Database["public"]["Enums"]["penalty_type"]
+          penalty_value: number | null
+          principal: number
+          purpose: string | null
+          repayment_frequency: Database["public"]["Enums"]["repayment_frequency"]
+          status: Database["public"]["Enums"]["loan_status"]
+          term_months: number
+          total_interest: number | null
+          total_repayable: number | null
+          updated_at: string
+        }
+        Insert: {
+          actual_end_date?: string | null
+          application_date?: string
+          approval_date?: string | null
+          approved_by?: string | null
+          client_id: string
+          created_at?: string
+          disbursed_amount?: number | null
+          disbursed_by?: string | null
+          disbursement_date?: string | null
+          expected_end_date?: string | null
+          interest_calc_frequency?: Database["public"]["Enums"]["interest_calc_frequency"]
+          interest_method?: Database["public"]["Enums"]["interest_method"]
+          interest_rate: number
+          loan_id?: string
+          loan_type: string
+          notes?: string | null
+          org_id: string
+          outstanding_interest?: number | null
+          outstanding_principal?: number | null
+          penalty_grace_days?: number | null
+          penalty_type?: Database["public"]["Enums"]["penalty_type"]
+          penalty_value?: number | null
+          principal: number
+          purpose?: string | null
+          repayment_frequency?: Database["public"]["Enums"]["repayment_frequency"]
+          status?: Database["public"]["Enums"]["loan_status"]
+          term_months: number
+          total_interest?: number | null
+          total_repayable?: number | null
+          updated_at?: string
+        }
+        Update: {
+          actual_end_date?: string | null
+          application_date?: string
+          approval_date?: string | null
+          approved_by?: string | null
+          client_id?: string
+          created_at?: string
+          disbursed_amount?: number | null
+          disbursed_by?: string | null
+          disbursement_date?: string | null
+          expected_end_date?: string | null
+          interest_calc_frequency?: Database["public"]["Enums"]["interest_calc_frequency"]
+          interest_method?: Database["public"]["Enums"]["interest_method"]
+          interest_rate?: number
+          loan_id?: string
+          loan_type?: string
+          notes?: string | null
+          org_id?: string
+          outstanding_interest?: number | null
+          outstanding_principal?: number | null
+          penalty_grace_days?: number | null
+          penalty_type?: Database["public"]["Enums"]["penalty_type"]
+          penalty_value?: number | null
+          principal?: number
+          purpose?: string | null
+          repayment_frequency?: Database["public"]["Enums"]["repayment_frequency"]
+          status?: Database["public"]["Enums"]["loan_status"]
+          term_months?: number
+          total_interest?: number | null
+          total_repayable?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loans_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["client_id"]
+          },
+        ]
+      }
       organisation_settings: {
         Row: {
           bog_tier: Database["public"]["Enums"]["bog_mfi_tier"]
@@ -319,6 +426,62 @@ export type Database = {
         }
         Relationships: []
       }
+      repayments: {
+        Row: {
+          amount: number
+          created_at: string
+          interest_portion: number | null
+          loan_id: string
+          notes: string | null
+          org_id: string
+          payment_date: string
+          payment_method: string | null
+          penalty_portion: number | null
+          principal_portion: number | null
+          received_by: string | null
+          reference: string | null
+          repayment_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          interest_portion?: number | null
+          loan_id: string
+          notes?: string | null
+          org_id: string
+          payment_date?: string
+          payment_method?: string | null
+          penalty_portion?: number | null
+          principal_portion?: number | null
+          received_by?: string | null
+          reference?: string | null
+          repayment_id?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          interest_portion?: number | null
+          loan_id?: string
+          notes?: string | null
+          org_id?: string
+          payment_date?: string
+          payment_method?: string | null
+          penalty_portion?: number | null
+          principal_portion?: number | null
+          received_by?: string | null
+          reference?: string | null
+          repayment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repayments_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["loan_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -330,6 +493,30 @@ export type Database = {
       bog_mfi_tier: "TIER_1_RCB" | "TIER_2_SL" | "TIER_3_FH" | "TIER_4_MFC"
       client_type: "INDIVIDUAL" | "GROUP" | "COOPERATIVE" | "SME"
       group_member_role: "LEADER" | "SECRETARY" | "MEMBER"
+      interest_calc_frequency:
+        | "DAILY"
+        | "WEEKLY"
+        | "FORTNIGHTLY"
+        | "MONTHLY"
+        | "QUARTERLY"
+        | "ANNUALLY"
+      interest_method: "FLAT" | "REDUCING_BALANCE"
+      loan_status:
+        | "PENDING"
+        | "APPROVED"
+        | "DISBURSED"
+        | "ACTIVE"
+        | "COMPLETED"
+        | "DEFAULTED"
+        | "WRITTEN_OFF"
+        | "REJECTED"
+      penalty_type:
+        | "NONE"
+        | "FLAT_AMOUNT"
+        | "PERCENT_OVERDUE"
+        | "PERCENT_INSTALLMENT"
+        | "DAILY_RATE"
+      repayment_frequency: "DAILY" | "WEEKLY" | "FORTNIGHTLY" | "MONTHLY"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -460,6 +647,33 @@ export const Constants = {
       bog_mfi_tier: ["TIER_1_RCB", "TIER_2_SL", "TIER_3_FH", "TIER_4_MFC"],
       client_type: ["INDIVIDUAL", "GROUP", "COOPERATIVE", "SME"],
       group_member_role: ["LEADER", "SECRETARY", "MEMBER"],
+      interest_calc_frequency: [
+        "DAILY",
+        "WEEKLY",
+        "FORTNIGHTLY",
+        "MONTHLY",
+        "QUARTERLY",
+        "ANNUALLY",
+      ],
+      interest_method: ["FLAT", "REDUCING_BALANCE"],
+      loan_status: [
+        "PENDING",
+        "APPROVED",
+        "DISBURSED",
+        "ACTIVE",
+        "COMPLETED",
+        "DEFAULTED",
+        "WRITTEN_OFF",
+        "REJECTED",
+      ],
+      penalty_type: [
+        "NONE",
+        "FLAT_AMOUNT",
+        "PERCENT_OVERDUE",
+        "PERCENT_INSTALLMENT",
+        "DAILY_RATE",
+      ],
+      repayment_frequency: ["DAILY", "WEEKLY", "FORTNIGHTLY", "MONTHLY"],
     },
   },
 } as const

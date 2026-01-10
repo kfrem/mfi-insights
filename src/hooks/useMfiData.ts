@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getExternalSupabase, isExternalSupabaseConfigured } from '@/integrations/external-supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   ExecKPI, 
@@ -15,7 +16,7 @@ import {
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { toast } from 'sonner';
 
-// Type-safe schema query helper for external schemas
+// Type-safe schema query helper for external schemas (mfi/mfi_reporting)
 const schemaQuery = (schema: string, table: string) => {
   const client = getExternalSupabase();
   if (!client) throw new Error('External Supabase not configured');
@@ -25,7 +26,7 @@ const schemaQuery = (schema: string, table: string) => {
 // Check if external database is available
 const checkExternalDb = () => {
   if (!isExternalSupabaseConfigured()) {
-    console.warn('External Supabase not configured, using mock data');
+    console.warn('External Supabase not configured, using local/mock data');
     return false;
   }
   return true;
@@ -212,6 +213,23 @@ export function useActiveLoans() {
     queryFn: async () => {
       if (!selectedOrgId) return [];
       
+      // Try local Supabase first (public.loans)
+      try {
+        const { data, error } = await supabase
+          .from('loans')
+          .select('*, clients(first_name, last_name)')
+          .eq('org_id', selectedOrgId)
+          .in('status', ['ACTIVE', 'DISBURSED', 'PENDING'])
+          .order('created_at', { ascending: false });
+        
+        if (!error && data && data.length > 0) {
+          return data as (Loan & { clients: { first_name: string; last_name: string } })[];
+        }
+      } catch {
+        // Fall through to external
+      }
+      
+      // Fallback to external mfi schema
       try {
         const { data, error } = await schemaQuery('mfi', 'loans')
           .select('*, clients(first_name, last_name)')
@@ -238,6 +256,30 @@ export function useClientExposure(clientId: string | null) {
     queryFn: async () => {
       if (!selectedOrgId || !clientId) return { totalExposure: 0, loanCount: 0, loans: [] };
       
+      // Try local Supabase first
+      try {
+        const { data, error } = await supabase
+          .from('loans')
+          .select('loan_id, principal, status, disbursement_date')
+          .eq('org_id', selectedOrgId)
+          .eq('client_id', clientId)
+          .in('status', ['ACTIVE', 'PENDING', 'DISBURSED']);
+        
+        if (!error && data) {
+          const loans = data as { loan_id: string; principal: number; status: string; disbursement_date: string }[];
+          const totalExposure = loans.reduce((sum, loan) => sum + (loan.principal || 0), 0);
+          
+          return {
+            totalExposure,
+            loanCount: loans.length,
+            loans,
+          };
+        }
+      } catch {
+        // Fall through to external
+      }
+      
+      // Fallback to external mfi schema
       try {
         const { data, error } = await schemaQuery('mfi', 'loans')
           .select('loan_id, principal, status, disbursement_date')
@@ -291,8 +333,30 @@ export function useCreateLoan() {
   
   return useMutation({
     mutationFn: async (input: CreateLoanInput) => {
-      const { data, error } = await schemaQuery('mfi', 'loans')
-        .insert({ ...input, status: 'active' })
+      // Use local Supabase (public.loans table)
+      const { data, error } = await supabase
+        .from('loans')
+        .insert({
+          org_id: input.org_id,
+          client_id: input.client_id,
+          loan_type: input.loan_type,
+          purpose: input.purpose,
+          principal: input.principal,
+          interest_rate: input.interest_rate,
+          term_months: input.term_months,
+          interest_method: input.interest_method,
+          interest_calc_frequency: input.interest_calc_frequency,
+          repayment_frequency: input.repayment_frequency,
+          penalty_type: input.penalty_type,
+          penalty_value: input.penalty_value || 0,
+          penalty_grace_days: input.penalty_grace_days || 0,
+          disbursement_date: input.disbursement_date,
+          total_interest: input.total_interest,
+          total_repayable: input.total_repayable,
+          outstanding_principal: input.principal,
+          notes: input.notes,
+          status: 'PENDING',
+        })
         .select()
         .single();
       
@@ -301,6 +365,7 @@ export function useCreateLoan() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-loans'] });
+      queryClient.invalidateQueries({ queryKey: ['client-exposure'] });
       queryClient.invalidateQueries({ queryKey: ['exec-kpis'] });
       toast.success('Loan created successfully');
     },
@@ -315,8 +380,21 @@ export function usePostRepayment() {
   
   return useMutation({
     mutationFn: async (input: PostRepaymentInput) => {
-      const { data, error } = await schemaQuery('mfi', 'repayments')
-        .insert(input)
+      // Use local Supabase (public.repayments table)
+      const { data, error } = await supabase
+        .from('repayments')
+        .insert({
+          org_id: input.org_id,
+          loan_id: input.loan_id,
+          amount: input.amount,
+          principal_portion: input.principal_portion || 0,
+          interest_portion: input.interest_portion || 0,
+          penalty_portion: input.penalty_portion || 0,
+          payment_date: input.payment_date,
+          payment_method: input.payment_method,
+          reference: input.reference,
+          notes: input.notes,
+        })
         .select()
         .single();
       
@@ -330,6 +408,7 @@ export function usePostRepayment() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repayments-daily'] });
+      queryClient.invalidateQueries({ queryKey: ['active-loans'] });
       queryClient.invalidateQueries({ queryKey: ['exec-kpis'] });
       queryClient.invalidateQueries({ queryKey: ['portfolio-aging'] });
       toast.success('Repayment posted successfully');
