@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,6 +25,8 @@ import { useCreateClient } from '@/hooks/useMfiData';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { getRegionOptions, getDistrictOptions, getTownOptions } from '@/data/ghanaLocations';
+import { getBusinessTypeOptions } from '@/data/ghanaLoanTypes';
 
 // Ghana Card format: GHA-XXXXXXXXX-X (13 digits)
 const ghanaCardRegex = /^GHA-\d{9}-\d$/;
@@ -43,6 +46,19 @@ const clientSchema = z.object({
   occupation: z.string().min(1, 'Occupation is required').max(200),
   risk_category: z.enum(['LOW', 'MEDIUM', 'HIGH'], { required_error: 'Risk category is required' }),
   source_of_funds: z.string().min(1, 'Source of funds is required').max(500),
+  // Location fields
+  region: z.string().min(1, 'Region is required'),
+  district: z.string().min(1, 'District is required'),
+  town: z.string().min(1, 'Town/City is required'),
+  landmark: z.string().max(200).optional(),
+  gps_address: z.string().max(20).optional(),
+  // Business information
+  has_business: z.boolean().optional(),
+  business_name: z.string().max(200).optional(),
+  business_type: z.string().optional(),
+  business_years: z.coerce.number().min(0).max(100).optional(),
+  monthly_income: z.coerce.number().min(0).optional(),
+  monthly_expenses: z.coerce.number().min(0).optional(),
   // Optional fields
   phone: z.string().max(20).optional(),
   email: z.string().email('Invalid email').max(255).optional().or(z.literal('')),
@@ -55,6 +71,8 @@ type ClientFormValues = z.infer<typeof clientSchema>;
 export function CreateClientForm() {
   const { selectedOrgId } = useOrganisation();
   const createClient = useCreateClient();
+  const [selectedRegion, setSelectedRegion] = useState<string>('');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('');
 
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
@@ -69,12 +87,29 @@ export function CreateClientForm() {
       occupation: '',
       risk_category: undefined,
       source_of_funds: '',
+      region: '',
+      district: '',
+      town: '',
+      landmark: '',
+      gps_address: '',
+      has_business: false,
+      business_name: '',
+      business_type: '',
+      business_years: 0,
+      monthly_income: 0,
+      monthly_expenses: 0,
       phone: '',
       email: '',
       address: '',
       proof_of_residence_type: undefined,
     },
   });
+
+  const watchHasBusiness = form.watch('has_business');
+  const regionOptions = getRegionOptions();
+  const districtOptions = getDistrictOptions(selectedRegion);
+  const townOptions = getTownOptions(selectedRegion, selectedDistrict);
+  const businessTypeOptions = getBusinessTypeOptions();
 
   const onSubmit = async (values: ClientFormValues) => {
     if (!selectedOrgId) return;
