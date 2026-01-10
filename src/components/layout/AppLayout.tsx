@@ -9,7 +9,9 @@ import {
   LogOut,
   User,
   Shield,
-  Activity
+  Activity,
+  Briefcase,
+  Building
 } from 'lucide-react';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,7 +39,9 @@ interface AppLayoutProps {
 
 const navItems = [
   { path: '/', label: 'Executive Dashboard', icon: LayoutDashboard },
+  { path: '/board', label: 'Board Dashboard', icon: Briefcase },
   { path: '/management', label: 'Management', icon: Activity },
+  { path: '/departments', label: 'Departments', icon: Building },
   { path: '/regulatory-reports', label: 'BoG Reports', icon: Shield },
   { path: '/portfolio-aging', label: 'Portfolio Ageing', icon: TrendingDown },
   { path: '/repayments', label: 'Repayments', icon: DollarSign },
