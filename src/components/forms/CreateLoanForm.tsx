@@ -29,6 +29,7 @@ import { Loader2, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { LOAN_CATEGORIES, getLoanProduct, getLoanProductsByCategory } from '@/data/ghanaLoanTypes';
 import { LoanCalculatorPreview } from './LoanCalculatorPreview';
+import { LoanAffordabilityCheck } from './LoanAffordabilityCheck';
 
 const loanSchema = z.object({
   client_id: z.string().min(1, 'Please select a client'),
@@ -74,6 +75,7 @@ export function CreateLoanForm() {
   });
 
   const watchLoanProduct = form.watch('loan_product');
+  const watchClientId = form.watch('client_id');
   
   // Watch form values for calculator preview
   const watchedValues = useWatch({
@@ -82,6 +84,52 @@ export function CreateLoanForm() {
   });
   
   const [watchedPrincipal, watchedInterestRate, watchedTermMonths, watchedFrequency, watchedDisbursementDate] = watchedValues;
+
+  // Get selected client's financial info for affordability check
+  const selectedClient = useMemo(() => {
+    if (!watchClientId || !clients) return null;
+    return clients.find(c => c.client_id === watchClientId);
+  }, [watchClientId, clients]);
+
+  // Calculate monthly repayment for affordability check (using flat rate)
+  const monthlyRepayment = useMemo(() => {
+    if (!watchedPrincipal || !watchedInterestRate || !watchedTermMonths) return 0;
+    const totalInterest = watchedPrincipal * (watchedInterestRate / 100) * (watchedTermMonths / 12);
+    const totalRepayment = watchedPrincipal + totalInterest;
+    
+    // Convert to monthly equivalent based on frequency
+    let numberOfPayments: number;
+    switch (watchedFrequency) {
+      case 'DAILY':
+        numberOfPayments = watchedTermMonths * 30;
+        break;
+      case 'WEEKLY':
+        numberOfPayments = watchedTermMonths * 4;
+        break;
+      case 'BI_WEEKLY':
+        numberOfPayments = watchedTermMonths * 2;
+        break;
+      case 'MONTHLY':
+      default:
+        numberOfPayments = watchedTermMonths;
+        break;
+    }
+    
+    const periodicPayment = totalRepayment / numberOfPayments;
+    
+    // Convert to monthly equivalent
+    switch (watchedFrequency) {
+      case 'DAILY':
+        return periodicPayment * 30;
+      case 'WEEKLY':
+        return periodicPayment * 4;
+      case 'BI_WEEKLY':
+        return periodicPayment * 2;
+      case 'MONTHLY':
+      default:
+        return periodicPayment;
+    }
+  }, [watchedPrincipal, watchedInterestRate, watchedTermMonths, watchedFrequency]);
   
   const productOptions = useMemo(() => {
     return selectedCategory ? getLoanProductsByCategory(selectedCategory) : [];
@@ -417,6 +465,16 @@ export function CreateLoanForm() {
               termMonths={watchedTermMonths || 0}
               repaymentFrequency={watchedFrequency || 'MONTHLY'}
               disbursementDate={watchedDisbursementDate || ''}
+            />
+          </div>
+
+          {/* Section: Affordability Check */}
+          <div className="space-y-4 pt-4 border-t">
+            <LoanAffordabilityCheck
+              monthlyIncome={selectedClient?.monthly_income || 0}
+              monthlyExpenses={selectedClient?.monthly_expenses || 0}
+              monthlyRepayment={monthlyRepayment}
+              principal={watchedPrincipal || 0}
             />
           </div>
 
