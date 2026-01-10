@@ -38,6 +38,9 @@ export interface Client {
   occupation: string; // Required for risk classification
   risk_category: RiskCategory; // LOW/MEDIUM/HIGH per BoG
   source_of_funds: string; // Required for AML
+  // Financial information for affordability assessment
+  monthly_income?: number;
+  monthly_expenses?: number;
   // System fields
   status: 'ACTIVE' | 'INACTIVE' | 'DECEASED' | 'MERGED';
   created_at?: string;
