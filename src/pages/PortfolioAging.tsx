@@ -1,8 +1,16 @@
 import { usePortfolioAging } from '@/hooks/useMfiData';
 import { BogBucketBadge } from '@/components/dashboard/BogBucketBadge';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Download, FileText } from 'lucide-react';
+import { exportPortfolioAgingCSV, exportToPDF } from '@/lib/export';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-GH', {
@@ -21,6 +29,9 @@ export default function PortfolioAging() {
       loan.client_name.toLowerCase().includes(search.toLowerCase()) ||
       loan.loan_id.toLowerCase().includes(search.toLowerCase())
   ) ?? [];
+
+  const handleExportCSV = () => exportPortfolioAgingCSV(filteredData);
+  const handleExportPDF = () => exportToPDF('portfolio-table', 'Portfolio Ageing Report');
 
   return (
     <div className="p-8">
@@ -44,6 +55,24 @@ export default function PortfolioAging() {
           <span className="text-sm text-muted-foreground">
             {filteredData.length} loans
           </span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={filteredData.length === 0}>
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportCSV}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportPDF}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export as PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Table */}
@@ -54,7 +83,7 @@ export default function PortfolioAging() {
             ))}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" id="portfolio-table">
             <table className="data-table">
               <thead>
                 <tr>
