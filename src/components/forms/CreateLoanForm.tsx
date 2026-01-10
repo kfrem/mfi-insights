@@ -84,15 +84,16 @@ export function CreateLoanForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {clients?.map((client) => (
-                      <SelectItem key={client.client_id} value={client.client_id}>
-                        {client.first_name} {client.last_name}
-                      </SelectItem>
-                    ))}
-                    {(!clients || clients.length === 0) && !clientsLoading && (
-                      <SelectItem value="" disabled>
-                        No clients found. Create one first.
-                      </SelectItem>
+                    {clients && clients.length > 0 ? (
+                      clients.map((client) => (
+                        <SelectItem key={client.client_id} value={client.client_id}>
+                          {client.first_name} {client.last_name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                        {clientsLoading ? 'Loading...' : 'No clients found. Create one first.'}
+                      </div>
                     )}
                   </SelectContent>
                 </Select>

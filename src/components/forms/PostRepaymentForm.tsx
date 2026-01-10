@@ -93,15 +93,16 @@ export function PostRepaymentForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {loans?.map((loan) => (
-                      <SelectItem key={loan.loan_id} value={loan.loan_id}>
-                        {loan.loan_id} - {loan.clients?.first_name} {loan.clients?.last_name} (GHS {loan.principal.toLocaleString()})
-                      </SelectItem>
-                    ))}
-                    {(!loans || loans.length === 0) && !loansLoading && (
-                      <SelectItem value="" disabled>
-                        No active loans found
-                      </SelectItem>
+                    {loans && loans.length > 0 ? (
+                      loans.map((loan) => (
+                        <SelectItem key={loan.loan_id} value={loan.loan_id}>
+                          {loan.loan_id} - {loan.clients?.first_name} {loan.clients?.last_name} (GHS {loan.principal.toLocaleString()})
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                        {loansLoading ? 'Loading...' : 'No active loans found'}
+                      </div>
                     )}
                   </SelectContent>
                 </Select>
