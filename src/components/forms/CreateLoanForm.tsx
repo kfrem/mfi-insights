@@ -201,12 +201,38 @@ export function CreateLoanForm() {
   const onSubmit = async (values: LoanFormValues) => {
     if (!selectedOrgId) return;
 
+    // Map form repayment_frequency to DB enum
+    const mapRepaymentFrequency = (freq: string): 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY' => {
+      if (freq === 'BI_WEEKLY') return 'FORTNIGHTLY';
+      return freq as 'DAILY' | 'WEEKLY' | 'MONTHLY';
+    };
+
+    // Map form penalty_type to DB enum
+    const mapPenaltyType = (type: string): 'NONE' | 'FLAT_AMOUNT' | 'PERCENT_OVERDUE' | 'PERCENT_INSTALLMENT' | 'DAILY_RATE' => {
+      const mapping: Record<string, 'NONE' | 'FLAT_AMOUNT' | 'PERCENT_OVERDUE' | 'PERCENT_INSTALLMENT' | 'DAILY_RATE'> = {
+        'NONE': 'NONE',
+        'FLAT_AMOUNT': 'FLAT_AMOUNT',
+        'PERCENTAGE_OVERDUE': 'PERCENT_OVERDUE',
+        'PERCENTAGE_INSTALLMENT': 'PERCENT_INSTALLMENT',
+        'DAILY_RATE': 'DAILY_RATE',
+      };
+      return mapping[type] || 'NONE';
+    };
+
     await createLoan.mutateAsync({
       org_id: selectedOrgId,
       client_id: values.client_id,
+      loan_type: values.loan_product, // Map loan_product to loan_type
+      purpose: values.purpose || undefined,
       principal: values.principal,
       interest_rate: values.interest_rate,
       term_months: values.term_months,
+      interest_method: values.interest_method as 'FLAT' | 'REDUCING_BALANCE',
+      interest_calc_frequency: values.interest_calc_frequency as 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY',
+      repayment_frequency: mapRepaymentFrequency(values.repayment_frequency),
+      penalty_type: mapPenaltyType(values.penalty_type),
+      penalty_value: values.penalty_value || 0,
+      penalty_grace_days: values.penalty_grace_days || 0,
       disbursement_date: values.disbursement_date,
     });
 

@@ -84,26 +84,87 @@ export interface GroupMember {
   created_at?: string;
   updated_at?: string;
 }
+// Interest calculation frequency options
+export type InterestCalcFrequency = 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY';
+
+// Repayment frequency options
+export type RepaymentFrequency = 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY';
+
+// Interest calculation method
+export type InterestMethod = 'FLAT' | 'REDUCING_BALANCE';
+
+// Penalty type for late payments
+export type PenaltyType = 'NONE' | 'FLAT_AMOUNT' | 'PERCENT_OVERDUE' | 'PERCENT_INSTALLMENT' | 'DAILY_RATE';
+
+// Loan status
+export type LoanStatus = 'PENDING' | 'APPROVED' | 'DISBURSED' | 'ACTIVE' | 'COMPLETED' | 'DEFAULTED' | 'WRITTEN_OFF' | 'REJECTED';
 
 export interface Loan {
   loan_id: string;
   org_id: string;
   client_id: string;
+  
+  // Loan details
+  loan_type: string;
+  purpose?: string;
   principal: number;
   interest_rate: number;
   term_months: number;
-  disbursement_date: string;
-  status: 'pending' | 'active' | 'closed' | 'written_off';
+  
+  // Interest and repayment configuration
+  interest_method: InterestMethod;
+  interest_calc_frequency: InterestCalcFrequency;
+  repayment_frequency: RepaymentFrequency;
+  
+  // Late payment penalty configuration
+  penalty_type: PenaltyType;
+  penalty_value?: number;
+  penalty_grace_days?: number;
+  
+  // Dates
+  application_date: string;
+  approval_date?: string;
+  disbursement_date?: string;
+  expected_end_date?: string;
+  actual_end_date?: string;
+  
+  // Amounts
+  disbursed_amount?: number;
+  total_interest?: number;
+  total_repayable?: number;
+  outstanding_principal?: number;
+  outstanding_interest?: number;
+  
+  // Status
+  status: LoanStatus;
+  
+  // Metadata
+  approved_by?: string;
+  disbursed_by?: string;
+  notes?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface Repayment {
   repayment_id: string;
   org_id: string;
   loan_id: string;
+  
+  // Repayment details
   amount: number;
+  principal_portion?: number;
+  interest_portion?: number;
+  penalty_portion?: number;
+  
+  // Payment info
   payment_date: string;
-  reference: string;
+  payment_method?: string;
+  reference?: string;
+  
+  // Metadata
+  received_by?: string;
+  notes?: string;
   created_at?: string;
 }
 
@@ -194,16 +255,45 @@ export interface GroupMemberInput {
 export interface CreateLoanInput {
   org_id: string;
   client_id: string;
+  
+  // Loan details
+  loan_type: string;
+  purpose?: string;
   principal: number;
   interest_rate: number;
   term_months: number;
-  disbursement_date: string;
+  
+  // Interest and repayment configuration
+  interest_method: InterestMethod;
+  interest_calc_frequency: InterestCalcFrequency;
+  repayment_frequency: RepaymentFrequency;
+  
+  // Late payment penalty configuration
+  penalty_type: PenaltyType;
+  penalty_value?: number;
+  penalty_grace_days?: number;
+  
+  // Dates
+  application_date?: string;
+  disbursement_date?: string;
+  
+  // Calculated amounts
+  total_interest?: number;
+  total_repayable?: number;
+  
+  // Notes
+  notes?: string;
 }
 
 export interface PostRepaymentInput {
   org_id: string;
   loan_id: string;
   amount: number;
+  principal_portion?: number;
+  interest_portion?: number;
+  penalty_portion?: number;
   payment_date: string;
-  reference: string;
+  payment_method?: string;
+  reference?: string;
+  notes?: string;
 }
