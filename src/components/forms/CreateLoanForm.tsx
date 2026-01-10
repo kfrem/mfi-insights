@@ -25,7 +25,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ClientSearchSelect } from './ClientSearchSelect';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useCreateLoan, useClients } from '@/hooks/useMfiData';
+import { useCreateLoan, useClients, useClientExposure } from '@/hooks/useMfiData';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { useTierLoanLimits } from '@/hooks/useBogTiers';
 import { Loader2, Info, AlertTriangle } from 'lucide-react';
@@ -82,6 +82,9 @@ export function CreateLoanForm() {
   const watchLoanProduct = form.watch('loan_product');
   const watchClientId = form.watch('client_id');
   
+  // Fetch client's existing loan exposure
+  const { data: clientExposure, isLoading: exposureLoading } = useClientExposure(watchClientId || null);
+  
   // Watch form values for calculator preview
   const watchedValues = useWatch({
     control: form.control,
@@ -89,6 +92,10 @@ export function CreateLoanForm() {
   });
   
   const [watchedPrincipal, watchedInterestRate, watchedTermMonths, watchedFrequency, watchedDisbursementDate] = watchedValues;
+
+  // Calculate total exposure including new loan
+  const existingExposure = clientExposure?.totalExposure || 0;
+  const proposedTotalExposure = existingExposure + (watchedPrincipal || 0);
 
   // Get selected client's financial info for affordability check
   const selectedClient = useMemo(() => {
@@ -180,9 +187,9 @@ export function CreateLoanForm() {
     return new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS', minimumFractionDigits: 0 }).format(value);
   };
 
-  // Check if principal exceeds tier limit or single obligor limit
+  // Check if principal exceeds tier limit or single obligor limit (using total exposure)
   const exceedsTierLimit = maxLoanAmount && watchedPrincipal > maxLoanAmount;
-  const exceedsSingleObligorLimit = singleObligorLimit && watchedPrincipal > singleObligorLimit;
+  const exceedsSingleObligorLimit = singleObligorLimit && proposedTotalExposure > singleObligorLimit;
   const tierLabel = tierSettings?.bog_tier ? BOG_TIER_LABELS[tierSettings.bog_tier] : null;
 
   return (
@@ -233,12 +240,14 @@ export function CreateLoanForm() {
         </Alert>
       )}
 
-      {/* Single Obligor Limit Warning */}
+      {/* Single Obligor Limit Warning - based on total exposure */}
       {exceedsSingleObligorLimit && (
         <Alert variant="destructive" className="mb-6">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Principal of {formatCurrency(watchedPrincipal)} exceeds the Single Obligor Limit of {formatCurrency(singleObligorLimit!)} ({singleObligorPercent}% of institution's net worth).
+            <strong>Single Obligor Limit Breach:</strong> Total exposure of {formatCurrency(proposedTotalExposure)} 
+            (Existing: {formatCurrency(existingExposure)} + New: {formatCurrency(watchedPrincipal)}) 
+            exceeds the limit of {formatCurrency(singleObligorLimit!)} ({singleObligorPercent}% of net worth).
           </AlertDescription>
         </Alert>
       )}
@@ -275,7 +284,7 @@ export function CreateLoanForm() {
             {selectedClient && (
               <Card className="bg-muted/30">
                 <CardContent className="pt-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                     <div>
                       <p className="text-muted-foreground text-xs">Full Name</p>
                       <p className="font-medium">{selectedClient.first_name} {selectedClient.last_name}</p>
@@ -296,7 +305,48 @@ export function CreateLoanForm() {
                         {selectedClient.monthly_expenses ? formatCurrency(selectedClient.monthly_expenses) : 'Not declared'}
                       </p>
                     </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Current Exposure</p>
+                      {exposureLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <p className={`font-medium ${existingExposure > 0 ? 'text-blue-600' : 'text-muted-foreground'}`}>
+                          {existingExposure > 0 
+                            ? `${formatCurrency(existingExposure)} (${clientExposure?.loanCount} loan${clientExposure?.loanCount !== 1 ? 's' : ''})`
+                            : 'No active loans'}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Exposure Summary Card when client has existing loans */}
+                  {existingExposure > 0 && singleObligorLimit && (
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="flex flex-wrap items-center gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Existing:</span>
+                          <Badge variant="secondary">{formatCurrency(existingExposure)}</Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">+ New Loan:</span>
+                          <Badge variant="outline">{formatCurrency(watchedPrincipal || 0)}</Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">=</span>
+                          <Badge variant={exceedsSingleObligorLimit ? "destructive" : "default"}>
+                            {formatCurrency(proposedTotalExposure)}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">/ Limit:</span>
+                          <Badge variant="outline">{formatCurrency(singleObligorLimit)}</Badge>
+                        </div>
+                        <div className={`font-medium ${exceedsSingleObligorLimit ? 'text-destructive' : 'text-green-600'}`}>
+                          ({((proposedTotalExposure / singleObligorLimit) * 100).toFixed(1)}% utilization)
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}

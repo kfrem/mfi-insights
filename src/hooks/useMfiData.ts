@@ -229,6 +229,40 @@ export function useActiveLoans() {
   });
 }
 
+// Hook to get total exposure for a specific client (sum of all active loans)
+export function useClientExposure(clientId: string | null) {
+  const { selectedOrgId } = useOrganisation();
+  
+  return useQuery({
+    queryKey: ['client-exposure', selectedOrgId, clientId],
+    queryFn: async () => {
+      if (!selectedOrgId || !clientId) return { totalExposure: 0, loanCount: 0, loans: [] };
+      
+      try {
+        const { data, error } = await schemaQuery('mfi', 'loans')
+          .select('loan_id, principal, status, disbursement_date')
+          .eq('org_id', selectedOrgId)
+          .eq('client_id', clientId)
+          .in('status', ['active', 'pending']);
+        
+        if (error) throw error;
+        
+        const loans = data as { loan_id: string; principal: number; status: string; disbursement_date: string }[];
+        const totalExposure = loans.reduce((sum, loan) => sum + (loan.principal || 0), 0);
+        
+        return {
+          totalExposure,
+          loanCount: loans.length,
+          loans,
+        };
+      } catch {
+        return { totalExposure: 0, loanCount: 0, loans: [] };
+      }
+    },
+    enabled: !!selectedOrgId && !!clientId,
+  });
+}
+
 export function useCreateClient() {
   const queryClient = useQueryClient();
   
