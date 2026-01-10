@@ -24,13 +24,16 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { ClientSearchSelect } from './ClientSearchSelect';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCreateLoan, useClients } from '@/hooks/useMfiData';
 import { useOrganisation } from '@/contexts/OrganisationContext';
-import { Loader2, Info } from 'lucide-react';
+import { useTierLoanLimits } from '@/hooks/useBogTiers';
+import { Loader2, Info, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { LOAN_CATEGORIES, getLoanProduct, getLoanProductsByCategory } from '@/data/ghanaLoanTypes';
 import { LoanCalculatorPreview } from './LoanCalculatorPreview';
 import { LoanAffordabilityCheck } from './LoanAffordabilityCheck';
+import { BOG_TIER_LABELS } from '@/types/bogTiers';
 
 const loanSchema = z.object({
   client_id: z.string().min(1, 'Please select a client'),
@@ -54,6 +57,7 @@ export function CreateLoanForm() {
   const { selectedOrgId } = useOrganisation();
   const createLoan = useCreateLoan();
   const { data: clients, isLoading: clientsLoading } = useClients();
+  const { settings: tierSettings, tierConfig, maxLoanAmount, singleObligorPercent } = useTierLoanLimits();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   const form = useForm<LoanFormValues>({
@@ -176,12 +180,43 @@ export function CreateLoanForm() {
     return new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS', minimumFractionDigits: 0 }).format(value);
   };
 
+  // Check if principal exceeds tier limit
+  const exceedsTierLimit = maxLoanAmount && watchedPrincipal > maxLoanAmount;
+  const tierLabel = tierSettings?.bog_tier ? BOG_TIER_LABELS[tierSettings.bog_tier] : null;
+
   return (
     <div className="form-section">
       <h2 className="text-lg font-semibold mb-2">Create New Loan</h2>
       <p className="text-sm text-muted-foreground mb-6">
         Select a loan product and configure the terms for disbursement
       </p>
+
+      {/* Tier Limit Info */}
+      {tierSettings && tierLabel && (
+        <Alert className="mb-6">
+          <Info className="h-4 w-4" />
+          <AlertDescription className="flex flex-wrap items-center gap-2">
+            <Badge className={`${tierLabel.color} text-white`}>{tierLabel.shortName}</Badge>
+            <span>
+              {maxLoanAmount 
+                ? `Max loan per borrower: ${formatCurrency(maxLoanAmount)}`
+                : 'No per-borrower limit configured'}
+            </span>
+            <span className="text-muted-foreground">|</span>
+            <span>Single Obligor: {singleObligorPercent}% of net worth</span>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Tier Limit Warning */}
+      {exceedsTierLimit && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Principal of {formatCurrency(watchedPrincipal)} exceeds the BoG tier limit of {formatCurrency(maxLoanAmount!)} for {tierLabel?.name}.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

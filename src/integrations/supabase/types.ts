@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      bog_tier_config: {
+        Row: {
+          car_requirement: number | null
+          liquidity_requirement: number | null
+          max_loan_per_borrower_ghs: number | null
+          min_capital_ghs: number
+          prudential_frequency: string | null
+          requires_bog_license: boolean | null
+          single_obligor_limit_percent: number | null
+          tier: Database["public"]["Enums"]["bog_mfi_tier"]
+          tier_description: string | null
+          tier_name: string
+        }
+        Insert: {
+          car_requirement?: number | null
+          liquidity_requirement?: number | null
+          max_loan_per_borrower_ghs?: number | null
+          min_capital_ghs: number
+          prudential_frequency?: string | null
+          requires_bog_license?: boolean | null
+          single_obligor_limit_percent?: number | null
+          tier: Database["public"]["Enums"]["bog_mfi_tier"]
+          tier_description?: string | null
+          tier_name: string
+        }
+        Update: {
+          car_requirement?: number | null
+          liquidity_requirement?: number | null
+          max_loan_per_borrower_ghs?: number | null
+          min_capital_ghs?: number
+          prudential_frequency?: string | null
+          requires_bog_license?: boolean | null
+          single_obligor_limit_percent?: number | null
+          tier?: Database["public"]["Enums"]["bog_mfi_tier"]
+          tier_description?: string | null
+          tier_name?: string
+        }
+        Relationships: []
+      }
       client_documents: {
         Row: {
           client_id: string
@@ -229,6 +268,54 @@ export type Database = {
           },
         ]
       }
+      organisation_settings: {
+        Row: {
+          bog_tier: Database["public"]["Enums"]["bog_mfi_tier"]
+          car_threshold: number | null
+          created_at: string
+          id: string
+          license_expiry: string | null
+          license_number: string | null
+          liquidity_threshold: number | null
+          max_loan_amount: number | null
+          max_single_obligor_limit: number | null
+          min_capital_requirement: number | null
+          org_id: string
+          prudential_return_frequency: string | null
+          updated_at: string
+        }
+        Insert: {
+          bog_tier?: Database["public"]["Enums"]["bog_mfi_tier"]
+          car_threshold?: number | null
+          created_at?: string
+          id?: string
+          license_expiry?: string | null
+          license_number?: string | null
+          liquidity_threshold?: number | null
+          max_loan_amount?: number | null
+          max_single_obligor_limit?: number | null
+          min_capital_requirement?: number | null
+          org_id: string
+          prudential_return_frequency?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bog_tier?: Database["public"]["Enums"]["bog_mfi_tier"]
+          car_threshold?: number | null
+          created_at?: string
+          id?: string
+          license_expiry?: string | null
+          license_number?: string | null
+          liquidity_threshold?: number | null
+          max_loan_amount?: number | null
+          max_single_obligor_limit?: number | null
+          min_capital_requirement?: number | null
+          org_id?: string
+          prudential_return_frequency?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -237,6 +324,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      bog_mfi_tier: "TIER_1_RCB" | "TIER_2_SL" | "TIER_3_FH" | "TIER_4_MFC"
       client_type: "INDIVIDUAL" | "GROUP" | "COOPERATIVE" | "SME"
       group_member_role: "LEADER" | "SECRETARY" | "MEMBER"
     }
@@ -366,6 +454,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      bog_mfi_tier: ["TIER_1_RCB", "TIER_2_SL", "TIER_3_FH", "TIER_4_MFC"],
       client_type: ["INDIVIDUAL", "GROUP", "COOPERATIVE", "SME"],
       group_member_role: ["LEADER", "SECRETARY", "MEMBER"],
     },

@@ -277,3 +277,18 @@ export function useTransactionReports() {
     enabled: !!selectedOrgId,
   });
 }
+
+// Combined hook for easy access to key regulatory metrics
+export function useRegulatoryData() {
+  const { data: carData } = useCapitalAdequacy();
+  const { data: liquidityData } = useLiquidityRatio();
+  const { data: prudentialReturns } = usePrudentialReturns();
+  const { data: portfolioMetrics } = usePortfolioMetrics();
+
+  return {
+    carData,
+    liquidityData,
+    prudentialReturns,
+    portfolioMetrics,
+  };
+}
