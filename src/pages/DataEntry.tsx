@@ -3,23 +3,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreateClientForm } from '@/components/forms/CreateClientForm';
 import { CreateLoanForm } from '@/components/forms/CreateLoanForm';
 import { PostRepaymentForm } from '@/components/forms/PostRepaymentForm';
-import { UserPlus, FileText, DollarSign } from 'lucide-react';
+import { ClientListView } from '@/components/clients/ClientListView';
+import { UserPlus, FileText, DollarSign, Users } from 'lucide-react';
 
 export default function DataEntry() {
-  const [activeTab, setActiveTab] = useState('client');
+  const [activeTab, setActiveTab] = useState('clients');
 
   return (
     <div className="p-8">
       <header className="page-header">
         <h1 className="page-title">Data Entry</h1>
-        <p className="page-subtitle">Create clients, disburse loans, and post repayments</p>
+        <p className="page-subtitle">Manage clients, disburse loans, and post repayments</p>
       </header>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-2xl">
-        <TabsList className="grid w-full grid-cols-3 mb-8">
-          <TabsTrigger value="client" className="flex items-center gap-2">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-4xl">
+        <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsTrigger value="clients" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Clients
+          </TabsTrigger>
+          <TabsTrigger value="new-client" className="flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
-            Client
+            New Client
           </TabsTrigger>
           <TabsTrigger value="loan" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -31,7 +36,11 @@ export default function DataEntry() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="client" className="animate-fade-in">
+        <TabsContent value="clients" className="animate-fade-in">
+          <ClientListView />
+        </TabsContent>
+
+        <TabsContent value="new-client" className="animate-fade-in">
           <CreateClientForm />
         </TabsContent>
 
