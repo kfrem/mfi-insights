@@ -334,10 +334,169 @@ export function CreateClientForm() {
             />
           </div>
 
-          {/* Section: Contact & Address */}
+          {/* Section: Location */}
           <div className="space-y-4 pt-4 border-t">
             <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Contact & Address
+              Location Details
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="region"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Region *</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedRegion(value);
+                        setSelectedDistrict('');
+                        form.setValue('district', '');
+                        form.setValue('town', '');
+                      }} 
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select region" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {regionOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="district"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>District *</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedDistrict(value);
+                        form.setValue('town', '');
+                      }} 
+                      value={field.value}
+                      disabled={!selectedRegion}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={selectedRegion ? "Select district" : "Select region first"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {districtOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="town"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Town/City *</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value}
+                      disabled={!selectedDistrict}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={selectedDistrict ? "Select town" : "Select district first"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {townOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="landmark"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Landmark / Street</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Near Kantamanto Market, Osu Oxford Street" {...field} />
+                    </FormControl>
+                    <FormDescription>Nearby landmark for easy identification</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="gps_address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ghana GPS Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="GA-123-4567" {...field} />
+                    </FormControl>
+                    <FormDescription>Digital address (GhanaPostGPS)</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="proof_of_residence_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Proof of Residence Type</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select document type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="UTILITY_BILL">Utility Bill (ECG, Ghana Water)</SelectItem>
+                      <SelectItem value="GPS_ADDRESS">GPS Digital Address Confirmation</SelectItem>
+                      <SelectItem value="LEASE_AGREEMENT">Rent/Lease Agreement</SelectItem>
+                      <SelectItem value="BANK_STATEMENT">Bank Statement with Address</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>Document used to verify residence</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Section: Contact */}
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Contact Information
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -346,10 +505,11 @@ export function CreateClientForm() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone</FormLabel>
+                    <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="+233 20 123 4567" {...field} />
+                      <Input placeholder="0201234567" {...field} />
                     </FormControl>
+                    <FormDescription>Mobile money number preferred</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -368,45 +528,126 @@ export function CreateClientForm() {
                 )}
               />
             </div>
+          </div>
 
+          {/* Section: Business Information */}
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Business / Employment Information
+            </h3>
+            
             <FormField
               control={form.control}
-              name="address"
+              name="has_business"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Physical Address</FormLabel>
+                <FormItem className="flex flex-row items-center gap-3 space-y-0 rounded-lg border p-4">
                   <FormControl>
-                    <Textarea placeholder="Street, City, Region (or GPS Address)" {...field} />
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
                   </FormControl>
-                  <FormMessage />
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="cursor-pointer">
+                      Client has a business
+                    </FormLabel>
+                    <FormDescription>
+                      Check if client operates a business (trading, farming, services, etc.)
+                    </FormDescription>
+                  </div>
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="proof_of_residence_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Proof of Residence Type</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select document type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="UTILITY_BILL">Utility Bill (Electricity, Water, Gas)</SelectItem>
-                      <SelectItem value="GPS_ADDRESS">GPS Digital Address</SelectItem>
-                      <SelectItem value="LEASE_AGREEMENT">Lease Agreement</SelectItem>
-                      <SelectItem value="BANK_STATEMENT">Bank Statement</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>Document used to verify address</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {watchHasBusiness && (
+              <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="business_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Kofi's Trading Enterprise" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="business_type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Type</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select business type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {businessTypeOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="business_years"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Years in Business</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="100" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="monthly_income"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Monthly Income (GHS)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="100" placeholder="5000" {...field} />
+                        </FormControl>
+                        <FormDescription>Average monthly revenue</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="monthly_expenses"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Monthly Expenses (GHS)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="100" placeholder="3000" {...field} />
+                        </FormControl>
+                        <FormDescription>Average monthly costs</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <Button type="submit" className="w-full md:w-auto" disabled={createClient.isPending || !selectedOrgId}>
