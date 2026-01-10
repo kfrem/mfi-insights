@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useClients } from '@/hooks/useMfiData';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -18,8 +19,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Users, AlertTriangle, Shield, ShieldAlert } from 'lucide-react';
-import type { RiskCategory } from '@/types/mfi';
+import { Search, Users, AlertTriangle, Shield, ShieldAlert, FileText } from 'lucide-react';
+import { ClientDocumentsModal } from './ClientDocumentsModal';
+import type { RiskCategory, Client } from '@/types/mfi';
 
 const riskCategoryConfig: Record<RiskCategory, { label: string; variant: 'default' | 'secondary' | 'destructive'; icon: typeof Shield }> = {
   LOW: { label: 'Low Risk', variant: 'default', icon: Shield },
@@ -31,6 +33,13 @@ export function ClientListView() {
   const { data: clients, isLoading } = useClients();
   const [searchQuery, setSearchQuery] = useState('');
   const [riskFilter, setRiskFilter] = useState<RiskCategory | 'ALL'>('ALL');
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
+
+  const handleViewDocs = (client: Client) => {
+    setSelectedClient(client);
+    setIsDocsModalOpen(true);
+  };
 
   const filteredClients = useMemo(() => {
     if (!clients) return [];
@@ -140,12 +149,13 @@ export function ClientListView() {
               <TableHead>Occupation</TableHead>
               <TableHead>Risk</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="text-right">Documents</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredClients.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   {searchQuery || riskFilter !== 'ALL' 
                     ? 'No clients match your filters' 
                     : 'No clients found. Create your first client above.'}
@@ -183,6 +193,17 @@ export function ClientListView() {
                         {client.status || 'ACTIVE'}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewDocs(client)}
+                        className="gap-1"
+                      >
+                        <FileText className="h-4 w-4" />
+                        View
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })
@@ -190,6 +211,13 @@ export function ClientListView() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Documents Modal */}
+      <ClientDocumentsModal
+        client={selectedClient}
+        open={isDocsModalOpen}
+        onOpenChange={setIsDocsModalOpen}
+      />
     </div>
   );
 }
