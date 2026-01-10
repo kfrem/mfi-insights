@@ -1,6 +1,15 @@
 import { useRepaymentDaily } from '@/hooks/useMfiData';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format, parseISO } from 'date-fns';
+import { Download, FileText, FileSpreadsheet } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { exportRepaymentsCSV, exportToPDF } from '@/lib/export';
 
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-GH', {
@@ -31,9 +40,30 @@ export default function Repayments() {
 
   return (
     <div className="p-8">
-      <header className="page-header">
-        <h1 className="page-title">Repayments</h1>
-        <p className="page-subtitle">Daily collection trends over the last 60 days</p>
+      {/* Header with Export */}
+      <header className="page-header flex justify-between items-start">
+        <div>
+          <h1 className="page-title">Repayments</h1>
+          <p className="page-subtitle">Daily collection trends over the last 60 days</p>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => repayments && exportRepaymentsCSV(repayments)}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportToPDF('repayments-table', 'Daily Repayments Report')}>
+              <FileText className="h-4 w-4 mr-2" />
+              Export Table as PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       {/* Summary Cards */}
@@ -109,7 +139,7 @@ export default function Repayments() {
       <div className="kpi-card">
         <h3 className="text-lg font-semibold mb-4">Daily Breakdown</h3>
         <div className="overflow-x-auto max-h-96">
-          <table className="data-table">
+          <table id="repayments-table" className="data-table">
             <thead className="sticky top-0 bg-card">
               <tr>
                 <th>Date</th>
