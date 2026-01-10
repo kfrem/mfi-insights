@@ -4,11 +4,18 @@ import { LiquidityCalculator } from '@/components/regulatory/LiquidityCalculator
 import { PrudentialReturnsTracker } from '@/components/regulatory/PrudentialReturnsTracker';
 import { AMLReportsPanel } from '@/components/regulatory/AMLReportsPanel';
 import { BogClassificationTable } from '@/components/dashboard/BogClassificationTable';
+import { TierComplianceWidget } from '@/components/regulatory/TierComplianceWidget';
 import { useBogClassification } from '@/hooks/useMfiData';
+import { useRegulatoryData } from '@/hooks/useRegulatoryData';
 import { Shield, Percent, Droplets, FileCheck, AlertTriangle, ClipboardList } from 'lucide-react';
 
 export default function RegulatoryReports() {
   const { data: bogData, isLoading: bogLoading } = useBogClassification();
+  const { carData, liquidityData } = useRegulatoryData();
+
+  // Get current CAR and liquidity values from the regulatory data hooks
+  const currentCAR = carData?.car_ratio ?? 0;
+  const currentLiquidity = liquidityData?.liquidity_ratio ?? 0;
 
   return (
     <div className="p-8">
@@ -21,6 +28,11 @@ export default function RegulatoryReports() {
           Bank of Ghana prudential reporting, capital adequacy, and compliance monitoring
         </p>
       </header>
+
+      {/* Tier Compliance Summary */}
+      <div className="mb-6">
+        <TierComplianceWidget currentCAR={currentCAR} currentLiquidity={currentLiquidity} />
+      </div>
 
       <Tabs defaultValue="car" className="space-y-6">
         <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full h-auto gap-2 bg-transparent p-0">

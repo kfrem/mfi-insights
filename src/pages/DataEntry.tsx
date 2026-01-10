@@ -6,7 +6,8 @@ import { PostRepaymentForm } from '@/components/forms/PostRepaymentForm';
 import { ClientListView } from '@/components/clients/ClientListView';
 import { ClientDocumentUpload } from '@/components/documents/ClientDocumentUpload';
 import { ClientDocumentSearch } from '@/components/documents/ClientDocumentSearch';
-import { UserPlus, FileText, DollarSign, Users, Upload, Search } from 'lucide-react';
+import { OrganisationTierSettings } from '@/components/settings/OrganisationTierSettings';
+import { UserPlus, FileText, DollarSign, Users, Upload, Search, Settings } from 'lucide-react';
 
 export default function DataEntry() {
   const [activeTab, setActiveTab] = useState('clients');
@@ -19,30 +20,34 @@ export default function DataEntry() {
       </header>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-4xl">
-        <TabsList className="grid w-full grid-cols-6 mb-8">
+        <TabsList className="grid w-full grid-cols-7 mb-8">
           <TabsTrigger value="clients" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Clients
+            <span className="hidden sm:inline">Clients</span>
           </TabsTrigger>
           <TabsTrigger value="new-client" className="flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
-            New Client
+            <span className="hidden sm:inline">New Client</span>
           </TabsTrigger>
           <TabsTrigger value="loan" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Loan
+            <span className="hidden sm:inline">Loan</span>
           </TabsTrigger>
           <TabsTrigger value="repayment" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
-            Repayment
+            <span className="hidden sm:inline">Repayment</span>
           </TabsTrigger>
           <TabsTrigger value="upload-doc" className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
-            Upload Doc
+            <span className="hidden sm:inline">Upload</span>
           </TabsTrigger>
           <TabsTrigger value="search-docs" className="flex items-center gap-2">
             <Search className="h-4 w-4" />
-            Find Docs
+            <span className="hidden sm:inline">Find Docs</span>
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Settings</span>
           </TabsTrigger>
         </TabsList>
 
@@ -68,6 +73,10 @@ export default function DataEntry() {
 
         <TabsContent value="search-docs" className="animate-fade-in">
           <ClientDocumentSearch />
+        </TabsContent>
+
+        <TabsContent value="settings" className="animate-fade-in">
+          <OrganisationTierSettings />
         </TabsContent>
       </Tabs>
     </div>
