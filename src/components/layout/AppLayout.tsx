@@ -6,9 +6,11 @@ import {
   DollarSign, 
   PlusCircle,
   Building2,
-  ChevronDown
+  LogOut,
+  User
 } from 'lucide-react';
 import { useOrganisation } from '@/contexts/OrganisationContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Select,
   SelectContent,
@@ -16,6 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
@@ -32,7 +43,7 @@ const navItems = [
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { organisations, selectedOrgId, setSelectedOrgId, isLoading } = useOrganisation();
-
+  const { user, signOut } = useAuth();
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
@@ -85,6 +96,34 @@ export function AppLayout({ children }: AppLayoutProps) {
             );
           })}
         </nav>
+        {/* User Menu */}
+        {user && (
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-sidebar-border">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent"
+                >
+                  <div className="h-8 w-8 rounded-full bg-sidebar-primary flex items-center justify-center">
+                    <User className="h-4 w-4 text-sidebar-primary-foreground" />
+                  </div>
+                  <div className="flex-1 text-left truncate">
+                    <p className="text-sm font-medium truncate">{user.email}</p>
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </aside>
 
       {/* Main Content */}
