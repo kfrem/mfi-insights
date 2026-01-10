@@ -7,7 +7,8 @@ import {
   PlusCircle,
   Building2,
   LogOut,
-  User
+  User,
+  Shield
 } from 'lucide-react';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,6 +36,7 @@ interface AppLayoutProps {
 
 const navItems = [
   { path: '/', label: 'Executive Dashboard', icon: LayoutDashboard },
+  { path: '/regulatory-reports', label: 'BoG Reports', icon: Shield },
   { path: '/portfolio-aging', label: 'Portfolio Ageing', icon: TrendingDown },
   { path: '/repayments', label: 'Repayments', icon: DollarSign },
   { path: '/data-entry', label: 'Data Entry', icon: PlusCircle },
