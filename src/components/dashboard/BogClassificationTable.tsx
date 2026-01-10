@@ -1,5 +1,14 @@
 import { BogClassification } from '@/types/mfi';
 import { BogBucketBadge } from './BogBucketBadge';
+import { Button } from '@/components/ui/button';
+import { Download, FileText } from 'lucide-react';
+import { exportBogClassificationCSV, exportToPDF } from '@/lib/export';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface BogClassificationTableProps {
   data: BogClassification[];
@@ -31,10 +40,33 @@ export function BogClassificationTable({ data, isLoading }: BogClassificationTab
   const totalOutstanding = data.reduce((sum, row) => sum + row.outstanding_balance, 0);
   const totalProvisions = data.reduce((sum, row) => sum + row.provision_amount, 0);
 
+  const handleExportCSV = () => exportBogClassificationCSV(data, 'org');
+  const handleExportPDF = () => exportToPDF('bog-table', 'BOG Classification of Advances');
+
   return (
     <div className="kpi-card">
-      <h3 className="text-lg font-semibold mb-4">BOG Classification of Advances</h3>
-      <div className="overflow-x-auto">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">BOG Classification of Advances</h3>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" disabled={data.length === 0}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleExportCSV}>
+              <FileText className="h-4 w-4 mr-2" />
+              Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportPDF}>
+              <FileText className="h-4 w-4 mr-2" />
+              Export as PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <div className="overflow-x-auto" id="bog-table">
         <table className="data-table">
           <thead>
             <tr>
