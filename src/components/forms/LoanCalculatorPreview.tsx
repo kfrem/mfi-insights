@@ -1,10 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -13,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Calculator, Calendar, TrendingUp, Wallet, AlertCircle, Info } from 'lucide-react';
+import { Calculator, Calendar, TrendingUp, Wallet, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { format, addDays, addWeeks, addMonths } from 'date-fns';
 import {
   Tooltip,
@@ -22,12 +20,22 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
+export type InterestCalcFrequency = 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY';
+export type InterestMethod = 'FLAT' | 'REDUCING_BALANCE';
+export type RepaymentFrequency = 'DAILY' | 'WEEKLY' | 'BI_WEEKLY' | 'MONTHLY';
+export type PenaltyType = 'NONE' | 'FLAT_AMOUNT' | 'PERCENTAGE_OVERDUE' | 'PERCENTAGE_INSTALLMENT' | 'DAILY_RATE';
+
 interface LoanCalculatorPreviewProps {
   principal: number;
   interestRate: number;
   termMonths: number;
-  repaymentFrequency: 'DAILY' | 'WEEKLY' | 'BI_WEEKLY' | 'MONTHLY';
+  repaymentFrequency: RepaymentFrequency;
   disbursementDate: string;
+  interestCalcFrequency?: InterestCalcFrequency;
+  interestMethod?: InterestMethod;
+  penaltyType?: PenaltyType;
+  penaltyValue?: number;
+  penaltyGraceDays?: number;
 }
 
 interface RepaymentScheduleItem {
@@ -39,14 +47,45 @@ interface RepaymentScheduleItem {
   balance: number;
 }
 
+// Interest calculation periods per year
+const PERIODS_PER_YEAR: Record<InterestCalcFrequency, number> = {
+  DAILY: 365,
+  WEEKLY: 52,
+  FORTNIGHTLY: 26,
+  MONTHLY: 12,
+  QUARTERLY: 4,
+  ANNUALLY: 1,
+};
+
+const INTEREST_FREQ_LABELS: Record<InterestCalcFrequency, string> = {
+  DAILY: 'Daily',
+  WEEKLY: 'Weekly',
+  FORTNIGHTLY: 'Fortnightly',
+  MONTHLY: 'Monthly',
+  QUARTERLY: 'Quarterly',
+  ANNUALLY: 'Annually',
+};
+
+const REPAYMENT_FREQ_LABELS: Record<RepaymentFrequency, string> = {
+  DAILY: 'Daily',
+  WEEKLY: 'Weekly',
+  BI_WEEKLY: 'Bi-Weekly',
+  MONTHLY: 'Monthly',
+};
+
 export function LoanCalculatorPreview({
   principal,
   interestRate,
   termMonths,
   repaymentFrequency,
   disbursementDate,
+  interestCalcFrequency = 'MONTHLY',
+  interestMethod = 'FLAT',
+  penaltyType = 'NONE',
+  penaltyValue = 0,
+  penaltyGraceDays = 0,
 }: LoanCalculatorPreviewProps) {
-  const [useReducingBalance, setUseReducingBalance] = useState(false);
+  const useReducingBalance = interestMethod === 'REDUCING_BALANCE';
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-GH', {
@@ -61,27 +100,43 @@ export function LoanCalculatorPreview({
       return null;
     }
 
-    // Calculate number of payments based on frequency
+    // Calculate number of payments based on repayment frequency
     let numberOfPayments: number;
-    let periodicRate: number;
-    
     switch (repaymentFrequency) {
       case 'DAILY':
         numberOfPayments = termMonths * 30;
-        periodicRate = interestRate / 100 / 365;
         break;
       case 'WEEKLY':
         numberOfPayments = termMonths * 4;
-        periodicRate = interestRate / 100 / 52;
         break;
       case 'BI_WEEKLY':
         numberOfPayments = termMonths * 2;
-        periodicRate = interestRate / 100 / 26;
         break;
       case 'MONTHLY':
       default:
         numberOfPayments = termMonths;
-        periodicRate = interestRate / 100 / 12;
+        break;
+    }
+
+    // Calculate periodic interest rate based on interest calculation frequency
+    const periodsPerYear = PERIODS_PER_YEAR[interestCalcFrequency];
+    const periodicInterestRate = interestRate / 100 / periodsPerYear;
+
+    // Calculate repayment periodic rate for reducing balance
+    let repaymentPeriodicRate: number;
+    switch (repaymentFrequency) {
+      case 'DAILY':
+        repaymentPeriodicRate = interestRate / 100 / 365;
+        break;
+      case 'WEEKLY':
+        repaymentPeriodicRate = interestRate / 100 / 52;
+        break;
+      case 'BI_WEEKLY':
+        repaymentPeriodicRate = interestRate / 100 / 26;
+        break;
+      case 'MONTHLY':
+      default:
+        repaymentPeriodicRate = interestRate / 100 / 12;
         break;
     }
 
@@ -94,11 +149,11 @@ export function LoanCalculatorPreview({
     if (useReducingBalance) {
       // Reducing Balance Method (Amortization)
       // PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
-      if (periodicRate === 0) {
+      if (repaymentPeriodicRate === 0) {
         periodicPayment = principal / numberOfPayments;
       } else {
-        const factor = Math.pow(1 + periodicRate, numberOfPayments);
-        periodicPayment = principal * (periodicRate * factor) / (factor - 1);
+        const factor = Math.pow(1 + repaymentPeriodicRate, numberOfPayments);
+        periodicPayment = principal * (repaymentPeriodicRate * factor) / (factor - 1);
       }
 
       for (let i = 1; i <= numberOfPayments; i++) {
@@ -119,7 +174,7 @@ export function LoanCalculatorPreview({
             break;
         }
 
-        const interestPayment = balance * periodicRate;
+        const interestPayment = balance * repaymentPeriodicRate;
         const principalPayment = periodicPayment - interestPayment;
         balance = Math.max(0, balance - principalPayment);
         totalInterest += interestPayment;
@@ -134,8 +189,11 @@ export function LoanCalculatorPreview({
         });
       }
     } else {
-      // Flat Rate Method
-      totalInterest = principal * (interestRate / 100) * (termMonths / 12);
+      // Flat Rate Method - interest based on interest calculation frequency
+      // Convert annual rate to the calculation period and then to total term
+      const calcPeriodsInTerm = termMonths * (periodsPerYear / 12);
+      totalInterest = principal * periodicInterestRate * calcPeriodsInTerm;
+      
       const totalRepayment = principal + totalInterest;
       periodicPayment = totalRepayment / numberOfPayments;
       const principalPerPayment = principal / numberOfPayments;
@@ -181,9 +239,44 @@ export function LoanCalculatorPreview({
       totalRepayment,
       schedule,
       effectiveRate: ((totalRepayment / principal - 1) / (termMonths / 12)) * 100,
-      interestSaved: useReducingBalance ? 0 : 0, // Will be calculated for comparison
     };
-  }, [principal, interestRate, termMonths, repaymentFrequency, disbursementDate, useReducingBalance]);
+  }, [principal, interestRate, termMonths, repaymentFrequency, disbursementDate, useReducingBalance, interestCalcFrequency]);
+
+  // Calculate penalty impact estimate
+  const penaltyEstimate = useMemo(() => {
+    if (!calculations || penaltyType === 'NONE' || !penaltyValue) {
+      return null;
+    }
+
+    // Estimate based on 10% late payments (industry average for MFIs)
+    const estimatedLatePayments = Math.ceil(calculations.numberOfPayments * 0.1);
+    let estimatedPenalty = 0;
+
+    switch (penaltyType) {
+      case 'FLAT_AMOUNT':
+        estimatedPenalty = penaltyValue * estimatedLatePayments;
+        break;
+      case 'PERCENTAGE_OVERDUE':
+        // Assume average overdue is 2 installments
+        estimatedPenalty = (calculations.periodicPayment * 2) * (penaltyValue / 100) * estimatedLatePayments;
+        break;
+      case 'PERCENTAGE_INSTALLMENT':
+        estimatedPenalty = calculations.periodicPayment * (penaltyValue / 100) * estimatedLatePayments;
+        break;
+      case 'DAILY_RATE':
+        // Assume average 7 days late
+        const avgDaysLate = 7;
+        estimatedPenalty = calculations.periodicPayment * (penaltyValue / 100) * avgDaysLate * estimatedLatePayments;
+        break;
+    }
+
+    return {
+      estimatedLatePayments,
+      estimatedPenalty,
+      worstCase: estimatedPenalty * 3, // If all payments are late
+      totalWithPenalty: calculations.totalRepayment + estimatedPenalty,
+    };
+  }, [calculations, penaltyType, penaltyValue]);
 
   // Calculate comparison data
   const comparisonData = useMemo(() => {
@@ -192,36 +285,39 @@ export function LoanCalculatorPreview({
     }
 
     let numberOfPayments: number;
-    let periodicRate: number;
+    let repaymentPeriodicRate: number;
     
     switch (repaymentFrequency) {
       case 'DAILY':
         numberOfPayments = termMonths * 30;
-        periodicRate = interestRate / 100 / 365;
+        repaymentPeriodicRate = interestRate / 100 / 365;
         break;
       case 'WEEKLY':
         numberOfPayments = termMonths * 4;
-        periodicRate = interestRate / 100 / 52;
+        repaymentPeriodicRate = interestRate / 100 / 52;
         break;
       case 'BI_WEEKLY':
         numberOfPayments = termMonths * 2;
-        periodicRate = interestRate / 100 / 26;
+        repaymentPeriodicRate = interestRate / 100 / 26;
         break;
       case 'MONTHLY':
       default:
         numberOfPayments = termMonths;
-        periodicRate = interestRate / 100 / 12;
+        repaymentPeriodicRate = interestRate / 100 / 12;
         break;
     }
 
-    // Flat rate total interest
-    const flatInterest = principal * (interestRate / 100) * (termMonths / 12);
+    // Flat rate total interest (using the configured frequency)
+    const periodsPerYear = PERIODS_PER_YEAR[interestCalcFrequency];
+    const periodicInterestRate = interestRate / 100 / periodsPerYear;
+    const calcPeriodsInTerm = termMonths * (periodsPerYear / 12);
+    const flatInterest = principal * periodicInterestRate * calcPeriodsInTerm;
 
     // Reducing balance total interest
     let reducingInterest = 0;
-    if (periodicRate > 0) {
-      const factor = Math.pow(1 + periodicRate, numberOfPayments);
-      const pmt = principal * (periodicRate * factor) / (factor - 1);
+    if (repaymentPeriodicRate > 0) {
+      const factor = Math.pow(1 + repaymentPeriodicRate, numberOfPayments);
+      const pmt = principal * (repaymentPeriodicRate * factor) / (factor - 1);
       reducingInterest = (pmt * numberOfPayments) - principal;
     }
 
@@ -230,7 +326,7 @@ export function LoanCalculatorPreview({
       reducingInterest,
       savings: flatInterest - reducingInterest,
     };
-  }, [principal, interestRate, termMonths, repaymentFrequency]);
+  }, [principal, interestRate, termMonths, repaymentFrequency, interestCalcFrequency]);
 
   if (!calculations) {
     return (
@@ -242,13 +338,6 @@ export function LoanCalculatorPreview({
       </Card>
     );
   }
-
-  const frequencyLabels = {
-    DAILY: 'Daily',
-    WEEKLY: 'Weekly',
-    BI_WEEKLY: 'Bi-Weekly',
-    MONTHLY: 'Monthly',
-  };
 
   const displaySchedule = calculations.schedule.length > 15
     ? [
@@ -266,45 +355,49 @@ export function LoanCalculatorPreview({
             <Calculator className="h-5 w-5 text-primary" />
             Loan Calculator Preview
           </CardTitle>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="secondary">
-              {frequencyLabels[repaymentFrequency]} Repayments
+              {REPAYMENT_FREQ_LABELS[repaymentFrequency]} Repayments
+            </Badge>
+            <Badge variant="outline">
+              {useReducingBalance ? 'Reducing Balance' : 'Flat Rate'}
+            </Badge>
+            <Badge variant="outline" className="bg-primary/10">
+              Interest: {INTEREST_FREQ_LABELS[interestCalcFrequency]}
             </Badge>
           </div>
         </div>
         
-        {/* Interest Method Toggle */}
+        {/* Interest Method Info */}
         <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3 mt-3">
           <div className="flex items-center gap-2">
-            <Label htmlFor="interest-method" className="text-sm font-medium">
-              Interest Calculation Method
-            </Label>
+            <span className="text-sm font-medium">
+              {useReducingBalance ? 'Reducing Balance' : 'Flat Rate'} @ {interestRate}% p.a.
+            </span>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p className="font-medium mb-1">Flat Rate:</p>
-                  <p className="text-xs mb-2">Interest calculated on original principal throughout. Common in Ghana MFIs. Higher total interest.</p>
-                  <p className="font-medium mb-1">Reducing Balance:</p>
-                  <p className="text-xs">Interest calculated on remaining balance. Lower total interest as principal reduces.</p>
+                  <p className="font-medium mb-1">Interest Calculation: {INTEREST_FREQ_LABELS[interestCalcFrequency]}</p>
+                  <p className="text-xs mb-2">
+                    Interest is calculated {INTEREST_FREQ_LABELS[interestCalcFrequency].toLowerCase()} 
+                    ({PERIODS_PER_YEAR[interestCalcFrequency]} periods/year).
+                  </p>
+                  <p className="font-medium mb-1">{useReducingBalance ? 'Reducing Balance:' : 'Flat Rate:'}</p>
+                  <p className="text-xs">
+                    {useReducingBalance 
+                      ? 'Interest calculated on remaining balance. Lower total interest as principal reduces.'
+                      : 'Interest calculated on original principal throughout. Common in Ghana MFIs.'
+                    }
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
-          <div className="flex items-center gap-3">
-            <span className={`text-sm ${!useReducingBalance ? 'font-medium text-primary' : 'text-muted-foreground'}`}>
-              Flat Rate
-            </span>
-            <Switch
-              id="interest-method"
-              checked={useReducingBalance}
-              onCheckedChange={setUseReducingBalance}
-            />
-            <span className={`text-sm ${useReducingBalance ? 'font-medium text-primary' : 'text-muted-foreground'}`}>
-              Reducing Balance
-            </span>
+          <div className="text-sm text-muted-foreground">
+            {interestRate / PERIODS_PER_YEAR[interestCalcFrequency]}% per {INTEREST_FREQ_LABELS[interestCalcFrequency].toLowerCase().replace('ly', '')}
           </div>
         </div>
       </CardHeader>
@@ -314,7 +407,7 @@ export function LoanCalculatorPreview({
           <div className="bg-background rounded-lg p-3 border">
             <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
               <Wallet className="h-3 w-3" />
-              {frequencyLabels[repaymentFrequency]} Payment
+              {REPAYMENT_FREQ_LABELS[repaymentFrequency]} Payment
             </div>
             <p className="text-lg font-bold text-primary">
               {formatCurrency(calculations.periodicPayment)}
@@ -348,6 +441,52 @@ export function LoanCalculatorPreview({
             </p>
           </div>
         </div>
+
+        {/* Penalty Impact Estimate */}
+        {penaltyEstimate && (
+          <div className="rounded-lg p-3 text-sm border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/20">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <span className="font-medium">Late Payment Penalty Impact (Estimated)</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              <div>
+                <p className="text-muted-foreground">Penalty Type:</p>
+                <p className="font-medium capitalize">
+                  {penaltyType.replace('_', ' ').toLowerCase()}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Penalty Rate/Amount:</p>
+                <p className="font-medium">
+                  {penaltyType === 'FLAT_AMOUNT' 
+                    ? formatCurrency(penaltyValue)
+                    : `${penaltyValue}%`
+                  }
+                  {penaltyGraceDays > 0 && ` (after ${penaltyGraceDays} days)`}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Est. Penalty (10% late):</p>
+                <p className="font-medium text-orange-600">
+                  + {formatCurrency(penaltyEstimate.estimatedPenalty)}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Total with Penalty:</p>
+                <p className="font-medium">
+                  {formatCurrency(penaltyEstimate.totalWithPenalty)}
+                </p>
+              </div>
+            </div>
+            <div className="mt-2 pt-2 border-t border-orange-200 dark:border-orange-800 text-xs text-muted-foreground">
+              <p>
+                * Estimate assumes {penaltyEstimate.estimatedLatePayments} late payments ({Math.round(penaltyEstimate.estimatedLatePayments / calculations.numberOfPayments * 100)}% of total).
+                Worst case (all late): +{formatCurrency(penaltyEstimate.worstCase)}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Comparison Card */}
         {comparisonData && comparisonData.savings > 0 && (
@@ -384,14 +523,26 @@ export function LoanCalculatorPreview({
             <span className="font-medium">{formatCurrency(principal)}</span>
           </div>
           <div className="flex justify-between mb-1">
-            <span>Interest ({interestRate}% p.a. {useReducingBalance ? 'reducing' : 'flat'}):</span>
+            <span>Interest ({interestRate}% p.a. {useReducingBalance ? 'reducing' : 'flat'}, {INTEREST_FREQ_LABELS[interestCalcFrequency].toLowerCase()} calc):</span>
             <span className="font-medium text-amber-600">+ {formatCurrency(calculations.totalInterest)}</span>
           </div>
+          {penaltyEstimate && (
+            <div className="flex justify-between mb-1 text-orange-600">
+              <span>Est. Late Penalties (if 10% late):</span>
+              <span className="font-medium">+ {formatCurrency(penaltyEstimate.estimatedPenalty)}</span>
+            </div>
+          )}
           <Separator className="my-2" />
           <div className="flex justify-between font-semibold">
             <span>Total Amount Payable:</span>
             <span>{formatCurrency(calculations.totalRepayment)}</span>
           </div>
+          {penaltyEstimate && (
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>With Est. Penalties:</span>
+              <span>{formatCurrency(penaltyEstimate.totalWithPenalty)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-xs text-muted-foreground mt-1">
             <span>Effective Annual Rate:</span>
             <span>{calculations.effectiveRate.toFixed(1)}%</span>
@@ -403,9 +554,9 @@ export function LoanCalculatorPreview({
           <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Repayment Schedule Preview
-            {useReducingBalance && (
-              <Badge variant="outline" className="text-xs">Reducing Balance</Badge>
-            )}
+            <Badge variant="outline" className="text-xs">
+              {useReducingBalance ? 'Reducing Balance' : 'Flat Rate'}
+            </Badge>
           </h4>
           <ScrollArea className="h-64 rounded-md border">
             <Table>
@@ -452,11 +603,13 @@ export function LoanCalculatorPreview({
           <div>
             <p className="font-medium text-amber-700 dark:text-amber-500">Note:</p>
             <p>
-              This is an estimated schedule using <strong>{useReducingBalance ? 'reducing balance' : 'flat rate'}</strong> calculation. 
+              This is an estimated schedule using <strong>{useReducingBalance ? 'reducing balance' : 'flat rate'}</strong> calculation 
+              with <strong>{INTEREST_FREQ_LABELS[interestCalcFrequency].toLowerCase()}</strong> interest compounding.
               {useReducingBalance 
                 ? ' With reducing balance, interest decreases as principal is paid down, resulting in lower total interest.'
                 : ' With flat rate, interest is calculated on the original principal, resulting in higher total interest compared to reducing balance.'
               }
+              {penaltyType !== 'NONE' && ' Penalty estimates assume 10% of payments are late.'}
             </p>
           </div>
         </div>
