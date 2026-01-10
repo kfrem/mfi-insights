@@ -35,16 +35,42 @@ import { LoanCalculatorPreview } from './LoanCalculatorPreview';
 import { LoanAffordabilityCheck } from './LoanAffordabilityCheck';
 import { BOG_TIER_LABELS } from '@/types/bogTiers';
 
+// Interest calculation frequency options
+const INTEREST_CALC_FREQUENCIES = [
+  { value: 'DAILY', label: 'Daily', description: 'Interest calculated daily' },
+  { value: 'WEEKLY', label: 'Weekly', description: 'Interest calculated weekly' },
+  { value: 'FORTNIGHTLY', label: 'Fortnightly', description: 'Interest calculated every 2 weeks' },
+  { value: 'MONTHLY', label: 'Monthly', description: 'Interest calculated monthly' },
+  { value: 'QUARTERLY', label: 'Quarterly', description: 'Interest calculated every 3 months' },
+  { value: 'ANNUALLY', label: 'Annually', description: 'Interest calculated yearly' },
+] as const;
+
+// Late payment penalty types
+const PENALTY_TYPES = [
+  { value: 'NONE', label: 'No Penalty', description: 'No late payment charges' },
+  { value: 'FLAT_AMOUNT', label: 'Flat Amount', description: 'Fixed GHS amount per late payment' },
+  { value: 'PERCENTAGE_OVERDUE', label: '% of Overdue', description: 'Percentage of overdue amount' },
+  { value: 'PERCENTAGE_INSTALLMENT', label: '% of Installment', description: 'Percentage of missed installment' },
+  { value: 'DAILY_RATE', label: 'Daily Rate', description: 'Daily percentage on overdue balance' },
+] as const;
+
 const loanSchema = z.object({
   client_id: z.string().min(1, 'Please select a client'),
   loan_category: z.string().min(1, 'Please select a loan category'),
   loan_product: z.string().min(1, 'Please select a loan product'),
   principal: z.coerce.number().min(100, 'Minimum principal is GHS 100').max(5000000, 'Maximum principal is GHS 5,000,000'),
   interest_rate: z.coerce.number().min(0, 'Interest rate cannot be negative').max(100, 'Interest rate cannot exceed 100%'),
+  interest_calc_frequency: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'QUARTERLY', 'ANNUALLY'], { required_error: 'Select interest calculation frequency' }),
+  interest_method: z.enum(['FLAT', 'REDUCING_BALANCE'], { required_error: 'Select interest method' }),
   term_months: z.coerce.number().min(1, 'Minimum term is 1 month').max(240, 'Maximum term is 240 months'),
   disbursement_date: z.string().min(1, 'Disbursement date is required'),
   purpose: z.string().min(10, 'Please describe the loan purpose (min 10 characters)').max(500),
   repayment_frequency: z.enum(['DAILY', 'WEEKLY', 'BI_WEEKLY', 'MONTHLY'], { required_error: 'Select repayment frequency' }),
+  // Late payment penalty settings (optional)
+  penalty_type: z.enum(['NONE', 'FLAT_AMOUNT', 'PERCENTAGE_OVERDUE', 'PERCENTAGE_INSTALLMENT', 'DAILY_RATE']).default('NONE'),
+  penalty_value: z.coerce.number().min(0).optional(),
+  penalty_grace_days: z.coerce.number().min(0).max(30).optional(),
+  // Collateral & Guarantor
   collateral_type: z.string().optional(),
   collateral_value: z.coerce.number().min(0).optional(),
   guarantor_name: z.string().max(200).optional(),
@@ -68,10 +94,15 @@ export function CreateLoanForm() {
       loan_product: '',
       principal: 5000,
       interest_rate: 30,
+      interest_calc_frequency: 'MONTHLY',
+      interest_method: 'FLAT',
       term_months: 12,
       disbursement_date: format(new Date(), 'yyyy-MM-dd'),
       purpose: '',
       repayment_frequency: 'MONTHLY',
+      penalty_type: 'NONE',
+      penalty_value: 0,
+      penalty_grace_days: 3,
       collateral_type: '',
       collateral_value: 0,
       guarantor_name: '',
@@ -495,11 +526,89 @@ export function CreateLoanForm() {
                 name="interest_rate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Annual Interest Rate (%) *</FormLabel>
+                    <FormLabel>Interest Rate (%) *</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.5" min="0" max="100" {...field} />
                     </FormControl>
-                    <FormDescription>Per annum (flat or reducing)</FormDescription>
+                    <FormDescription>Based on calculation frequency below</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Interest Calculation Settings */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="interest_method"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Interest Method *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select method" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="FLAT">Flat Rate</SelectItem>
+                        <SelectItem value="REDUCING_BALANCE">Reducing Balance</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      {field.value === 'FLAT' ? 'Interest on original principal' : 'Interest on outstanding balance'}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="interest_calc_frequency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Interest Calculation Frequency *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select frequency" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {INTEREST_CALC_FREQUENCIES.map((freq) => (
+                          <SelectItem key={freq.value} value={freq.value}>
+                            <div className="flex flex-col">
+                              <span>{freq.label}</span>
+                              <span className="text-xs text-muted-foreground">{freq.description}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="term_months"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Loan Term (Months) *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min={selectedProductInfo?.minTerm || 1} 
+                        max={selectedProductInfo?.maxTerm || 240} 
+                        {...field} 
+                      />
+                    </FormControl>
+                    {selectedProductInfo && (
+                      <FormDescription>
+                        {selectedProductInfo.minTerm} - {selectedProductInfo.maxTerm} months
+                      </FormDescription>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -587,7 +696,120 @@ export function CreateLoanForm() {
             />
           </div>
 
-          {/* Section: Loan Calculator Preview */}
+          {/* Section: Late Payment Penalties */}
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Late Payment Penalties (Optional)
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Configure penalties for missed or late payments. Leave as "No Penalty" if not applicable.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="penalty_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Penalty Type</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select penalty type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {PENALTY_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            <div className="flex flex-col">
+                              <span>{type.label}</span>
+                              <span className="text-xs text-muted-foreground">{type.description}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {form.watch('penalty_type') !== 'NONE' && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="penalty_value"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {form.watch('penalty_type') === 'FLAT_AMOUNT' 
+                            ? 'Penalty Amount (GHS)' 
+                            : 'Penalty Rate (%)'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step={form.watch('penalty_type') === 'FLAT_AMOUNT' ? '1' : '0.1'} 
+                            min="0" 
+                            max={form.watch('penalty_type') === 'FLAT_AMOUNT' ? '10000' : '100'}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {form.watch('penalty_type') === 'FLAT_AMOUNT' && 'Fixed amount charged per late payment'}
+                          {form.watch('penalty_type') === 'PERCENTAGE_OVERDUE' && 'Percentage of total overdue amount'}
+                          {form.watch('penalty_type') === 'PERCENTAGE_INSTALLMENT' && 'Percentage of missed installment'}
+                          {form.watch('penalty_type') === 'DAILY_RATE' && 'Daily rate on overdue balance'}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="penalty_grace_days"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Grace Period (Days)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" max="30" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Days after due date before penalty applies
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+            </div>
+            
+            {form.watch('penalty_type') !== 'NONE' && (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Penalty Summary:</strong>{' '}
+                  {form.watch('penalty_type') === 'FLAT_AMOUNT' && (
+                    <>GHS {form.watch('penalty_value') || 0} per late payment</>
+                  )}
+                  {form.watch('penalty_type') === 'PERCENTAGE_OVERDUE' && (
+                    <>{form.watch('penalty_value') || 0}% of overdue amount</>
+                  )}
+                  {form.watch('penalty_type') === 'PERCENTAGE_INSTALLMENT' && (
+                    <>{form.watch('penalty_value') || 0}% of missed installment</>
+                  )}
+                  {form.watch('penalty_type') === 'DAILY_RATE' && (
+                    <>{form.watch('penalty_value') || 0}% per day on overdue balance</>
+                  )}
+                  {form.watch('penalty_grace_days') > 0 && (
+                    <>, after {form.watch('penalty_grace_days')} day grace period</>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+
           <div className="space-y-4 pt-4 border-t">
             <LoanCalculatorPreview
               principal={watchedPrincipal || 0}
