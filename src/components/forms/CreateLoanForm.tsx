@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
+import { ClientSearchSelect } from './ClientSearchSelect';
 import { Badge } from '@/components/ui/badge';
 import { useCreateLoan, useClients } from '@/hooks/useMfiData';
 import { useOrganisation } from '@/contexts/OrganisationContext';
@@ -196,30 +197,49 @@ export function CreateLoanForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Select Client *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={clientsLoading ? 'Loading...' : 'Search or select a client'} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {clients && clients.length > 0 ? (
-                        clients.map((client) => (
-                          <SelectItem key={client.client_id} value={client.client_id}>
-                            {client.first_name} {client.last_name} ({client.ghana_card_number})
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                          {clientsLoading ? 'Loading...' : 'No clients found. Create one first.'}
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <ClientSearchSelect
+                      clients={clients}
+                      isLoading={clientsLoading}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Search by name, Ghana Card, or phone..."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Selected Client Summary */}
+            {selectedClient && (
+              <Card className="bg-muted/30">
+                <CardContent className="pt-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground text-xs">Full Name</p>
+                      <p className="font-medium">{selectedClient.first_name} {selectedClient.last_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Ghana Card</p>
+                      <p className="font-medium font-mono text-xs">{selectedClient.ghana_card_number}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Monthly Income</p>
+                      <p className="font-medium text-green-600">
+                        {selectedClient.monthly_income ? formatCurrency(selectedClient.monthly_income) : 'Not declared'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Monthly Expenses</p>
+                      <p className="font-medium text-amber-600">
+                        {selectedClient.monthly_expenses ? formatCurrency(selectedClient.monthly_expenses) : 'Not declared'}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Section: Loan Product */}
