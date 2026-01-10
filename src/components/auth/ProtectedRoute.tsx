@@ -7,7 +7,15 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
+  // TEMPORARY: Authentication bypassed for testing
+  // TODO: Remove this bypass before going live
+  const BYPASS_AUTH = true;
+
   const { isAuthenticated, isLoading } = useAuth();
+
+  if (BYPASS_AUTH) {
+    return <>{children}</>;
+  }
 
   if (isLoading) {
     return (
