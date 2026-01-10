@@ -33,6 +33,7 @@ import { format } from 'date-fns';
 import { LOAN_CATEGORIES, getLoanProduct, getLoanProductsByCategory } from '@/data/ghanaLoanTypes';
 import { LoanCalculatorPreview } from './LoanCalculatorPreview';
 import { LoanAffordabilityCheck } from './LoanAffordabilityCheck';
+import { LoanAmortizationSchedule } from './LoanAmortizationSchedule';
 import { BOG_TIER_LABELS } from '@/types/bogTiers';
 
 // Interest calculation frequency options
@@ -851,6 +852,25 @@ export function CreateLoanForm() {
               penaltyGraceDays={form.watch('penalty_grace_days') || 0}
             />
           </div>
+
+          {/* Section: Amortization Schedule */}
+          {watchedPrincipal > 0 && watchedTermMonths > 0 && (
+            <div className="space-y-4 pt-4 border-t">
+              <LoanAmortizationSchedule
+                principal={watchedPrincipal}
+                interestRate={watchedInterestRate || 0}
+                termMonths={watchedTermMonths}
+                interestMethod={form.watch('interest_method') || 'FLAT'}
+                interestCalcFrequency={form.watch('interest_calc_frequency') || 'MONTHLY'}
+                repaymentFrequency={watchedFrequency || 'MONTHLY'}
+                penaltyType={form.watch('penalty_type') || 'NONE'}
+                penaltyValue={form.watch('penalty_value') || 0}
+                penaltyGraceDays={form.watch('penalty_grace_days') || 0}
+                startDate={watchedDisbursementDate || format(new Date(), 'yyyy-MM-dd')}
+                showFullSchedule={true}
+              />
+            </div>
+          )}
 
           {/* Section: Affordability Check */}
           <div className="space-y-4 pt-4 border-t">
