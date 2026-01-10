@@ -4,7 +4,9 @@ import { CreateClientForm } from '@/components/forms/CreateClientForm';
 import { CreateLoanForm } from '@/components/forms/CreateLoanForm';
 import { PostRepaymentForm } from '@/components/forms/PostRepaymentForm';
 import { ClientListView } from '@/components/clients/ClientListView';
-import { UserPlus, FileText, DollarSign, Users } from 'lucide-react';
+import { ClientDocumentUpload } from '@/components/documents/ClientDocumentUpload';
+import { ClientDocumentSearch } from '@/components/documents/ClientDocumentSearch';
+import { UserPlus, FileText, DollarSign, Users, Upload, Search } from 'lucide-react';
 
 export default function DataEntry() {
   const [activeTab, setActiveTab] = useState('clients');
@@ -17,7 +19,7 @@ export default function DataEntry() {
       </header>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-4xl">
-        <TabsList className="grid w-full grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-6 mb-8">
           <TabsTrigger value="clients" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Clients
@@ -33,6 +35,14 @@ export default function DataEntry() {
           <TabsTrigger value="repayment" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
             Repayment
+          </TabsTrigger>
+          <TabsTrigger value="upload-doc" className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            Upload Doc
+          </TabsTrigger>
+          <TabsTrigger value="search-docs" className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            Find Docs
           </TabsTrigger>
         </TabsList>
 
@@ -50,6 +60,14 @@ export default function DataEntry() {
 
         <TabsContent value="repayment" className="animate-fade-in">
           <PostRepaymentForm />
+        </TabsContent>
+
+        <TabsContent value="upload-doc" className="animate-fade-in">
+          <ClientDocumentUpload />
+        </TabsContent>
+
+        <TabsContent value="search-docs" className="animate-fade-in">
+          <ClientDocumentSearch />
         </TabsContent>
       </Tabs>
     </div>
