@@ -1,4 +1,4 @@
-import { BogClassification, PortfolioAging } from '@/types/mfi';
+import { BogClassification, PortfolioAging, RepaymentDaily } from '@/types/mfi';
 import { format } from 'date-fns';
 
 export function exportToCSV<T extends Record<string, any>>(
@@ -46,6 +46,14 @@ export function exportPortfolioAgingCSV(data: PortfolioAging[]): void {
     { key: 'outstanding_balance', header: 'Outstanding Balance (GHS)' },
     { key: 'days_overdue', header: 'Days Overdue' },
     { key: 'bog_bucket', header: 'BOG Classification' },
+  ]);
+}
+
+export function exportRepaymentsCSV(data: RepaymentDaily[]): void {
+  exportToCSV(data, `repayments-daily-${format(new Date(), 'yyyy-MM-dd')}`, [
+    { key: 'payment_date', header: 'Date' },
+    { key: 'total_amount', header: 'Amount (GHS)' },
+    { key: 'payment_count', header: 'Payment Count' },
   ]);
 }
 
