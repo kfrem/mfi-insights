@@ -1,0 +1,134 @@
+import { useRepaymentDaily } from '@/hooks/useMfiData';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { format, parseISO } from 'date-fns';
+
+const formatCurrency = (val: number) =>
+  new Intl.NumberFormat('en-GH', {
+    style: 'currency',
+    currency: 'GHS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(val);
+
+const formatCompact = (val: number) =>
+  new Intl.NumberFormat('en-GH', {
+    notation: 'compact',
+    compactDisplay: 'short',
+    maximumFractionDigits: 1,
+  }).format(val);
+
+export default function Repayments() {
+  const { data: repayments, isLoading } = useRepaymentDaily();
+
+  const totalAmount = repayments?.reduce((sum, r) => sum + r.total_amount, 0) ?? 0;
+  const totalPayments = repayments?.reduce((sum, r) => sum + r.payment_count, 0) ?? 0;
+  const avgDaily = repayments && repayments.length > 0 ? totalAmount / repayments.length : 0;
+
+  const chartData = repayments?.map((r) => ({
+    ...r,
+    date: format(parseISO(r.payment_date), 'MMM dd'),
+  })) ?? [];
+
+  return (
+    <div className="p-8">
+      <header className="page-header">
+        <h1 className="page-title">Repayments</h1>
+        <p className="page-subtitle">Daily collection trends over the last 60 days</p>
+      </header>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="kpi-card">
+          <p className="text-sm font-medium text-muted-foreground">Total Collected (60 days)</p>
+          <p className="text-2xl font-semibold mt-1">{formatCurrency(totalAmount)}</p>
+        </div>
+        <div className="kpi-card">
+          <p className="text-sm font-medium text-muted-foreground">Total Payments</p>
+          <p className="text-2xl font-semibold mt-1">{totalPayments.toLocaleString()}</p>
+        </div>
+        <div className="kpi-card">
+          <p className="text-sm font-medium text-muted-foreground">Avg. Daily Collection</p>
+          <p className="text-2xl font-semibold mt-1">{formatCurrency(avgDaily)}</p>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div className="kpi-card mb-8">
+        <h3 className="text-lg font-semibold mb-6">Daily Collection Trend</h3>
+        {isLoading ? (
+          <div className="h-72 bg-muted animate-pulse rounded" />
+        ) : (
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={6}
+                />
+                <YAxis 
+                  tickFormatter={formatCompact}
+                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                  tickLine={false}
+                  axisLine={false}
+                  width={60}
+                />
+                <Tooltip
+                  formatter={(value: number) => [formatCurrency(value), 'Amount']}
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="total_amount"
+                  stroke="hsl(var(--accent))"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#colorAmount)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+
+      {/* Daily Breakdown Table */}
+      <div className="kpi-card">
+        <h3 className="text-lg font-semibold mb-4">Daily Breakdown</h3>
+        <div className="overflow-x-auto max-h-96">
+          <table className="data-table">
+            <thead className="sticky top-0 bg-card">
+              <tr>
+                <th>Date</th>
+                <th className="text-right">Amount</th>
+                <th className="text-right">Payments</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...(repayments ?? [])].reverse().map((r) => (
+                <tr key={r.payment_date}>
+                  <td>{format(parseISO(r.payment_date), 'EEE, MMM dd yyyy')}</td>
+                  <td className="text-right font-medium">{formatCurrency(r.total_amount)}</td>
+                  <td className="text-right">{r.payment_count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
