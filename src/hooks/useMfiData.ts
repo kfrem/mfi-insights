@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { externalSupabase, isExternalSupabaseConfigured } from '@/integrations/external-supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   ExecKPI, 
@@ -16,13 +16,17 @@ import { useOrganisation } from '@/contexts/OrganisationContext';
 import { toast } from 'sonner';
 
 // Type-safe schema query helper for external schemas
-const schemaQuery = (client: SupabaseClient, schema: string, table: string) => {
-  return (client as any).schema(schema).from(table);
+const schemaQuery = (schema: string, table: string) => {
+  return (externalSupabase as any).schema(schema).from(table);
 };
 
-// Direct query helper (bypasses type checking for external tables)
-const rawQuery = (client: SupabaseClient, table: string) => {
-  return (client as any).from(table);
+// Check if external database is available
+const checkExternalDb = () => {
+  if (!isExternalSupabaseConfigured()) {
+    console.warn('External Supabase not configured, using mock data');
+    return false;
+  }
+  return true;
 };
 
 // Mock data for demo when database isn't connected
@@ -82,7 +86,7 @@ export function useExecKpis() {
       if (!selectedOrgId) return null;
       
       try {
-        const { data, error } = await schemaQuery(supabase, 'mfi_reporting', 'v_exec_kpis')
+        const { data, error } = await schemaQuery('mfi_reporting', 'v_exec_kpis')
           .select('*')
           .eq('org_id', selectedOrgId)
           .single();
@@ -107,7 +111,7 @@ export function useBogClassification() {
       if (!selectedOrgId) return [];
       
       try {
-        const { data, error } = await schemaQuery(supabase, 'mfi_reporting', 'v_bog_classification_of_advances')
+        const { data, error } = await schemaQuery('mfi_reporting', 'v_bog_classification_of_advances')
           .select('*')
           .eq('org_id', selectedOrgId)
           .order('bog_bucket');
@@ -131,7 +135,7 @@ export function usePortfolioAging() {
       if (!selectedOrgId) return [];
       
       try {
-        const { data, error } = await schemaQuery(supabase, 'mfi_reporting', 'v_portfolio_aging')
+        const { data, error } = await schemaQuery('mfi_reporting', 'v_portfolio_aging')
           .select('*')
           .eq('org_id', selectedOrgId)
           .order('days_overdue', { ascending: false });
@@ -158,7 +162,7 @@ export function useRepaymentDaily() {
         const sixtyDaysAgo = new Date();
         sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
         
-        const { data, error } = await schemaQuery(supabase, 'mfi_reporting', 'v_repayments_daily')
+        const { data, error } = await schemaQuery('mfi_reporting', 'v_repayments_daily')
           .select('*')
           .eq('org_id', selectedOrgId)
           .gte('payment_date', sixtyDaysAgo.toISOString().split('T')[0])
@@ -183,7 +187,7 @@ export function useClients() {
       if (!selectedOrgId) return [];
       
       try {
-        const { data, error } = await schemaQuery(supabase, 'mfi', 'clients')
+        const { data, error } = await schemaQuery('mfi', 'clients')
           .select('*')
           .eq('org_id', selectedOrgId)
           .order('created_at', { ascending: false });
@@ -207,7 +211,7 @@ export function useActiveLoans() {
       if (!selectedOrgId) return [];
       
       try {
-        const { data, error } = await schemaQuery(supabase, 'mfi', 'loans')
+        const { data, error } = await schemaQuery('mfi', 'loans')
           .select('*, clients(first_name, last_name)')
           .eq('org_id', selectedOrgId)
           .eq('status', 'active')
@@ -228,7 +232,7 @@ export function useCreateClient() {
   
   return useMutation({
     mutationFn: async (input: CreateClientInput) => {
-      const { data, error } = await schemaQuery(supabase, 'mfi', 'clients')
+      const { data, error } = await schemaQuery('mfi', 'clients')
         .insert(input)
         .select()
         .single();
@@ -251,7 +255,7 @@ export function useCreateLoan() {
   
   return useMutation({
     mutationFn: async (input: CreateLoanInput) => {
-      const { data, error } = await schemaQuery(supabase, 'mfi', 'loans')
+      const { data, error } = await schemaQuery('mfi', 'loans')
         .insert({ ...input, status: 'active' })
         .select()
         .single();
@@ -275,7 +279,7 @@ export function usePostRepayment() {
   
   return useMutation({
     mutationFn: async (input: PostRepaymentInput) => {
-      const { data, error } = await schemaQuery(supabase, 'mfi', 'repayments')
+      const { data, error } = await schemaQuery('mfi', 'repayments')
         .insert(input)
         .select()
         .single();
