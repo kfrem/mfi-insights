@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, FileText, Users, CreditCard, Building } from 'lucide-react';
-import { useGLSummary, useTrialBalance, useIncomeStatement, useRecoveryMetrics, useCollectorPerformance, useApprovalMetrics, useRejectionAnalysis, useCreditOfficerPerformance, useProductPerformance } from '@/hooks/useDepartmentalData';
+import { useGLSummary, useTrialBalance, useIncomeStatement, useRecoveryMetrics, useCollectorPerformance, useApprovalMetrics, useRejectionAnalysis, useCreditOfficerPerformance, useProductPerformance, useApplicationPipeline } from '@/hooks/useDepartmentalData';
 import { ReportPeriod } from '@/types/departmental';
 import { exportToCSV } from '@/lib/export';
 import RejectionAnalysisCharts from '@/components/departmental/RejectionAnalysisCharts';
 import CreditOfficerScorecard from '@/components/departmental/CreditOfficerScorecard';
+import LoanApplicationPipeline from '@/components/departmental/LoanApplicationPipeline';
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS', minimumFractionDigits: 0 }).format(value);
@@ -33,6 +34,7 @@ export default function DepartmentalReports() {
   const { data: rejections } = useRejectionAnalysis(period);
   const { data: creditOfficers } = useCreditOfficerPerformance();
   const { data: products } = useProductPerformance();
+  const { data: pipeline } = useApplicationPipeline();
 
   return (
     <div className="p-8">
@@ -167,6 +169,14 @@ export default function DepartmentalReports() {
               <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Approval Rate</p><p className="text-lg font-bold">{approvals.approval_rate.toFixed(1)}%</p></CardContent></Card>
               <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Disbursed</p><p className="text-lg font-bold text-primary">{formatCurrency(approvals.amount_disbursed)}</p></CardContent></Card>
               <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Avg TAT</p><p className="text-lg font-bold">{approvals.avg_processing_days.toFixed(1)} days</p></CardContent></Card>
+            </div>
+          )}
+
+          {/* Loan Application Pipeline */}
+          {pipeline && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Application Pipeline</h3>
+              <LoanApplicationPipeline data={pipeline} />
             </div>
           )}
 

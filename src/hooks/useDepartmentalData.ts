@@ -11,6 +11,7 @@ import {
   RejectionAnalysis,
   CreditOfficerPerformance,
   ProductPerformance,
+  ApplicationPipeline,
   ReportPeriod,
 } from '@/types/departmental';
 
@@ -242,6 +243,17 @@ function generateMockCreditOfficerPerformance(): CreditOfficerPerformance[] {
   }));
 }
 
+function generateMockApplicationPipeline(): ApplicationPipeline[] {
+  return [
+    { stage: 'New', count: 28, total_amount: 1850000, avg_days_in_stage: 1.2, oldest_application_days: 3 },
+    { stage: 'Documents', count: 22, total_amount: 1420000, avg_days_in_stage: 2.5, oldest_application_days: 5 },
+    { stage: 'Appraisal', count: 18, total_amount: 1180000, avg_days_in_stage: 3.8, oldest_application_days: 8 },
+    { stage: 'Committee', count: 12, total_amount: 780000, avg_days_in_stage: 1.5, oldest_application_days: 4 },
+    { stage: 'Approval', count: 15, total_amount: 920000, avg_days_in_stage: 0.8, oldest_application_days: 2 },
+    { stage: 'Disbursement', count: 8, total_amount: 520000, avg_days_in_stage: 1.0, oldest_application_days: 2 },
+  ];
+}
+
 function generateMockProductPerformance(): ProductPerformance[] {
   return [
     { product_id: 'BL', product_name: 'Business Loan', active_loans: 4200, portfolio_outstanding: 22500000, portfolio_share: 50.0, applications_mtd: 85, disbursements_mtd: 3800000, par_30_rate: 5.8, avg_yield: 42, interest_income: 1100000, fee_income: 150000, provisions: 180000, net_contribution: 1070000 },
@@ -369,6 +381,19 @@ export function useProductPerformance() {
     queryFn: async () => {
       await new Promise(resolve => setTimeout(resolve, 400));
       return generateMockProductPerformance();
+    },
+    enabled: !!selectedOrgId,
+  });
+}
+
+export function useApplicationPipeline() {
+  const { selectedOrgId } = useOrganisation();
+
+  return useQuery({
+    queryKey: ['application-pipeline', selectedOrgId],
+    queryFn: async () => {
+      await new Promise(resolve => setTimeout(resolve, 400));
+      return generateMockApplicationPipeline();
     },
     enabled: !!selectedOrgId,
   });
