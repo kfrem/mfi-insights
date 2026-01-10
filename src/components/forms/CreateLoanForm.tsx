@@ -46,12 +46,12 @@ const INTEREST_CALC_FREQUENCIES = [
   { value: 'ANNUALLY', label: 'Annually', description: 'Interest calculated yearly' },
 ] as const;
 
-// Late payment penalty types
+// Late payment penalty types - matching DB enum values
 const PENALTY_TYPES = [
   { value: 'NONE', label: 'No Penalty', description: 'No late payment charges' },
   { value: 'FLAT_AMOUNT', label: 'Flat Amount', description: 'Fixed GHS amount per late payment' },
-  { value: 'PERCENTAGE_OVERDUE', label: '% of Overdue', description: 'Percentage of overdue amount' },
-  { value: 'PERCENTAGE_INSTALLMENT', label: '% of Installment', description: 'Percentage of missed installment' },
+  { value: 'PERCENT_OVERDUE', label: '% of Overdue', description: 'Percentage of overdue amount' },
+  { value: 'PERCENT_INSTALLMENT', label: '% of Installment', description: 'Percentage of missed installment' },
   { value: 'DAILY_RATE', label: 'Daily Rate', description: 'Daily percentage on overdue balance' },
 ] as const;
 
@@ -66,9 +66,10 @@ const loanSchema = z.object({
   term_months: z.coerce.number().min(1, 'Minimum term is 1 month').max(240, 'Maximum term is 240 months'),
   disbursement_date: z.string().min(1, 'Disbursement date is required'),
   purpose: z.string().min(10, 'Please describe the loan purpose (min 10 characters)').max(500),
-  repayment_frequency: z.enum(['DAILY', 'WEEKLY', 'BI_WEEKLY', 'MONTHLY'], { required_error: 'Select repayment frequency' }),
-  // Late payment penalty settings (optional)
-  penalty_type: z.enum(['NONE', 'FLAT_AMOUNT', 'PERCENTAGE_OVERDUE', 'PERCENTAGE_INSTALLMENT', 'DAILY_RATE']).default('NONE'),
+  // Repayment frequency - matching DB enum exactly
+  repayment_frequency: z.enum(['DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY'], { required_error: 'Select repayment frequency' }),
+  // Late payment penalty settings - matching DB enum exactly
+  penalty_type: z.enum(['NONE', 'FLAT_AMOUNT', 'PERCENT_OVERDUE', 'PERCENT_INSTALLMENT', 'DAILY_RATE']).default('NONE'),
   penalty_value: z.coerce.number().min(0).optional(),
   penalty_grace_days: z.coerce.number().min(0).max(30).optional(),
   // Collateral & Guarantor
@@ -150,7 +151,7 @@ export function CreateLoanForm() {
       case 'WEEKLY':
         numberOfPayments = watchedTermMonths * 4;
         break;
-      case 'BI_WEEKLY':
+      case 'FORTNIGHTLY':
         numberOfPayments = watchedTermMonths * 2;
         break;
       case 'MONTHLY':
@@ -167,7 +168,7 @@ export function CreateLoanForm() {
         return periodicPayment * 30;
       case 'WEEKLY':
         return periodicPayment * 4;
-      case 'BI_WEEKLY':
+      case 'FORTNIGHTLY':
         return periodicPayment * 2;
       case 'MONTHLY':
       default:
@@ -202,36 +203,18 @@ export function CreateLoanForm() {
   const onSubmit = async (values: LoanFormValues) => {
     if (!selectedOrgId) return;
 
-    // Map form repayment_frequency to DB enum
-    const mapRepaymentFrequency = (freq: string): 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY' => {
-      if (freq === 'BI_WEEKLY') return 'FORTNIGHTLY';
-      return freq as 'DAILY' | 'WEEKLY' | 'MONTHLY';
-    };
-
-    // Map form penalty_type to DB enum
-    const mapPenaltyType = (type: string): 'NONE' | 'FLAT_AMOUNT' | 'PERCENT_OVERDUE' | 'PERCENT_INSTALLMENT' | 'DAILY_RATE' => {
-      const mapping: Record<string, 'NONE' | 'FLAT_AMOUNT' | 'PERCENT_OVERDUE' | 'PERCENT_INSTALLMENT' | 'DAILY_RATE'> = {
-        'NONE': 'NONE',
-        'FLAT_AMOUNT': 'FLAT_AMOUNT',
-        'PERCENTAGE_OVERDUE': 'PERCENT_OVERDUE',
-        'PERCENTAGE_INSTALLMENT': 'PERCENT_INSTALLMENT',
-        'DAILY_RATE': 'DAILY_RATE',
-      };
-      return mapping[type] || 'NONE';
-    };
-
     await createLoan.mutateAsync({
       org_id: selectedOrgId,
       client_id: values.client_id,
-      loan_type: values.loan_product, // Map loan_product to loan_type
+      loan_type: values.loan_product,
       purpose: values.purpose || undefined,
       principal: values.principal,
       interest_rate: values.interest_rate,
       term_months: values.term_months,
-      interest_method: values.interest_method as 'FLAT' | 'REDUCING_BALANCE',
-      interest_calc_frequency: values.interest_calc_frequency as 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY',
-      repayment_frequency: mapRepaymentFrequency(values.repayment_frequency),
-      penalty_type: mapPenaltyType(values.penalty_type),
+      interest_method: values.interest_method,
+      interest_calc_frequency: values.interest_calc_frequency,
+      repayment_frequency: values.repayment_frequency,
+      penalty_type: values.penalty_type,
       penalty_value: values.penalty_value || 0,
       penalty_grace_days: values.penalty_grace_days || 0,
       disbursement_date: values.disbursement_date,
@@ -681,7 +664,7 @@ export function CreateLoanForm() {
                       <SelectContent>
                         <SelectItem value="DAILY">Daily</SelectItem>
                         <SelectItem value="WEEKLY">Weekly</SelectItem>
-                        <SelectItem value="BI_WEEKLY">Bi-Weekly (Every 2 weeks)</SelectItem>
+                        <SelectItem value="FORTNIGHTLY">Fortnightly (Every 2 weeks)</SelectItem>
                         <SelectItem value="MONTHLY">Monthly</SelectItem>
                       </SelectContent>
                     </Select>
@@ -784,8 +767,8 @@ export function CreateLoanForm() {
                         </FormControl>
                         <FormDescription>
                           {form.watch('penalty_type') === 'FLAT_AMOUNT' && 'Fixed amount charged per late payment'}
-                          {form.watch('penalty_type') === 'PERCENTAGE_OVERDUE' && 'Percentage of total overdue amount'}
-                          {form.watch('penalty_type') === 'PERCENTAGE_INSTALLMENT' && 'Percentage of missed installment'}
+                          {form.watch('penalty_type') === 'PERCENT_OVERDUE' && 'Percentage of total overdue amount'}
+                          {form.watch('penalty_type') === 'PERCENT_INSTALLMENT' && 'Percentage of missed installment'}
                           {form.watch('penalty_type') === 'DAILY_RATE' && 'Daily rate on overdue balance'}
                         </FormDescription>
                         <FormMessage />
@@ -820,10 +803,10 @@ export function CreateLoanForm() {
                   {form.watch('penalty_type') === 'FLAT_AMOUNT' && (
                     <>GHS {form.watch('penalty_value') || 0} per late payment</>
                   )}
-                  {form.watch('penalty_type') === 'PERCENTAGE_OVERDUE' && (
+                  {form.watch('penalty_type') === 'PERCENT_OVERDUE' && (
                     <>{form.watch('penalty_value') || 0}% of overdue amount</>
                   )}
-                  {form.watch('penalty_type') === 'PERCENTAGE_INSTALLMENT' && (
+                  {form.watch('penalty_type') === 'PERCENT_INSTALLMENT' && (
                     <>{form.watch('penalty_value') || 0}% of missed installment</>
                   )}
                   {form.watch('penalty_type') === 'DAILY_RATE' && (
