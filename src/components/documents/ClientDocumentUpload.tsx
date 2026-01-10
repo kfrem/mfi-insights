@@ -28,14 +28,16 @@ const DOCUMENT_TYPES = [
   { value: 'other', label: 'Other Document' },
 ];
 
+const DEFAULT_DOC_TYPE = 'other';
+
 interface UploadFormData {
   client_id: string;
-  document_type: string;
   description: string;
 }
 
 interface FileWithStatus {
   file: File;
+  documentType: string;
   status: 'pending' | 'uploading' | 'success' | 'error';
   error?: string;
 }
@@ -50,10 +52,10 @@ export function ClientDocumentUpload() {
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [defaultDocType, setDefaultDocType] = useState(DEFAULT_DOC_TYPE);
 
   const { register, handleSubmit, setValue, watch, reset } = useForm<UploadFormData>();
   const selectedClientId = watch('client_id');
-  const selectedDocType = watch('document_type');
 
   const selectedClient = clients.find(c => c.client_id === selectedClientId);
 
@@ -84,7 +86,11 @@ export function ClientDocumentUpload() {
         toast.error(`${file.name} is already added`);
         continue;
       }
-      validFiles.push({ file, status: 'pending' });
+      validFiles.push({ 
+        file, 
+        documentType: defaultDocType,
+        status: 'pending' 
+      });
     }
     
     if (validFiles.length > 0) {
@@ -128,6 +134,19 @@ export function ClientDocumentUpload() {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const updateFileDocType = (index: number, docType: string) => {
+    setSelectedFiles(prev => prev.map((f, i) => 
+      i === index ? { ...f, documentType: docType } : f
+    ));
+  };
+
+  const applyDocTypeToAll = () => {
+    setSelectedFiles(prev => prev.map(f => 
+      f.status === 'pending' ? { ...f, documentType: defaultDocType } : f
+    ));
+    toast.success('Document type applied to all pending files');
+  };
+
   const addTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim().toLowerCase())) {
       setTags([...tags, tagInput.trim().toLowerCase()]);
@@ -152,6 +171,10 @@ export function ClientDocumentUpload() {
     return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
   };
 
+  const getDocTypeLabel = (value: string) => {
+    return DOCUMENT_TYPES.find(t => t.value === value)?.label || value;
+  };
+
   const onSubmit = async (data: UploadFormData) => {
     if (selectedFiles.length === 0) {
       toast.error('Please select at least one file to upload');
@@ -160,6 +183,13 @@ export function ClientDocumentUpload() {
 
     if (!user?.id || !selectedOrgId) {
       toast.error('Authentication required');
+      return;
+    }
+
+    // Check all files have document types
+    const filesWithoutType = selectedFiles.filter(f => !f.documentType);
+    if (filesWithoutType.length > 0) {
+      toast.error('Please assign a document type to all files');
       return;
     }
 
@@ -189,7 +219,7 @@ export function ClientDocumentUpload() {
 
         if (uploadError) throw uploadError;
 
-        // Create document record
+        // Create document record with individual document type
         const { error: insertError } = await supabase
           .from('client_documents')
           .insert({
@@ -197,7 +227,7 @@ export function ClientDocumentUpload() {
             org_id: selectedOrgId,
             file_name: fileItem.file.name,
             file_path: filePath,
-            document_type: data.document_type,
+            document_type: fileItem.documentType,
             description: data.description || null,
             tags: tags.length > 0 ? tags : null,
             uploaded_by: user.id,
@@ -269,21 +299,36 @@ export function ClientDocumentUpload() {
             )}
           </div>
 
-          {/* Document Type */}
+          {/* Default Document Type */}
           <div className="space-y-2">
-            <Label>Document Type *</Label>
-            <Select onValueChange={(value) => setValue('document_type', value)} value={selectedDocType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select document type" />
-              </SelectTrigger>
-              <SelectContent>
-                {DOCUMENT_TYPES.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Default Document Type</Label>
+            <div className="flex gap-2">
+              <Select value={defaultDocType} onValueChange={setDefaultDocType}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select default type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DOCUMENT_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {hasFiles && pendingFiles.length > 0 && (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={applyDocTypeToAll}
+                  disabled={isUploading}
+                >
+                  Apply to All
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              New files will use this type. You can change each file's type individually below.
+            </p>
           </div>
 
           {/* File Upload */}
@@ -321,45 +366,74 @@ export function ClientDocumentUpload() {
 
             {/* Selected Files List */}
             {hasFiles && (
-              <div className="space-y-2 mt-4">
+              <div className="space-y-3 mt-4">
                 <p className="text-sm font-medium">
                   {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
                 </p>
-                <div className="max-h-48 overflow-y-auto space-y-2">
+                <div className="max-h-72 overflow-y-auto space-y-3">
                   {selectedFiles.map((fileItem, index) => (
                     <div 
                       key={`${fileItem.file.name}-${index}`}
-                      className="flex items-center gap-3 p-2 rounded-md bg-muted/50"
+                      className="flex flex-col gap-2 p-3 rounded-md bg-muted/50"
                     >
-                      <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{fileItem.file.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatFileSize(fileItem.file.size)}
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{fileItem.file.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatFileSize(fileItem.file.size)}
+                          </p>
+                        </div>
+                        {fileItem.status === 'pending' && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 flex-shrink-0"
+                            onClick={() => removeFile(index)}
+                            disabled={isUploading}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {fileItem.status === 'uploading' && (
+                          <Loader2 className="h-4 w-4 animate-spin text-primary flex-shrink-0" />
+                        )}
+                        {fileItem.status === 'success' && (
+                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        )}
+                        {fileItem.status === 'error' && (
+                          <span title={fileItem.error}>
+                            <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                          </span>
+                        )}
                       </div>
+                      
+                      {/* Per-file document type selector */}
                       {fileItem.status === 'pending' && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 flex-shrink-0"
-                          onClick={() => removeFile(index)}
+                        <Select 
+                          value={fileItem.documentType} 
+                          onValueChange={(value) => updateFileDocType(index, value)}
                           disabled={isUploading}
                         >
-                          <X className="h-4 w-4" />
-                        </Button>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DOCUMENT_TYPES.map((type) => (
+                              <SelectItem key={type.value} value={type.value} className="text-xs">
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       )}
-                      {fileItem.status === 'uploading' && (
-                        <Loader2 className="h-4 w-4 animate-spin text-primary flex-shrink-0" />
-                      )}
-                      {fileItem.status === 'success' && (
-                        <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                      )}
-                      {fileItem.status === 'error' && (
-                        <span title={fileItem.error}>
-                          <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
-                        </span>
+                      
+                      {/* Show document type for non-pending files */}
+                      {fileItem.status !== 'pending' && (
+                        <Badge variant="outline" className="w-fit text-xs">
+                          {getDocTypeLabel(fileItem.documentType)}
+                        </Badge>
                       )}
                     </div>
                   ))}
@@ -423,7 +497,7 @@ export function ClientDocumentUpload() {
           <Button 
             type="submit" 
             className="w-full" 
-            disabled={isUploading || !selectedClientId || !selectedDocType || pendingFiles.length === 0}
+            disabled={isUploading || !selectedClientId || pendingFiles.length === 0}
           >
             {isUploading ? (
               <>
