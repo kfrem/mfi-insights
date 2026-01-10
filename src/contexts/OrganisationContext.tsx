@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Organisation } from '@/types/mfi';
-import { externalSupabase, isExternalSupabaseConfigured } from '@/integrations/external-supabase/client';
+import { getExternalSupabase, isExternalSupabaseConfigured } from '@/integrations/external-supabase/client';
 
 interface OrganisationContextType {
   organisations: Organisation[];
@@ -27,7 +27,10 @@ export function OrganisationProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const { data, error } = await (externalSupabase as any)
+        const client = getExternalSupabase();
+        if (!client) throw new Error('External Supabase not available');
+        
+        const { data, error } = await (client as any)
           .schema('mfi')
           .from('organisations')
           .select('org_id, name')

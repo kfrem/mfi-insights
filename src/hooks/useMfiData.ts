@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { externalSupabase, isExternalSupabaseConfigured } from '@/integrations/external-supabase/client';
+import { getExternalSupabase, isExternalSupabaseConfigured } from '@/integrations/external-supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   ExecKPI, 
@@ -17,7 +17,9 @@ import { toast } from 'sonner';
 
 // Type-safe schema query helper for external schemas
 const schemaQuery = (schema: string, table: string) => {
-  return (externalSupabase as any).schema(schema).from(table);
+  const client = getExternalSupabase();
+  if (!client) throw new Error('External Supabase not configured');
+  return (client as any).schema(schema).from(table);
 };
 
 // Check if external database is available
