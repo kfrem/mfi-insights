@@ -14,8 +14,8 @@ interface AmortizationScheduleProps {
   termMonths: number;
   interestMethod: 'FLAT' | 'REDUCING_BALANCE';
   interestCalcFrequency: 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY';
-  repaymentFrequency: 'DAILY' | 'WEEKLY' | 'BI_WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY';
-  penaltyType: 'NONE' | 'FLAT_AMOUNT' | 'PERCENTAGE_OVERDUE' | 'PERCENTAGE_INSTALLMENT' | 'DAILY_RATE';
+  repaymentFrequency: 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY';
+  penaltyType: 'NONE' | 'FLAT_AMOUNT' | 'PERCENT_OVERDUE' | 'PERCENT_INSTALLMENT' | 'DAILY_RATE';
   penaltyValue?: number;
   penaltyGraceDays?: number;
   startDate: string;
@@ -48,7 +48,6 @@ const getNumberOfPayments = (termMonths: number, frequency: string): number => {
   switch (frequency) {
     case 'DAILY': return termMonths * 30; // Approximate
     case 'WEEKLY': return termMonths * 4;
-    case 'BI_WEEKLY':
     case 'FORTNIGHTLY': return termMonths * 2;
     case 'MONTHLY': return termMonths;
     default: return termMonths;
@@ -60,7 +59,6 @@ const getNextPaymentDate = (currentDate: Date, frequency: string): Date => {
   switch (frequency) {
     case 'DAILY': return addDays(currentDate, 1);
     case 'WEEKLY': return addWeeks(currentDate, 1);
-    case 'BI_WEEKLY':
     case 'FORTNIGHTLY': return addWeeks(currentDate, 2);
     case 'MONTHLY': return addMonths(currentDate, 1);
     default: return addMonths(currentDate, 1);
@@ -72,8 +70,7 @@ const getPeriodsPerYear = (frequency: string): number => {
   switch (frequency) {
     case 'DAILY': return 365;
     case 'WEEKLY': return 52;
-    case 'FORTNIGHTLY':
-    case 'BI_WEEKLY': return 26;
+    case 'FORTNIGHTLY': return 26;
     case 'MONTHLY': return 12;
     case 'QUARTERLY': return 4;
     case 'ANNUALLY': return 1;
@@ -94,9 +91,9 @@ const calculatePenalty = (
   switch (penaltyType) {
     case 'FLAT_AMOUNT':
       return penaltyValue;
-    case 'PERCENTAGE_OVERDUE':
+    case 'PERCENT_OVERDUE':
       return (overdueAmount * penaltyValue) / 100;
-    case 'PERCENTAGE_INSTALLMENT':
+    case 'PERCENT_INSTALLMENT':
       return (installmentAmount * penaltyValue) / 100;
     case 'DAILY_RATE':
       return (overdueAmount * penaltyValue * daysLate) / 100;
@@ -231,7 +228,6 @@ export function LoanAmortizationSchedule({
   const frequencyLabel = {
     'DAILY': 'Daily',
     'WEEKLY': 'Weekly',
-    'BI_WEEKLY': 'Bi-Weekly',
     'FORTNIGHTLY': 'Fortnightly',
     'MONTHLY': 'Monthly',
   }[repaymentFrequency] || 'Monthly';
@@ -239,8 +235,8 @@ export function LoanAmortizationSchedule({
   const penaltyLabel = {
     'NONE': 'None',
     'FLAT_AMOUNT': `${formatCurrency(penaltyValue)} flat`,
-    'PERCENTAGE_OVERDUE': `${penaltyValue}% of overdue`,
-    'PERCENTAGE_INSTALLMENT': `${penaltyValue}% of installment`,
+    'PERCENT_OVERDUE': `${penaltyValue}% of overdue`,
+    'PERCENT_INSTALLMENT': `${penaltyValue}% of installment`,
     'DAILY_RATE': `${penaltyValue}% daily`,
   }[penaltyType] || 'None';
 

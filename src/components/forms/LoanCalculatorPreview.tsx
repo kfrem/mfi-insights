@@ -22,8 +22,8 @@ import {
 
 export type InterestCalcFrequency = 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY';
 export type InterestMethod = 'FLAT' | 'REDUCING_BALANCE';
-export type RepaymentFrequency = 'DAILY' | 'WEEKLY' | 'BI_WEEKLY' | 'MONTHLY';
-export type PenaltyType = 'NONE' | 'FLAT_AMOUNT' | 'PERCENTAGE_OVERDUE' | 'PERCENTAGE_INSTALLMENT' | 'DAILY_RATE';
+export type RepaymentFrequency = 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY';
+export type PenaltyType = 'NONE' | 'FLAT_AMOUNT' | 'PERCENT_OVERDUE' | 'PERCENT_INSTALLMENT' | 'DAILY_RATE';
 
 interface LoanCalculatorPreviewProps {
   principal: number;
@@ -69,7 +69,7 @@ const INTEREST_FREQ_LABELS: Record<InterestCalcFrequency, string> = {
 const REPAYMENT_FREQ_LABELS: Record<RepaymentFrequency, string> = {
   DAILY: 'Daily',
   WEEKLY: 'Weekly',
-  BI_WEEKLY: 'Bi-Weekly',
+  FORTNIGHTLY: 'Fortnightly',
   MONTHLY: 'Monthly',
 };
 
@@ -109,7 +109,7 @@ export function LoanCalculatorPreview({
       case 'WEEKLY':
         numberOfPayments = termMonths * 4;
         break;
-      case 'BI_WEEKLY':
+      case 'FORTNIGHTLY':
         numberOfPayments = termMonths * 2;
         break;
       case 'MONTHLY':
@@ -131,7 +131,7 @@ export function LoanCalculatorPreview({
       case 'WEEKLY':
         repaymentPeriodicRate = interestRate / 100 / 52;
         break;
-      case 'BI_WEEKLY':
+      case 'FORTNIGHTLY':
         repaymentPeriodicRate = interestRate / 100 / 26;
         break;
       case 'MONTHLY':
@@ -165,7 +165,7 @@ export function LoanCalculatorPreview({
           case 'WEEKLY':
             dueDate = addWeeks(startDate, i);
             break;
-          case 'BI_WEEKLY':
+          case 'FORTNIGHTLY':
             dueDate = addWeeks(startDate, i * 2);
             break;
           case 'MONTHLY':
@@ -208,7 +208,7 @@ export function LoanCalculatorPreview({
           case 'WEEKLY':
             dueDate = addWeeks(startDate, i);
             break;
-          case 'BI_WEEKLY':
+          case 'FORTNIGHTLY':
             dueDate = addWeeks(startDate, i * 2);
             break;
           case 'MONTHLY':
@@ -256,11 +256,11 @@ export function LoanCalculatorPreview({
       case 'FLAT_AMOUNT':
         estimatedPenalty = penaltyValue * estimatedLatePayments;
         break;
-      case 'PERCENTAGE_OVERDUE':
+      case 'PERCENT_OVERDUE':
         // Assume average overdue is 2 installments
         estimatedPenalty = (calculations.periodicPayment * 2) * (penaltyValue / 100) * estimatedLatePayments;
         break;
-      case 'PERCENTAGE_INSTALLMENT':
+      case 'PERCENT_INSTALLMENT':
         estimatedPenalty = calculations.periodicPayment * (penaltyValue / 100) * estimatedLatePayments;
         break;
       case 'DAILY_RATE':
@@ -296,7 +296,7 @@ export function LoanCalculatorPreview({
         numberOfPayments = termMonths * 4;
         repaymentPeriodicRate = interestRate / 100 / 52;
         break;
-      case 'BI_WEEKLY':
+      case 'FORTNIGHTLY':
         numberOfPayments = termMonths * 2;
         repaymentPeriodicRate = interestRate / 100 / 26;
         break;
