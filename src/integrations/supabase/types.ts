@@ -280,6 +280,7 @@ export type Database = {
           max_loan_amount: number | null
           max_single_obligor_limit: number | null
           min_capital_requirement: number | null
+          net_worth: number | null
           org_id: string
           prudential_return_frequency: string | null
           updated_at: string
@@ -295,6 +296,7 @@ export type Database = {
           max_loan_amount?: number | null
           max_single_obligor_limit?: number | null
           min_capital_requirement?: number | null
+          net_worth?: number | null
           org_id: string
           prudential_return_frequency?: string | null
           updated_at?: string
@@ -310,6 +312,7 @@ export type Database = {
           max_loan_amount?: number | null
           max_single_obligor_limit?: number | null
           min_capital_requirement?: number | null
+          net_worth?: number | null
           org_id?: string
           prudential_return_frequency?: string | null
           updated_at?: string

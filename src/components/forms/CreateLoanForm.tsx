@@ -57,7 +57,7 @@ export function CreateLoanForm() {
   const { selectedOrgId } = useOrganisation();
   const createLoan = useCreateLoan();
   const { data: clients, isLoading: clientsLoading } = useClients();
-  const { settings: tierSettings, tierConfig, maxLoanAmount, singleObligorPercent } = useTierLoanLimits();
+  const { settings: tierSettings, tierConfig, maxLoanAmount, singleObligorLimit, singleObligorPercent, isNetWorthConfigured } = useTierLoanLimits();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   const form = useForm<LoanFormValues>({
@@ -180,8 +180,9 @@ export function CreateLoanForm() {
     return new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS', minimumFractionDigits: 0 }).format(value);
   };
 
-  // Check if principal exceeds tier limit
+  // Check if principal exceeds tier limit or single obligor limit
   const exceedsTierLimit = maxLoanAmount && watchedPrincipal > maxLoanAmount;
+  const exceedsSingleObligorLimit = singleObligorLimit && watchedPrincipal > singleObligorLimit;
   const tierLabel = tierSettings?.bog_tier ? BOG_TIER_LABELS[tierSettings.bog_tier] : null;
 
   return (
@@ -199,11 +200,25 @@ export function CreateLoanForm() {
             <Badge className={`${tierLabel.color} text-white`}>{tierLabel.shortName}</Badge>
             <span>
               {maxLoanAmount 
-                ? `Max loan per borrower: ${formatCurrency(maxLoanAmount)}`
-                : 'No per-borrower limit configured'}
+                ? `Max loan: ${formatCurrency(maxLoanAmount)}`
+                : 'No per-borrower limit'}
             </span>
             <span className="text-muted-foreground">|</span>
-            <span>Single Obligor: {singleObligorPercent}% of net worth</span>
+            <span>
+              Single Obligor: {singleObligorLimit 
+                ? formatCurrency(singleObligorLimit)
+                : `${singleObligorPercent}% of net worth (not configured)`}
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Net Worth Not Configured Warning */}
+      {tierSettings && !isNetWorthConfigured && (
+        <Alert className="mb-6 border-amber-500 bg-amber-50 dark:bg-amber-950">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800 dark:text-amber-200">
+            Institution net worth is not configured. Go to Settings → Organisation to set net worth for single obligor limit validation.
           </AlertDescription>
         </Alert>
       )}
@@ -214,6 +229,16 @@ export function CreateLoanForm() {
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             Principal of {formatCurrency(watchedPrincipal)} exceeds the BoG tier limit of {formatCurrency(maxLoanAmount!)} for {tierLabel?.name}.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Single Obligor Limit Warning */}
+      {exceedsSingleObligorLimit && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Principal of {formatCurrency(watchedPrincipal)} exceeds the Single Obligor Limit of {formatCurrency(singleObligorLimit!)} ({singleObligorPercent}% of institution's net worth).
           </AlertDescription>
         </Alert>
       )}

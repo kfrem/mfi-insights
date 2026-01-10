@@ -38,6 +38,7 @@ export function OrganisationTierSettings() {
     license_expiry: '',
     max_loan_amount: '',
     max_single_obligor_limit: '',
+    net_worth: '',
     car_threshold: '10',
     liquidity_threshold: '15',
     prudential_return_frequency: 'MONTHLY' as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY',
@@ -51,6 +52,7 @@ export function OrganisationTierSettings() {
         license_expiry: settings.license_expiry || '',
         max_loan_amount: settings.max_loan_amount?.toString() || '',
         max_single_obligor_limit: settings.max_single_obligor_limit?.toString() || '',
+        net_worth: settings.net_worth?.toString() || '',
         car_threshold: settings.car_threshold?.toString() || '10',
         liquidity_threshold: settings.liquidity_threshold?.toString() || '15',
         prudential_return_frequency: settings.prudential_return_frequency || 'MONTHLY',
@@ -60,6 +62,11 @@ export function OrganisationTierSettings() {
 
   const selectedTierConfig = tierConfigs?.find(t => t.tier === formData.bog_tier);
 
+  // Calculate single obligor limit from net worth
+  const calculatedSingleObligorLimit = formData.net_worth && selectedTierConfig
+    ? (parseFloat(formData.net_worth) * (selectedTierConfig.single_obligor_limit_percent / 100))
+    : null;
+
   const handleSave = () => {
     updateSettings.mutate({
       bog_tier: formData.bog_tier,
@@ -67,6 +74,7 @@ export function OrganisationTierSettings() {
       license_expiry: formData.license_expiry || null,
       max_loan_amount: formData.max_loan_amount ? parseFloat(formData.max_loan_amount) : null,
       max_single_obligor_limit: formData.max_single_obligor_limit ? parseFloat(formData.max_single_obligor_limit) : null,
+      net_worth: formData.net_worth ? parseFloat(formData.net_worth) : null,
       car_threshold: parseFloat(formData.car_threshold) || 10,
       liquidity_threshold: parseFloat(formData.liquidity_threshold) || 15,
       prudential_return_frequency: formData.prudential_return_frequency,
@@ -194,6 +202,33 @@ export function OrganisationTierSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Net Worth for Single Obligor Calculation */}
+          <div className="space-y-2">
+            <Label htmlFor="net_worth" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Institution Net Worth / Capital (GHS) *
+            </Label>
+            <Input
+              id="net_worth"
+              type="number"
+              placeholder="Enter institution's net worth"
+              value={formData.net_worth}
+              onChange={(e) => setFormData({ ...formData, net_worth: e.target.value })}
+            />
+            <p className="text-xs text-muted-foreground">
+              Required for calculating single obligor limit ({selectedTierConfig?.single_obligor_limit_percent}% of net worth)
+            </p>
+            {calculatedSingleObligorLimit && (
+              <Alert className="mt-2">
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  Calculated Single Obligor Limit: <strong>{formatCurrency(calculatedSingleObligorLimit)}</strong> 
+                  ({selectedTierConfig?.single_obligor_limit_percent}% of {formatCurrency(parseFloat(formData.net_worth))})
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="max_loan_amount">Maximum Loan Amount (GHS)</Label>
@@ -209,16 +244,16 @@ export function OrganisationTierSettings() {
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="max_single_obligor">Single Obligor Limit (GHS)</Label>
+              <Label htmlFor="max_single_obligor">Single Obligor Limit Override (GHS)</Label>
               <Input
                 id="max_single_obligor"
                 type="number"
-                placeholder="Based on net worth"
+                placeholder={calculatedSingleObligorLimit ? formatCurrency(calculatedSingleObligorLimit) : 'Set net worth first'}
                 value={formData.max_single_obligor_limit}
                 onChange={(e) => setFormData({ ...formData, max_single_obligor_limit: e.target.value })}
               />
               <p className="text-xs text-muted-foreground">
-                Max exposure to single borrower ({selectedTierConfig?.single_obligor_limit_percent}% of net worth)
+                Override calculated limit (leave empty to use {selectedTierConfig?.single_obligor_limit_percent}% of net worth)
               </p>
             </div>
           </div>

@@ -26,6 +26,7 @@ export interface OrganisationSettings {
   prudential_return_frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY';
   car_threshold: number;
   liquidity_threshold: number;
+  net_worth: number | null;
   created_at: string;
   updated_at: string;
 }
