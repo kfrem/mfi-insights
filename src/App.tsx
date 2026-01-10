@@ -3,23 +3,41 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { OrganisationProvider } from "@/contexts/OrganisationContext";
+import { AppLayout } from "@/components/layout/AppLayout";
+import ExecutiveDashboard from "./pages/ExecutiveDashboard";
+import PortfolioAging from "./pages/PortfolioAging";
+import Repayments from "./pages/Repayments";
+import DataEntry from "./pages/DataEntry";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 1000, // 30 seconds
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <OrganisationProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<ExecutiveDashboard />} />
+              <Route path="/portfolio-aging" element={<PortfolioAging />} />
+              <Route path="/repayments" element={<Repayments />} />
+              <Route path="/data-entry" element={<DataEntry />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AppLayout>
+        </BrowserRouter>
+      </OrganisationProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
