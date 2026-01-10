@@ -23,15 +23,25 @@ import {
 } from '@/components/ui/select';
 import { useCreateClient } from '@/hooks/useMfiData';
 import { useOrganisation } from '@/contexts/OrganisationContext';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, User, Users, Building2, Briefcase } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getRegionOptions, getDistrictOptions, getTownOptions } from '@/data/ghanaLocations';
 import { getBusinessTypeOptions } from '@/data/ghanaLoanTypes';
+import { GroupMemberForm, MemberData, emptyMember } from './GroupMemberForm';
+import { ClientType } from '@/types/mfi';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 // Ghana Card format: GHA-XXXXXXXXX-X (13 digits)
 const ghanaCardRegex = /^GHA-\d{9}-\d$/;
 
 const clientSchema = z.object({
+  // Client type selection
+  client_type: z.enum(['INDIVIDUAL', 'GROUP', 'COOPERATIVE', 'SME'], { required_error: 'Client type is required' }),
+  // Group/Cooperative/SME specific fields
+  group_name: z.string().optional(),
+  registration_number: z.string().optional(),
+  registration_date: z.string().optional(),
   // Mandatory KYC fields per BoG AML/CFT&P 2022
   first_name: z.string().min(1, 'First name is required').max(100),
   last_name: z.string().min(1, 'Last name is required').max(100),
@@ -64,6 +74,15 @@ const clientSchema = z.object({
   email: z.string().email('Invalid email').max(255).optional().or(z.literal('')),
   address: z.string().max(500).optional(),
   proof_of_residence_type: z.enum(['UTILITY_BILL', 'GPS_ADDRESS', 'LEASE_AGREEMENT', 'BANK_STATEMENT']).optional(),
+}).refine((data) => {
+  // Group name required for non-individual types
+  if (data.client_type !== 'INDIVIDUAL' && !data.group_name) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Group/Business name is required',
+  path: ['group_name'],
 });
 
 type ClientFormValues = z.infer<typeof clientSchema>;
@@ -73,10 +92,16 @@ export function CreateClientForm() {
   const createClient = useCreateClient();
   const [selectedRegion, setSelectedRegion] = useState<string>('');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('');
+  const [members, setMembers] = useState<MemberData[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
+      client_type: 'INDIVIDUAL',
+      group_name: '',
+      registration_number: '',
+      registration_date: '',
       first_name: '',
       last_name: '',
       ghana_card_number: '',
@@ -105,34 +130,153 @@ export function CreateClientForm() {
     },
   });
 
+  const watchClientType = form.watch('client_type');
   const watchHasBusiness = form.watch('has_business');
+  const isGroupType = watchClientType !== 'INDIVIDUAL';
+
   const regionOptions = getRegionOptions();
   const districtOptions = getDistrictOptions(selectedRegion);
   const townOptions = getTownOptions(selectedRegion, selectedDistrict);
   const businessTypeOptions = getBusinessTypeOptions();
 
+  const handleAddMember = () => {
+    setMembers([...members, { ...emptyMember }]);
+  };
+
+  const handleRemoveMember = (index: number) => {
+    setMembers(members.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateMember = (index: number, field: keyof MemberData, value: string) => {
+    const updated = [...members];
+    updated[index] = { ...updated[index], [field]: value };
+    setMembers(updated);
+  };
+
+  const validateMembers = (): boolean => {
+    if (!isGroupType) return true;
+
+    const hasLeader = members.some(m => m.role === 'LEADER');
+    const hasSecretary = members.some(m => m.role === 'SECRETARY');
+
+    if (!hasLeader || !hasSecretary) {
+      toast.error('Group must have at least a Leader and Secretary');
+      return false;
+    }
+
+    // Validate each member has required fields
+    for (let i = 0; i < members.length; i++) {
+      const m = members[i];
+      if (!m.first_name || !m.last_name || !m.ghana_card_number || !m.ghana_card_expiry || 
+          !m.date_of_birth || !m.occupation || !m.source_of_funds) {
+        toast.error(`Member ${i + 1} is missing required fields`);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const onSubmit = async (values: ClientFormValues) => {
     if (!selectedOrgId) return;
+    if (!validateMembers()) return;
 
-    await createClient.mutateAsync({
-      org_id: selectedOrgId,
-      first_name: values.first_name,
-      last_name: values.last_name,
-      ghana_card_number: values.ghana_card_number,
-      ghana_card_expiry: values.ghana_card_expiry,
-      date_of_birth: values.date_of_birth,
-      gender: values.gender,
-      nationality: values.nationality,
-      occupation: values.occupation,
-      risk_category: values.risk_category,
-      source_of_funds: values.source_of_funds,
-      phone: values.phone || undefined,
-      email: values.email || undefined,
-      address: values.address || undefined,
-      proof_of_residence_type: values.proof_of_residence_type,
-    });
+    setIsSubmitting(true);
 
-    form.reset();
+    try {
+      // Create client in Lovable Cloud
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .insert({
+          org_id: selectedOrgId,
+          client_type: values.client_type,
+          first_name: values.first_name,
+          last_name: values.last_name,
+          ghana_card_number: values.ghana_card_number,
+          ghana_card_expiry: values.ghana_card_expiry,
+          date_of_birth: values.date_of_birth,
+          gender: values.gender,
+          nationality: values.nationality,
+          occupation: values.occupation,
+          risk_category: values.risk_category,
+          source_of_funds: values.source_of_funds,
+          phone: values.phone || null,
+          email: values.email || null,
+          address: values.address || null,
+          proof_of_residence_type: values.proof_of_residence_type || null,
+          group_name: values.group_name || null,
+          registration_number: values.registration_number || null,
+          registration_date: values.registration_date || null,
+          monthly_income: values.monthly_income || null,
+          monthly_expenses: values.monthly_expenses || null,
+        })
+        .select()
+        .single();
+
+      if (clientError) throw clientError;
+
+      // If group type, add members
+      if (isGroupType && members.length > 0 && clientData) {
+        const memberInserts = members.map(m => ({
+          org_id: selectedOrgId,
+          client_id: clientData.client_id,
+          role: m.role,
+          first_name: m.first_name,
+          last_name: m.last_name,
+          ghana_card_number: m.ghana_card_number,
+          ghana_card_expiry: m.ghana_card_expiry,
+          date_of_birth: m.date_of_birth,
+          gender: m.gender,
+          nationality: m.nationality,
+          phone: m.phone || null,
+          email: m.email || null,
+          occupation: m.occupation,
+          risk_category: m.risk_category,
+          source_of_funds: m.source_of_funds,
+        }));
+
+        const { error: membersError } = await supabase
+          .from('group_members')
+          .insert(memberInserts);
+
+        if (membersError) throw membersError;
+      }
+
+      toast.success(`${values.client_type === 'INDIVIDUAL' ? 'Client' : values.client_type} created successfully`);
+      form.reset();
+      setMembers([]);
+    } catch (error: any) {
+      console.error('Error creating client:', error);
+      toast.error(error.message || 'Failed to create client');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getClientTypeDescription = (type: ClientType) => {
+    switch (type) {
+      case 'INDIVIDUAL':
+        return 'Single person account';
+      case 'GROUP':
+        return 'Informal group with joint liability';
+      case 'COOPERATIVE':
+        return 'Registered cooperative society';
+      case 'SME':
+        return 'Small/Medium Enterprise';
+    }
+  };
+
+  const getClientTypeIcon = (type: ClientType) => {
+    switch (type) {
+      case 'INDIVIDUAL':
+        return <User className="h-4 w-4" />;
+      case 'GROUP':
+        return <Users className="h-4 w-4" />;
+      case 'COOPERATIVE':
+        return <Building2 className="h-4 w-4" />;
+      case 'SME':
+        return <Briefcase className="h-4 w-4" />;
+    }
   };
 
   return (
@@ -151,11 +295,126 @@ export function CreateClientForm() {
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Section: Ghana Card Information */}
+          {/* Section: Client Type Selection */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Ghana Card Details
+              Account Type
             </h3>
+            
+            <FormField
+              control={form.control}
+              name="client_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Client Type *</FormLabel>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {(['INDIVIDUAL', 'GROUP', 'COOPERATIVE', 'SME'] as const).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => {
+                          field.onChange(type);
+                          if (type === 'INDIVIDUAL') {
+                            setMembers([]);
+                          }
+                        }}
+                        className={`p-4 rounded-lg border-2 text-left transition-all ${
+                          field.value === type
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          {getClientTypeIcon(type)}
+                          <span className="font-medium">{type}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {getClientTypeDescription(type)}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Group/Cooperative/SME Specific Fields */}
+            {isGroupType && (
+              <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="group_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {watchClientType === 'SME' ? 'Business Name' : 
+                           watchClientType === 'COOPERATIVE' ? 'Cooperative Name' : 'Group Name'} *
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={
+                              watchClientType === 'SME' ? 'ABC Trading Ltd' : 
+                              watchClientType === 'COOPERATIVE' ? 'Farmers Cooperative' : 
+                              'Unity Savings Group'
+                            } 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {(watchClientType === 'COOPERATIVE' || watchClientType === 'SME') && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="registration_number"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Registration Number</FormLabel>
+                            <FormControl>
+                              <Input placeholder="CS-12345" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              {watchClientType === 'COOPERATIVE' ? 'Cooperative registration' : 'Business registration'}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="registration_date"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Registration Date</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Section: Primary Contact / Representative */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              {isGroupType ? 'Primary Contact / Representative' : 'Ghana Card Details'}
+            </h3>
+            {isGroupType && (
+              <p className="text-xs text-muted-foreground">
+                This person is the main contact for the {watchClientType.toLowerCase()}. 
+                Add group members separately below.
+              </p>
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -530,129 +789,144 @@ export function CreateClientForm() {
             </div>
           </div>
 
-          {/* Section: Business Information */}
-          <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Business / Employment Information
-            </h3>
-            
-            <FormField
-              control={form.control}
-              name="has_business"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center gap-3 space-y-0 rounded-lg border p-4">
-                  <FormControl>
-                    <input
-                      type="checkbox"
-                      checked={field.value}
-                      onChange={field.onChange}
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel className="cursor-pointer">
-                      Client has a business
-                    </FormLabel>
-                    <FormDescription>
-                      Check if client operates a business (trading, farming, services, etc.)
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
+          {/* Section: Business Information (for Individual) */}
+          {!isGroupType && (
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                Business / Employment Information
+              </h3>
+              
+              <FormField
+                control={form.control}
+                name="has_business"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-3 space-y-0 rounded-lg border p-4">
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer">
+                        Client has a business
+                      </FormLabel>
+                      <FormDescription>
+                        Check if client operates a business (trading, farming, services, etc.)
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
 
-            {watchHasBusiness && (
-              <div className="space-y-4 pl-4 border-l-2 border-primary/20">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="business_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Business Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Kofi's Trading Enterprise" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="business_type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Business Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+              {watchHasBusiness && (
+                <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="business_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Business Name</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select business type" />
-                            </SelectTrigger>
+                            <Input placeholder="Kofi's Trading Enterprise" {...field} />
                           </FormControl>
-                          <SelectContent>
-                            {businessTypeOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="business_type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Business Type</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select business type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {businessTypeOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="business_years"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Years in Business</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" max="100" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="monthly_income"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Monthly Income (GHS)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" step="100" placeholder="5000" {...field} />
-                        </FormControl>
-                        <FormDescription>Average monthly revenue</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="monthly_expenses"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Monthly Expenses (GHS)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" step="100" placeholder="3000" {...field} />
-                        </FormControl>
-                        <FormDescription>Average monthly costs</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="business_years"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Years in Business</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" max="100" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="monthly_income"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Monthly Income (GHS)</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" step="100" placeholder="5000" {...field} />
+                          </FormControl>
+                          <FormDescription>Average monthly revenue</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="monthly_expenses"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Monthly Expenses (GHS)</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" step="100" placeholder="3000" {...field} />
+                          </FormControl>
+                          <FormDescription>Average monthly costs</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
-          <Button type="submit" className="w-full md:w-auto" disabled={createClient.isPending || !selectedOrgId}>
-            {createClient.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Client
+          {/* Section: Group Members */}
+          {isGroupType && (
+            <div className="pt-4 border-t">
+              <GroupMemberForm
+                members={members}
+                onAddMember={handleAddMember}
+                onRemoveMember={handleRemoveMember}
+                onUpdateMember={handleUpdateMember}
+                clientType={watchClientType as 'GROUP' | 'COOPERATIVE' | 'SME'}
+              />
+            </div>
+          )}
+
+          <Button type="submit" className="w-full md:w-auto" disabled={isSubmitting || !selectedOrgId}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Create {watchClientType === 'INDIVIDUAL' ? 'Client' : watchClientType}
           </Button>
         </form>
       </Form>

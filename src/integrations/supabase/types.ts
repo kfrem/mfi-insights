@@ -59,6 +59,176 @@ export type Database = {
         }
         Relationships: []
       }
+      clients: {
+        Row: {
+          address: string | null
+          client_id: string
+          client_type: Database["public"]["Enums"]["client_type"]
+          created_at: string
+          date_of_birth: string
+          email: string | null
+          first_name: string
+          gender: string
+          ghana_card_expiry: string
+          ghana_card_number: string
+          group_name: string | null
+          last_name: string
+          monthly_expenses: number | null
+          monthly_income: number | null
+          nationality: string
+          occupation: string
+          org_id: string
+          phone: string | null
+          proof_of_residence_type: string | null
+          registration_date: string | null
+          registration_number: string | null
+          risk_category: string
+          source_of_funds: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          client_id?: string
+          client_type?: Database["public"]["Enums"]["client_type"]
+          created_at?: string
+          date_of_birth: string
+          email?: string | null
+          first_name: string
+          gender: string
+          ghana_card_expiry: string
+          ghana_card_number: string
+          group_name?: string | null
+          last_name: string
+          monthly_expenses?: number | null
+          monthly_income?: number | null
+          nationality?: string
+          occupation: string
+          org_id: string
+          phone?: string | null
+          proof_of_residence_type?: string | null
+          registration_date?: string | null
+          registration_number?: string | null
+          risk_category: string
+          source_of_funds: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          client_id?: string
+          client_type?: Database["public"]["Enums"]["client_type"]
+          created_at?: string
+          date_of_birth?: string
+          email?: string | null
+          first_name?: string
+          gender?: string
+          ghana_card_expiry?: string
+          ghana_card_number?: string
+          group_name?: string | null
+          last_name?: string
+          monthly_expenses?: number | null
+          monthly_income?: number | null
+          nationality?: string
+          occupation?: string
+          org_id?: string
+          phone?: string | null
+          proof_of_residence_type?: string | null
+          registration_date?: string | null
+          registration_number?: string | null
+          risk_category?: string
+          source_of_funds?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      group_members: {
+        Row: {
+          address: string | null
+          client_id: string
+          created_at: string
+          date_of_birth: string
+          email: string | null
+          first_name: string
+          gender: string
+          ghana_card_expiry: string
+          ghana_card_number: string
+          is_active: boolean
+          last_name: string
+          member_id: string
+          monthly_expenses: number | null
+          monthly_income: number | null
+          nationality: string
+          occupation: string
+          org_id: string
+          phone: string | null
+          proof_of_residence_type: string | null
+          risk_category: string
+          role: Database["public"]["Enums"]["group_member_role"]
+          source_of_funds: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          client_id: string
+          created_at?: string
+          date_of_birth: string
+          email?: string | null
+          first_name: string
+          gender: string
+          ghana_card_expiry: string
+          ghana_card_number: string
+          is_active?: boolean
+          last_name: string
+          member_id?: string
+          monthly_expenses?: number | null
+          monthly_income?: number | null
+          nationality?: string
+          occupation: string
+          org_id: string
+          phone?: string | null
+          proof_of_residence_type?: string | null
+          risk_category: string
+          role?: Database["public"]["Enums"]["group_member_role"]
+          source_of_funds: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          client_id?: string
+          created_at?: string
+          date_of_birth?: string
+          email?: string | null
+          first_name?: string
+          gender?: string
+          ghana_card_expiry?: string
+          ghana_card_number?: string
+          is_active?: boolean
+          last_name?: string
+          member_id?: string
+          monthly_expenses?: number | null
+          monthly_income?: number | null
+          nationality?: string
+          occupation?: string
+          org_id?: string
+          phone?: string | null
+          proof_of_residence_type?: string | null
+          risk_category?: string
+          role?: Database["public"]["Enums"]["group_member_role"]
+          source_of_funds?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["client_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -67,7 +237,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      client_type: "INDIVIDUAL" | "GROUP" | "COOPERATIVE" | "SME"
+      group_member_role: "LEADER" | "SECRETARY" | "MEMBER"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -194,6 +365,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      client_type: ["INDIVIDUAL", "GROUP", "COOPERATIVE", "SME"],
+      group_member_role: ["LEADER", "SECRETARY", "MEMBER"],
+    },
   },
 } as const
