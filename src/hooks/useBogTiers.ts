@@ -88,11 +88,23 @@ export function useTierLoanLimits() {
   
   const currentTierConfig = tierConfigs?.find(t => t.tier === settings?.bog_tier);
   
+  const singleObligorPercent = currentTierConfig?.single_obligor_limit_percent || 25;
+  const netWorth = settings?.net_worth || null;
+  
+  // Calculate single obligor limit: either custom override or percentage of net worth
+  const calculatedSingleObligorLimit = netWorth 
+    ? (netWorth * singleObligorPercent) / 100 
+    : null;
+  
+  const singleObligorLimit = settings?.max_single_obligor_limit || calculatedSingleObligorLimit;
+  
   return {
     settings,
     tierConfig: currentTierConfig,
     maxLoanAmount: settings?.max_loan_amount || currentTierConfig?.max_loan_per_borrower_ghs || null,
-    singleObligorLimit: settings?.max_single_obligor_limit || null,
-    singleObligorPercent: currentTierConfig?.single_obligor_limit_percent || 25,
+    singleObligorLimit,
+    singleObligorPercent,
+    netWorth,
+    isNetWorthConfigured: netWorth !== null && netWorth > 0,
   };
 }
