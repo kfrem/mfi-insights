@@ -48,23 +48,23 @@ export function KPICard({
       variant === 'elevated' ? 'kpi-card-elevated' : 'kpi-card',
       'animate-fade-in'
     )}>
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
+      <div className="flex items-start justify-between gap-2">
+        <div className="space-y-1 min-w-0 flex-1">
           <p className={cn(
-            'text-sm font-medium',
+            'text-xs md:text-sm font-medium truncate',
             variant === 'elevated' ? 'text-primary-foreground/80' : 'text-muted-foreground'
           )}>
             {title}
           </p>
           <p className={cn(
-            'text-2xl font-semibold tracking-tight',
+            'text-lg md:text-2xl font-semibold tracking-tight truncate',
             variant === 'elevated' ? 'text-primary-foreground' : 'text-foreground'
           )}>
             {formatValue(value)}
           </p>
           {subtitle && (
             <p className={cn(
-              'text-xs',
+              'text-xs truncate',
               variant === 'elevated' ? 'text-primary-foreground/70' : 'text-muted-foreground'
             )}>
               {subtitle}
@@ -73,7 +73,7 @@ export function KPICard({
         </div>
         {icon && (
           <div className={cn(
-            'p-2 rounded-lg',
+            'p-1.5 md:p-2 rounded-lg shrink-0',
             variant === 'elevated' 
               ? 'bg-white/10' 
               : 'bg-muted'
@@ -84,15 +84,15 @@ export function KPICard({
       </div>
       
       {trend && trendValue && (
-        <div className="mt-4 flex items-center gap-1.5">
+        <div className="mt-3 md:mt-4 flex items-center gap-1.5">
           <TrendIcon className={cn(
-            'h-4 w-4',
+            'h-3.5 w-3.5 md:h-4 md:w-4 shrink-0',
             trend === 'up' && 'text-status-current',
             trend === 'down' && 'text-status-loss',
             trend === 'neutral' && 'text-muted-foreground'
           )} />
           <span className={cn(
-            'text-xs font-medium',
+            'text-xs font-medium truncate',
             variant === 'elevated' ? 'text-primary-foreground/80' : 'text-muted-foreground'
           )}>
             {trendValue}

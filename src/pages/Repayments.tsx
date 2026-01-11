@@ -39,16 +39,16 @@ export default function Repayments() {
   })) ?? [];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       {/* Header with Export */}
-      <header className="page-header flex justify-between items-start">
+      <header className="page-header flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
         <div>
           <h1 className="page-title">Repayments</h1>
           <p className="page-subtitle">Daily collection trends over the last 60 days</p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2 w-full sm:w-auto">
               <Download className="h-4 w-4" />
               Export
             </Button>
@@ -67,28 +67,28 @@ export default function Repayments() {
       </header>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
         <div className="kpi-card">
-          <p className="text-sm font-medium text-muted-foreground">Total Collected (60 days)</p>
-          <p className="text-2xl font-semibold mt-1">{formatCurrency(totalAmount)}</p>
+          <p className="text-xs md:text-sm font-medium text-muted-foreground">Total Collected (60 days)</p>
+          <p className="text-lg md:text-2xl font-semibold mt-1 truncate">{formatCurrency(totalAmount)}</p>
         </div>
         <div className="kpi-card">
-          <p className="text-sm font-medium text-muted-foreground">Total Payments</p>
-          <p className="text-2xl font-semibold mt-1">{totalPayments.toLocaleString()}</p>
+          <p className="text-xs md:text-sm font-medium text-muted-foreground">Total Payments</p>
+          <p className="text-lg md:text-2xl font-semibold mt-1">{totalPayments.toLocaleString()}</p>
         </div>
         <div className="kpi-card">
-          <p className="text-sm font-medium text-muted-foreground">Avg. Daily Collection</p>
-          <p className="text-2xl font-semibold mt-1">{formatCurrency(avgDaily)}</p>
+          <p className="text-xs md:text-sm font-medium text-muted-foreground">Avg. Daily Collection</p>
+          <p className="text-lg md:text-2xl font-semibold mt-1 truncate">{formatCurrency(avgDaily)}</p>
         </div>
       </div>
 
       {/* Chart */}
-      <div className="kpi-card mb-8">
-        <h3 className="text-lg font-semibold mb-6">Daily Collection Trend</h3>
+      <div className="kpi-card mb-6 md:mb-8">
+        <h3 className="text-base md:text-lg font-semibold mb-4 md:mb-6">Daily Collection Trend</h3>
         {isLoading ? (
-          <div className="h-72 bg-muted animate-pulse rounded" />
+          <div className="h-48 md:h-72 bg-muted animate-pulse rounded" />
         ) : (
-          <div className="h-72">
+          <div className="h-48 md:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
@@ -100,17 +100,17 @@ export default function Repayments() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis 
                   dataKey="date" 
-                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                  tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                   tickLine={false}
                   axisLine={false}
-                  interval={6}
+                  interval="preserveStartEnd"
                 />
                 <YAxis 
                   tickFormatter={formatCompact}
-                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                  tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                   tickLine={false}
                   axisLine={false}
-                  width={60}
+                  width={50}
                 />
                 <Tooltip
                   formatter={(value: number) => [formatCurrency(value), 'Amount']}
@@ -118,7 +118,7 @@ export default function Repayments() {
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
-                    fontSize: '13px',
+                    fontSize: '12px',
                   }}
                 />
                 <Area
@@ -137,9 +137,9 @@ export default function Repayments() {
 
       {/* Daily Breakdown Table */}
       <div className="kpi-card">
-        <h3 className="text-lg font-semibold mb-4">Daily Breakdown</h3>
-        <div className="overflow-x-auto max-h-96">
-          <table id="repayments-table" className="data-table">
+        <h3 className="text-base md:text-lg font-semibold mb-4">Daily Breakdown</h3>
+        <div className="table-responsive max-h-80 md:max-h-96 overflow-y-auto">
+          <table id="repayments-table" className="data-table min-w-[400px]">
             <thead className="sticky top-0 bg-card">
               <tr>
                 <th>Date</th>
@@ -150,9 +150,9 @@ export default function Repayments() {
             <tbody>
               {[...(repayments ?? [])].reverse().map((r) => (
                 <tr key={r.payment_date}>
-                  <td>{format(parseISO(r.payment_date), 'EEE, MMM dd yyyy')}</td>
-                  <td className="text-right font-medium">{formatCurrency(r.total_amount)}</td>
-                  <td className="text-right">{r.payment_count}</td>
+                  <td className="text-sm">{format(parseISO(r.payment_date), 'MMM dd yyyy')}</td>
+                  <td className="text-right font-medium text-sm">{formatCurrency(r.total_amount)}</td>
+                  <td className="text-right text-sm">{r.payment_count}</td>
                 </tr>
               ))}
             </tbody>
