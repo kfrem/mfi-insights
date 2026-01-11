@@ -736,6 +736,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_board_member: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_executive: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       user_belongs_to_org: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
