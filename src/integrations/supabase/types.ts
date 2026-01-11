@@ -769,7 +769,12 @@ export type Database = {
         | "PERCENT_INSTALLMENT"
         | "DAILY_RATE"
       repayment_frequency: "DAILY" | "WEEKLY" | "FORTNIGHTLY" | "MONTHLY"
-      user_role: "ADMIN" | "MANAGER" | "FIELD_OFFICER" | "TELLER"
+      user_role:
+        | "ADMIN"
+        | "MANAGER"
+        | "FIELD_OFFICER"
+        | "TELLER"
+        | "BOARD_DIRECTOR"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -927,7 +932,13 @@ export const Constants = {
         "DAILY_RATE",
       ],
       repayment_frequency: ["DAILY", "WEEKLY", "FORTNIGHTLY", "MONTHLY"],
-      user_role: ["ADMIN", "MANAGER", "FIELD_OFFICER", "TELLER"],
+      user_role: [
+        "ADMIN",
+        "MANAGER",
+        "FIELD_OFFICER",
+        "TELLER",
+        "BOARD_DIRECTOR",
+      ],
     },
   },
 } as const
