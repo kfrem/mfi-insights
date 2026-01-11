@@ -23,21 +23,28 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useFieldCollections, useVerifyFieldCollection } from '@/hooks/useFieldCollection';
 import { CollectionStatus } from '@/types/audit';
+import { useOrganisation } from '@/contexts/OrganisationContext';
 
 interface FieldCollectionsListProps {
-  orgId: string;
   canVerify?: boolean;
+  filter?: 'all' | 'pending';
 }
 
-export function FieldCollectionsList({ orgId, canVerify = false }: FieldCollectionsListProps) {
+export function FieldCollectionsList({ canVerify = false, filter = 'all' }: FieldCollectionsListProps) {
+  const { selectedOrgId: orgId } = useOrganisation();
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [verifyAction, setVerifyAction] = useState<'VERIFIED' | 'REJECTED' | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [selectedDetails, setSelectedDetails] = useState<typeof collections.data[0] | null>(null);
+  const [selectedDetails, setSelectedDetails] = useState<any | null>(null);
 
-  const collections = useFieldCollections(orgId);
+  const collections = useFieldCollections(orgId || '');
   const verifyCollection = useVerifyFieldCollection();
+
+  // Filter collections based on filter prop
+  const filteredCollections = collections.data?.filter(c => 
+    filter === 'pending' ? c.status === 'PENDING' : true
+  );
 
   const handleVerify = async () => {
     if (!selectedCollection || !verifyAction) return;
@@ -104,7 +111,7 @@ export function FieldCollectionsList({ orgId, canVerify = false }: FieldCollecti
               </TableRow>
             </TableHeader>
             <TableBody>
-              {collections.data?.map((collection) => (
+              {filteredCollections?.map((collection) => (
                 <TableRow key={collection.id}>
                   <TableCell className="font-medium">
                     {format(new Date(collection.collection_date), 'dd MMM yyyy HH:mm')}
@@ -178,7 +185,7 @@ export function FieldCollectionsList({ orgId, canVerify = false }: FieldCollecti
                   </TableCell>
                 </TableRow>
               ))}
-              {(!collections.data || collections.data.length === 0) && (
+              {(!filteredCollections || filteredCollections.length === 0) && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-muted-foreground">
                     No field collections recorded yet

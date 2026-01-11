@@ -27,6 +27,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { CollectionMethod } from '@/types/audit';
 import { useClients } from '@/hooks/useMfiData';
+import { useOrganisation } from '@/contexts/OrganisationContext';
 
 const formSchema = z.object({
   client_id: z.string().min(1, 'Client is required'),
@@ -40,11 +41,11 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface FieldCollectionFormProps {
-  orgId: string;
   onSuccess?: () => void;
 }
 
-export function FieldCollectionForm({ orgId, onSuccess }: FieldCollectionFormProps) {
+export function FieldCollectionForm({ onSuccess }: FieldCollectionFormProps) {
+  const { selectedOrgId: orgId } = useOrganisation();
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;

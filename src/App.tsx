@@ -16,6 +16,8 @@ import FinancialReports from "./pages/FinancialReports";
 import PortfolioAging from "./pages/PortfolioAging";
 import Repayments from "./pages/Repayments";
 import DataEntry from "./pages/DataEntry";
+import FieldOperations from "./pages/FieldOperations";
+import AuditLog from "./pages/AuditLog";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -54,7 +56,9 @@ const App = () => (
                         <Route path="/financial-reports" element={<FinancialReports />} />
                         <Route path="/portfolio-aging" element={<PortfolioAging />} />
                         <Route path="/repayments" element={<Repayments />} />
+                        <Route path="/field-operations" element={<FieldOperations />} />
                         <Route path="/data-entry" element={<DataEntry />} />
+                        <Route path="/audit-log" element={<AuditLog />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </AppLayout>

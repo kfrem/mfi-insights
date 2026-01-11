@@ -39,17 +39,15 @@ import {
 } from '@/components/ui/dialog';
 import { useAuditLogs } from '@/hooks/useAuditLog';
 import { ActionType, EntityType, ActivityAuditLog } from '@/types/audit';
+import { useOrganisation } from '@/contexts/OrganisationContext';
 
-interface AuditLogViewerProps {
-  orgId: string;
-}
-
-export function AuditLogViewer({ orgId }: AuditLogViewerProps) {
+export function AuditLogViewer() {
+  const { selectedOrgId } = useOrganisation();
   const [actionFilter, setActionFilter] = useState<ActionType | 'ALL'>('ALL');
   const [entityFilter, setEntityFilter] = useState<EntityType | 'ALL'>('ALL');
   const [selectedLog, setSelectedLog] = useState<ActivityAuditLog | null>(null);
 
-  const logs = useAuditLogs(orgId, {
+  const logs = useAuditLogs(selectedOrgId || '', {
     actionType: actionFilter === 'ALL' ? undefined : actionFilter,
     entityType: entityFilter === 'ALL' ? undefined : entityFilter,
   });
