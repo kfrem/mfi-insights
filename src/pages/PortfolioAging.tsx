@@ -34,7 +34,7 @@ export default function PortfolioAging() {
   const handleExportPDF = () => exportToPDF('portfolio-table', 'Portfolio Ageing Report');
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <header className="page-header">
         <h1 className="page-title">Portfolio Ageing</h1>
         <p className="page-subtitle">Loans ordered by days overdue with BOG classification</p>
@@ -42,8 +42,8 @@ export default function PortfolioAging() {
 
       <div className="kpi-card">
         {/* Search */}
-        <div className="mb-6 flex items-center gap-4">
-          <div className="relative flex-1 max-w-sm">
+        <div className="mb-4 md:mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+          <div className="relative flex-1 sm:max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by client or loan ID..."
@@ -52,27 +52,29 @@ export default function PortfolioAging() {
               className="pl-10"
             />
           </div>
-          <span className="text-sm text-muted-foreground">
-            {filteredData.length} loans
-          </span>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={filteredData.length === 0}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleExportCSV}>
-                <FileText className="h-4 w-4 mr-2" />
-                Export as CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExportPDF}>
-                <FileText className="h-4 w-4 mr-2" />
-                Export as PDF
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center justify-between sm:justify-start gap-3">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">
+              {filteredData.length} loans
+            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" disabled={filteredData.length === 0}>
+                  <Download className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Export</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportCSV}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportPDF}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Export as PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Table */}
@@ -83,8 +85,8 @@ export default function PortfolioAging() {
             ))}
           </div>
         ) : (
-          <div className="overflow-x-auto" id="portfolio-table">
-            <table className="data-table">
+          <div className="table-responsive" id="portfolio-table">
+            <table className="data-table min-w-[600px]">
               <thead>
                 <tr>
                   <th>Loan ID</th>
@@ -105,10 +107,10 @@ export default function PortfolioAging() {
                 ) : (
                   filteredData.map((loan) => (
                     <tr key={loan.loan_id}>
-                      <td className="font-mono text-sm">{loan.loan_id}</td>
-                      <td className="font-medium">{loan.client_name}</td>
-                      <td className="text-right">{formatCurrency(loan.principal)}</td>
-                      <td className="text-right">{formatCurrency(loan.outstanding_balance)}</td>
+                      <td className="font-mono text-xs md:text-sm">{loan.loan_id.slice(0, 8)}...</td>
+                      <td className="font-medium text-sm">{loan.client_name}</td>
+                      <td className="text-right text-sm">{formatCurrency(loan.principal)}</td>
+                      <td className="text-right text-sm">{formatCurrency(loan.outstanding_balance)}</td>
                       <td className="text-right">
                         <span className={loan.days_overdue > 90 ? 'text-status-loss font-semibold' : ''}>
                           {loan.days_overdue}

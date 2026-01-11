@@ -5,23 +5,25 @@ import { Shield, Users } from 'lucide-react';
 
 export default function UserManagement() {
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">User Management</h1>
+        <p className="text-sm md:text-base text-muted-foreground mt-1">
           Manage staff roles, permissions, and client assignments
         </p>
       </div>
 
-      <Tabs defaultValue="roles" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="roles" className="gap-2">
+      <Tabs defaultValue="roles" className="space-y-4 md:space-y-6">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="roles" className="gap-1.5 md:gap-2 flex-1 sm:flex-initial">
             <Shield className="h-4 w-4" />
-            Staff Roles
+            <span className="hidden sm:inline">Staff Roles</span>
+            <span className="sm:hidden">Roles</span>
           </TabsTrigger>
-          <TabsTrigger value="assignments" className="gap-2">
+          <TabsTrigger value="assignments" className="gap-1.5 md:gap-2 flex-1 sm:flex-initial">
             <Users className="h-4 w-4" />
-            Client Assignments
+            <span className="hidden sm:inline">Client Assignments</span>
+            <span className="sm:hidden">Assignments</span>
           </TabsTrigger>
         </TabsList>
 
