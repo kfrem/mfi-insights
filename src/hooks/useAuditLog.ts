@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ActivityAuditLog, ActionType, EntityType } from '@/types/audit';
-import { Json } from '@/integrations/supabase/types';
 
 export function useAuditLogs(orgId: string | undefined, filters?: {
   userId?: string;
@@ -60,22 +59,16 @@ export function useLogActivity() {
       new_values?: Record<string, unknown>;
       metadata?: Record<string, unknown>;
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { error } = await supabase
-        .from('activity_audit_log')
-        .insert([{
-          org_id: log.org_id,
-          action_type: log.action_type,
-          entity_type: log.entity_type,
-          entity_id: log.entity_id,
-          old_values: log.old_values as Json,
-          new_values: log.new_values as Json,
-          metadata: log.metadata as Json,
-          user_id: user.id,
-          user_agent: navigator.userAgent,
-        }]);
+      // Use server-side function for tamper-proof audit logging
+      const { error } = await supabase.rpc('log_activity', {
+        _org_id: log.org_id,
+        _action_type: log.action_type,
+        _entity_type: log.entity_type,
+        _entity_id: log.entity_id || null,
+        _old_values: log.old_values ? JSON.stringify(log.old_values) : null,
+        _new_values: log.new_values ? JSON.stringify(log.new_values) : null,
+        _metadata: log.metadata ? JSON.stringify(log.metadata) : null,
+      });
 
       if (error) throw error;
     },
