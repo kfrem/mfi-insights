@@ -146,6 +146,7 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          assigned_officer_id: string | null
           client_id: string
           client_type: Database["public"]["Enums"]["client_type"]
           created_at: string
@@ -173,6 +174,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          assigned_officer_id?: string | null
           client_id?: string
           client_type?: Database["public"]["Enums"]["client_type"]
           created_at?: string
@@ -200,6 +202,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          assigned_officer_id?: string | null
           client_id?: string
           client_type?: Database["public"]["Enums"]["client_type"]
           created_at?: string
@@ -713,6 +716,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_client: {
+        Args: { _client_id: string; _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_access_loan: {
+        Args: { _loan_id: string; _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_any_role: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
