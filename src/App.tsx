@@ -12,6 +12,7 @@ import BoardDashboard from "./pages/BoardDashboard";
 import ManagementDashboard from "./pages/ManagementDashboard";
 import DepartmentalReports from "./pages/DepartmentalReports";
 import RegulatoryReports from "./pages/RegulatoryReports";
+import FinancialReports from "./pages/FinancialReports";
 import PortfolioAging from "./pages/PortfolioAging";
 import Repayments from "./pages/Repayments";
 import DataEntry from "./pages/DataEntry";
@@ -50,6 +51,7 @@ const App = () => (
                         <Route path="/management" element={<ManagementDashboard />} />
                         <Route path="/departments" element={<DepartmentalReports />} />
                         <Route path="/regulatory-reports" element={<RegulatoryReports />} />
+                        <Route path="/financial-reports" element={<FinancialReports />} />
                         <Route path="/portfolio-aging" element={<PortfolioAging />} />
                         <Route path="/repayments" element={<Repayments />} />
                         <Route path="/data-entry" element={<DataEntry />} />
