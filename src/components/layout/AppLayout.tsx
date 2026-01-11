@@ -14,7 +14,8 @@ import {
   Building,
   FileText,
   MapPin,
-  History
+  History,
+  AlertTriangle
 } from 'lucide-react';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { NetworkStatusIndicator } from '@/components/offline/NetworkStatusIndicator';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -52,12 +54,14 @@ const navItems = [
   { path: '/field-operations', label: 'Field Operations', icon: MapPin },
   { path: '/data-entry', label: 'Data Entry', icon: PlusCircle },
   { path: '/audit-log', label: 'Audit Trail', icon: History },
+  { path: '/sync-conflicts', label: 'Sync Conflicts', icon: AlertTriangle },
 ];
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { organisations, selectedOrgId, setSelectedOrgId, isLoading } = useOrganisation();
   const { user, signOut } = useAuth();
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
@@ -88,7 +92,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-280px)]">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
@@ -110,6 +114,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             );
           })}
         </nav>
+        
         {/* User Menu */}
         {user && (
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-sidebar-border">
@@ -142,7 +147,14 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main Content */}
       <main className="pl-64">
-        <div className="min-h-screen">
+        {/* Top Bar with Network Status */}
+        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+          <div className="flex items-center justify-end h-14 px-6">
+            <NetworkStatusIndicator />
+          </div>
+        </div>
+        
+        <div className="min-h-[calc(100vh-3.5rem)]">
           {children}
         </div>
       </main>
