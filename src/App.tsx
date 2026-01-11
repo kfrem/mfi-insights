@@ -18,6 +18,7 @@ import Repayments from "./pages/Repayments";
 import DataEntry from "./pages/DataEntry";
 import FieldOperations from "./pages/FieldOperations";
 import AuditLog from "./pages/AuditLog";
+import SyncConflicts from "./pages/SyncConflicts";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -59,6 +60,7 @@ const App = () => (
                         <Route path="/field-operations" element={<FieldOperations />} />
                         <Route path="/data-entry" element={<DataEntry />} />
                         <Route path="/audit-log" element={<AuditLog />} />
+                        <Route path="/sync-conflicts" element={<SyncConflicts />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </AppLayout>
