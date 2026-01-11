@@ -15,7 +15,8 @@ import {
   FileText,
   MapPin,
   History,
-  AlertTriangle
+  AlertTriangle,
+  Users
 } from 'lucide-react';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,6 +54,7 @@ const navItems = [
   { path: '/repayments', label: 'Repayments', icon: DollarSign },
   { path: '/field-operations', label: 'Field Operations', icon: MapPin },
   { path: '/data-entry', label: 'Data Entry', icon: PlusCircle },
+  { path: '/user-management', label: 'User Management', icon: Users },
   { path: '/audit-log', label: 'Audit Trail', icon: History },
   { path: '/sync-conflicts', label: 'Sync Conflicts', icon: AlertTriangle },
 ];
