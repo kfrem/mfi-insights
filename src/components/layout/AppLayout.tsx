@@ -11,7 +11,10 @@ import {
   Shield,
   Activity,
   Briefcase,
-  Building
+  Building,
+  FileText,
+  MapPin,
+  History
 } from 'lucide-react';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,9 +46,12 @@ const navItems = [
   { path: '/management', label: 'Management', icon: Activity },
   { path: '/departments', label: 'Departments', icon: Building },
   { path: '/regulatory-reports', label: 'BoG Reports', icon: Shield },
+  { path: '/financial-reports', label: 'Financial Reports', icon: FileText },
   { path: '/portfolio-aging', label: 'Portfolio Ageing', icon: TrendingDown },
   { path: '/repayments', label: 'Repayments', icon: DollarSign },
+  { path: '/field-operations', label: 'Field Operations', icon: MapPin },
   { path: '/data-entry', label: 'Data Entry', icon: PlusCircle },
+  { path: '/audit-log', label: 'Audit Trail', icon: History },
 ];
 
 export function AppLayout({ children }: AppLayoutProps) {

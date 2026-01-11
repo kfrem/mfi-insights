@@ -4,6 +4,7 @@ import { FinancialStatementsPanel } from '@/components/financial/FinancialStatem
 import { ProfitabilityMetricsPanel } from '@/components/financial/ProfitabilityMetricsPanel';
 import { GovernanceRiskPanel } from '@/components/financial/GovernanceRiskPanel';
 import { PARAgingPanel } from '@/components/financial/PARAgingPanel';
+import { DepositMonitoringPanel } from '@/components/financial/DepositMonitoringPanel';
 import { TierComplianceWidget } from '@/components/regulatory/TierComplianceWidget';
 import { useFinancialRatios } from '@/hooks/useFinancialData';
 import { useCapitalAdequacy, useLiquidityRatio } from '@/hooks/useRegulatoryData';
@@ -32,22 +33,26 @@ export default function FinancialReports() {
       </div>
 
       <Tabs defaultValue="statements" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="statements" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Financial Statements
+            <span className="hidden lg:inline">Financial</span> Statements
           </TabsTrigger>
           <TabsTrigger value="profitability" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            Profitability & Quality
+            Profitability
           </TabsTrigger>
           <TabsTrigger value="par" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             PAR Analysis
           </TabsTrigger>
+          <TabsTrigger value="deposits" className="flex items-center gap-2">
+            <Wallet className="h-4 w-4" />
+            Deposits
+          </TabsTrigger>
           <TabsTrigger value="governance" className="flex items-center gap-2">
             <ShieldAlert className="h-4 w-4" />
-            Governance & Risk
+            Governance
           </TabsTrigger>
         </TabsList>
 
@@ -61,6 +66,10 @@ export default function FinancialReports() {
 
         <TabsContent value="par">
           <PARAgingPanel />
+        </TabsContent>
+
+        <TabsContent value="deposits">
+          <DepositMonitoringPanel />
         </TabsContent>
 
         <TabsContent value="governance">
