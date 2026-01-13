@@ -4,6 +4,8 @@ import { Progress } from '@/components/ui/progress';
 import { AlertTriangle, TrendingUp, TrendingDown, Minus, CheckCircle, XCircle } from 'lucide-react';
 import { useFinancialRatios, useIncomeQuality, useDisbursementQuality } from '@/hooks/useFinancialData';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useDrilldown } from '@/components/drilldown/DrilldownContext';
+import { DrilldownConfig } from '@/components/drilldown/types';
 
 const formatPercent = (val: number) => `${val.toFixed(1)}%`;
 const formatCurrency = (val: number) =>
@@ -21,9 +23,11 @@ interface MetricCardProps {
   benchmark?: string;
   status?: 'good' | 'warning' | 'critical' | 'neutral';
   trend?: 'up' | 'down' | 'stable';
+  drilldownConfig?: DrilldownConfig;
 }
 
-function MetricCard({ title, value, subtitle, benchmark, status = 'neutral', trend }: MetricCardProps) {
+function MetricCard({ title, value, subtitle, benchmark, status = 'neutral', trend, drilldownConfig }: MetricCardProps) {
+  const drilldown = useDrilldown();
   const statusColors = {
     good: 'border-status-current bg-status-current/5',
     warning: 'border-yellow-500 bg-yellow-500/5',
@@ -31,8 +35,13 @@ function MetricCard({ title, value, subtitle, benchmark, status = 'neutral', tre
     neutral: 'border-border',
   };
 
+  const isClickable = !!drilldownConfig;
+
   return (
-    <Card className={statusColors[status]}>
+    <Card 
+      className={`${statusColors[status]} ${isClickable ? 'cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all' : ''}`}
+      onClick={isClickable ? () => drilldown.openDrilldown(drilldownConfig) : undefined}
+    >
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
           {title}
@@ -44,7 +53,7 @@ function MetricCard({ title, value, subtitle, benchmark, status = 'neutral', tre
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <span className={`text-2xl font-bold ${status === 'good' ? 'text-status-current' : status === 'critical' ? 'text-status-loss' : ''}`}>
+        <span className={`text-2xl font-bold ${status === 'good' ? 'text-status-current' : status === 'critical' ? 'text-status-loss' : ''} ${isClickable ? 'underline decoration-dotted underline-offset-4 decoration-primary/40' : ''}`}>
           {value}
         </span>
         {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
@@ -58,6 +67,42 @@ export function ProfitabilityMetricsPanel() {
   const { data: ratios, isLoading: ratiosLoading } = useFinancialRatios();
   const { data: incomeQuality, isLoading: iqLoading } = useIncomeQuality();
   const { data: disbQuality, isLoading: dqLoading } = useDisbursementQuality();
+
+  // Drilldown configurations
+  const nimConfig: DrilldownConfig = {
+    metricId: 'nim',
+    title: 'Net Interest Margin',
+    hasSource: false,
+    calculation: '(Interest Income - Interest Expense) / Average Earning Assets × 100'
+  };
+
+  const ossConfig: DrilldownConfig = {
+    metricId: 'oss',
+    title: 'Operational Self-Sufficiency',
+    hasSource: false,
+    calculation: 'Operating Income / (Operating Expenses + Loan Loss Provisions + Financial Expenses) × 100'
+  };
+
+  const costIncomeConfig: DrilldownConfig = {
+    metricId: 'cost_income',
+    title: 'Cost-to-Income Ratio',
+    hasSource: false,
+    calculation: 'Total Operating Expenses / Total Operating Income × 100'
+  };
+
+  const roaConfig: DrilldownConfig = {
+    metricId: 'roa',
+    title: 'Return on Assets',
+    hasSource: false,
+    calculation: 'Net Income / Average Total Assets × 100'
+  };
+
+  const roeConfig: DrilldownConfig = {
+    metricId: 'roe',
+    title: 'Return on Equity',
+    hasSource: false,
+    calculation: 'Net Income / Average Shareholders Equity × 100'
+  };
 
   if (ratiosLoading || iqLoading || dqLoading) {
     return (
