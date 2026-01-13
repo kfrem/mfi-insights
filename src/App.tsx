@@ -23,6 +23,7 @@ import AuditLog from "./pages/AuditLog";
 import SyncConflicts from "./pages/SyncConflicts";
 import UserManagement from "./pages/UserManagement";
 import Settings from "./pages/Settings";
+import ShareholderDashboard from "./pages/ShareholderDashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import OrganisationOnboarding from "./pages/OrganisationOnboarding";
@@ -71,6 +72,7 @@ const App = () => (
                           <Routes>
                             <Route path="/" element={<ExecutiveDashboard />} />
                             <Route path="/board" element={<BoardDashboard />} />
+                            <Route path="/shareholders" element={<ShareholderDashboard />} />
                             <Route path="/management" element={<ManagementDashboard />} />
                             <Route path="/departments" element={<DepartmentalReports />} />
                             <Route path="/regulatory-reports" element={<RegulatoryReports />} />

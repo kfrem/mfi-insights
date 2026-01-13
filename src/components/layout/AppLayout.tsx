@@ -18,7 +18,8 @@ import {
   AlertTriangle,
   Users,
   Menu,
-  Settings
+  Settings,
+  PieChart
 } from 'lucide-react';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -41,6 +42,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { NetworkStatusIndicator } from '@/components/offline/NetworkStatusIndicator';
+import { DemoModeBanner } from '@/components/layout/DemoModeBanner';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -49,6 +51,7 @@ interface AppLayoutProps {
 const navItems = [
   { path: '/', label: 'Executive Dashboard', icon: LayoutDashboard },
   { path: '/board', label: 'Board Dashboard', icon: Briefcase },
+  { path: '/shareholders', label: 'Investor Portal', icon: PieChart },
   { path: '/management', label: 'Management', icon: Activity },
   { path: '/departments', label: 'Departments', icon: Building },
   { path: '/regulatory-reports', label: 'BoG Reports', icon: Shield },
@@ -156,7 +159,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Demo Mode Banner */}
+      <DemoModeBanner />
+      
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-sidebar border-b border-sidebar-border h-14 flex items-center px-4">
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>

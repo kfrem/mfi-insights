@@ -230,6 +230,66 @@ export type Database = {
         }
         Relationships: []
       }
+      dividend_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          dividend_rate: number
+          id: string
+          notes: string | null
+          org_id: string
+          payment_method: string | null
+          payment_reference: string | null
+          payout_date: string
+          shareholder_id: string
+          shares_at_payout: number
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          dividend_rate: number
+          id?: string
+          notes?: string | null
+          org_id: string
+          payment_method?: string | null
+          payment_reference?: string | null
+          payout_date: string
+          shareholder_id: string
+          shares_at_payout: number
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          dividend_rate?: number
+          id?: string
+          notes?: string | null
+          org_id?: string
+          payment_method?: string | null
+          payment_reference?: string | null
+          payout_date?: string
+          shareholder_id?: string
+          shares_at_payout?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dividend_payouts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "dividend_payouts_shareholder_id_fkey"
+            columns: ["shareholder_id"]
+            isOneToOne: false
+            referencedRelation: "shareholders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       field_collections: {
         Row: {
           amount_collected: number
@@ -758,6 +818,122 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "loans"
             referencedColumns: ["loan_id"]
+          },
+        ]
+      }
+      shareholder_transactions: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          org_id: string
+          processed_by: string | null
+          share_units: number
+          shareholder_id: string
+          total_amount: number
+          transaction_date: string
+          transaction_type: string
+          unit_value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          org_id: string
+          processed_by?: string | null
+          share_units: number
+          shareholder_id: string
+          total_amount: number
+          transaction_date?: string
+          transaction_type: string
+          unit_value: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          org_id?: string
+          processed_by?: string | null
+          share_units?: number
+          shareholder_id?: string
+          total_amount?: number
+          transaction_date?: string
+          transaction_type?: string
+          unit_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shareholder_transactions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["org_id"]
+          },
+          {
+            foreignKeyName: "shareholder_transactions_shareholder_id_fkey"
+            columns: ["shareholder_id"]
+            isOneToOne: false
+            referencedRelation: "shareholders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shareholders: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          investment_date: string
+          org_id: string
+          phone: string | null
+          share_unit_value: number
+          share_units: number
+          status: string
+          total_investment: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          investment_date?: string
+          org_id: string
+          phone?: string | null
+          share_unit_value?: number
+          share_units?: number
+          status?: string
+          total_investment?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          investment_date?: string
+          org_id?: string
+          phone?: string | null
+          share_unit_value?: number
+          share_units?: number
+          status?: string
+          total_investment?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shareholders_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["org_id"]
           },
         ]
       }
