@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatDate } from '@/lib/dateUtils';
+import { useDrilldown } from '@/components/drilldown/DrilldownContext';
+import { DrilldownConfig } from '@/components/drilldown/types';
 
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-GH', {
@@ -25,6 +27,28 @@ const formatCurrency = (val: number) =>
 export function StaffProductivityPanel() {
   const { data: staff, isLoading } = useStaffProductivity();
   const { data: branches } = useBranchPerformance();
+  const drilldown = useDrilldown();
+
+  const totalStaffConfig: DrilldownConfig = {
+    metricId: 'total_staff',
+    title: 'Total Staff',
+    hasSource: false,
+    calculation: 'Count of all active staff members assigned to the organization'
+  };
+
+  const needsAttentionConfig: DrilldownConfig = {
+    metricId: 'staff_needs_attention',
+    title: 'Staff Needing Attention',
+    hasSource: false,
+    calculation: 'Count of staff with collection rate < 80%'
+  };
+
+  const branchesConfig: DrilldownConfig = {
+    metricId: 'total_branches',
+    title: 'Total Branches',
+    hasSource: false,
+    calculation: 'Count of active branch locations'
+  };
 
   const handleExportCSV = () => {
     if (!staff) return;
@@ -61,7 +85,10 @@ export function StaffProductivityPanel() {
     <div className="space-y-6" id="staff-productivity">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card 
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          onClick={() => drilldown.openDrilldown(totalStaffConfig)}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -69,7 +96,9 @@ export function StaffProductivityPanel() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-3xl font-bold">{staff?.length ?? 0}</span>
+            <span className="text-3xl font-bold underline decoration-dotted underline-offset-4 decoration-primary/40">
+              {staff?.length ?? 0}
+            </span>
           </CardContent>
         </Card>
 
@@ -89,19 +118,25 @@ export function StaffProductivityPanel() {
           </CardContent>
         </Card>
 
-        <Card className={needsAttention.length > 0 ? 'border-status-watch' : ''}>
+        <Card 
+          className={`cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all ${needsAttention.length > 0 ? 'border-status-watch' : ''}`}
+          onClick={() => drilldown.openDrilldown(needsAttentionConfig)}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Needs Attention</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className={`text-3xl font-bold ${needsAttention.length > 0 ? 'text-status-watch' : ''}`}>
+            <span className={`text-3xl font-bold underline decoration-dotted underline-offset-4 decoration-primary/40 ${needsAttention.length > 0 ? 'text-status-watch' : ''}`}>
               {needsAttention.length}
             </span>
             <p className="text-xs text-muted-foreground">Below 80% collection</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          onClick={() => drilldown.openDrilldown(branchesConfig)}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Building2 className="h-4 w-4" />
@@ -109,7 +144,9 @@ export function StaffProductivityPanel() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-3xl font-bold">{branches?.length ?? 0}</span>
+            <span className="text-3xl font-bold underline decoration-dotted underline-offset-4 decoration-primary/40">
+              {branches?.length ?? 0}
+            </span>
           </CardContent>
         </Card>
       </div>

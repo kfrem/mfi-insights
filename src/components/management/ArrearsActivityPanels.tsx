@@ -15,6 +15,8 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { formatDate, parseISO } from '@/lib/dateUtils';
+import { useDrilldown } from '@/components/drilldown/DrilldownContext';
+import { DrilldownConfig } from '@/components/drilldown/types';
 
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-GH', {
@@ -26,6 +28,23 @@ const formatCurrency = (val: number) =>
 
 export function ArrearsTrackerPanel() {
   const { data: arrears, isLoading } = useArrearsTracker();
+  const drilldown = useDrilldown();
+
+  const highPriorityConfig: DrilldownConfig = {
+    metricId: 'high_priority_arrears',
+    title: 'High Priority Arrears',
+    hasSource: true,
+    sourceDescription: 'Loans marked as high priority for collections',
+    calculation: 'Loans with arrears amount > GHS 5,000 OR days overdue > 60'
+  };
+
+  const totalArrearsConfig: DrilldownConfig = {
+    metricId: 'total_arrears_amount',
+    title: 'Total Arrears',
+    hasSource: true,
+    sourceDescription: 'Sum of all overdue amounts across all delinquent loans',
+    calculation: 'Sum of (expected repayment - actual repayment) for all overdue loans'
+  };
 
   if (isLoading) {
     return (
@@ -55,7 +74,10 @@ export function ArrearsTrackerPanel() {
     <div className="space-y-4">
       {/* Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className={highPriority.length > 0 ? 'border-status-loss' : ''}>
+        <Card 
+          className={`cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all ${highPriority.length > 0 ? 'border-status-loss' : ''}`}
+          onClick={() => drilldown.openDrilldown(highPriorityConfig)}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-status-loss flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
@@ -63,7 +85,9 @@ export function ArrearsTrackerPanel() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-3xl font-bold text-status-loss">{highPriority.length}</span>
+            <span className="text-3xl font-bold text-status-loss underline decoration-dotted underline-offset-4 decoration-primary/40">
+              {highPriority.length}
+            </span>
           </CardContent>
         </Card>
         <Card>
@@ -74,12 +98,17 @@ export function ArrearsTrackerPanel() {
             <span className="text-3xl font-bold">{arrears.length}</span>
           </CardContent>
         </Card>
-        <Card>
+        <Card 
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          onClick={() => drilldown.openDrilldown(totalArrearsConfig)}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Arrears</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="text-2xl font-bold">{formatCurrency(totalArrears)}</span>
+            <span className="text-2xl font-bold underline decoration-dotted underline-offset-4 decoration-primary/40">
+              {formatCurrency(totalArrears)}
+            </span>
           </CardContent>
         </Card>
       </div>
