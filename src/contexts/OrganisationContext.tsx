@@ -3,12 +3,16 @@ import { Organisation } from '@/types/organisation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Demo organisation ID - matches the one seeded in the database
+const DEMO_ORG_ID = 'a0000000-0000-0000-0000-000000000001';
+
 interface OrganisationContextType {
   organisations: Organisation[];
   selectedOrg: Organisation | null;
   selectedOrgId: string | null;
   setSelectedOrgId: (orgId: string | null) => void;
   isLoading: boolean;
+  isDemoMode: boolean;
   refetch: () => Promise<void>;
 }
 
@@ -20,7 +24,34 @@ export function OrganisationProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
+  // Check if running in demo mode
+  const isDemoMode = sessionStorage.getItem('mfi_demo_mode') === 'true';
+
   const fetchOrganisations = async () => {
+    // In demo mode, fetch demo org directly
+    if (isDemoMode) {
+      try {
+        const { data, error } = await supabase
+          .from('organisations')
+          .select('*')
+          .eq('org_id', DEMO_ORG_ID)
+          .single();
+
+        if (error) throw error;
+
+        const demoOrg = data as Organisation;
+        setOrganisations([demoOrg]);
+        setSelectedOrgId(DEMO_ORG_ID);
+      } catch (err) {
+        console.error('Failed to fetch demo organisation:', err);
+        setOrganisations([]);
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Regular flow - fetch user's organisations
     if (!user) {
       setOrganisations([]);
       setSelectedOrgId(null);
@@ -56,7 +87,7 @@ export function OrganisationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchOrganisations();
-  }, [user]);
+  }, [user, isDemoMode]);
 
   const selectedOrg = organisations.find(org => org.org_id === selectedOrgId) || null;
 
@@ -67,6 +98,7 @@ export function OrganisationProvider({ children }: { children: ReactNode }) {
       selectedOrgId, 
       setSelectedOrgId, 
       isLoading,
+      isDemoMode,
       refetch: fetchOrganisations
     }}>
       {children}

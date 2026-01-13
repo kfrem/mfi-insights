@@ -159,8 +159,18 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+      <Card className="w-full max-w-md relative">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute left-4 top-4 gap-2"
+          onClick={() => navigate('/welcome')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+        
+        <CardHeader className="text-center pt-12">
           <div className="flex justify-center mb-4">
             <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
               <Building2 className="h-6 w-6 text-primary-foreground" />
