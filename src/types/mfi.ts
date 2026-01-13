@@ -1,12 +1,7 @@
 // Types matching the existing MFI database schemas
 
-// mfi schema - operational tables
-export interface Organisation {
-  org_id: string;
-  name: string;
-  code?: string;
-  created_at?: string;
-}
+// Re-export Organisation from the new organisation types
+export type { Organisation } from './organisation';
 
 // Risk categories per BoG AML/CFT&P guidelines
 export type RiskCategory = 'LOW' | 'MEDIUM' | 'HIGH';

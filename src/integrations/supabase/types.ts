@@ -608,6 +608,74 @@ export type Database = {
           prudential_return_frequency?: string | null
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "fk_organisation_settings_org"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "organisations"
+            referencedColumns: ["org_id"]
+          },
+        ]
+      }
+      organisations: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          is_demo: boolean | null
+          logo_url: string | null
+          name: string
+          org_id: string
+          phone: string | null
+          postal_code: string | null
+          region: string | null
+          registration_number: string | null
+          tax_id: string | null
+          trading_name: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          is_demo?: boolean | null
+          logo_url?: string | null
+          name: string
+          org_id?: string
+          phone?: string | null
+          postal_code?: string | null
+          region?: string | null
+          registration_number?: string | null
+          tax_id?: string | null
+          trading_name?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          is_demo?: boolean | null
+          logo_url?: string | null
+          name?: string
+          org_id?: string
+          phone?: string | null
+          postal_code?: string | null
+          region?: string | null
+          registration_number?: string | null
+          tax_id?: string | null
+          trading_name?: string | null
+          updated_at?: string
+          website?: string | null
+        }
         Relationships: []
       }
       profiles: {
@@ -712,7 +780,15 @@ export type Database = {
           org_id?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_organizations_org"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["org_id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

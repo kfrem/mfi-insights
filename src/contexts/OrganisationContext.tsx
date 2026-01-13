@@ -1,12 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Organisation } from '@/types/mfi';
-import { getExternalSupabase, isExternalSupabaseConfigured } from '@/integrations/external-supabase/client';
+import { Organisation } from '@/types/organisation';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface OrganisationContextType {
   organisations: Organisation[];
+  selectedOrg: Organisation | null;
   selectedOrgId: string | null;
   setSelectedOrgId: (orgId: string | null) => void;
   isLoading: boolean;
+  refetch: () => Promise<void>;
 }
 
 const OrganisationContext = createContext<OrganisationContextType | undefined>(undefined);
@@ -15,49 +18,57 @@ export function OrganisationProvider({ children }: { children: ReactNode }) {
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    async function fetchOrganisations() {
-      if (!isExternalSupabaseConfigured()) {
-        // Fallback to demo data if external Supabase not configured
-        setOrganisations([{ org_id: 'org-1', name: 'MFI Demo Organisation' }]);
-        setSelectedOrgId('org-1');
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const client = getExternalSupabase();
-        if (!client) throw new Error('External Supabase not available');
-        
-        const { data, error } = await (client as any)
-          .schema('mfi')
-          .from('organisations')
-          .select('org_id, name')
-          .order('name');
-
-        if (error) throw error;
-
-        const orgs = data as Organisation[];
-        setOrganisations(orgs);
-        if (orgs.length > 0) {
-          setSelectedOrgId(orgs[0].org_id);
-        }
-      } catch (err) {
-        console.error('Failed to fetch organisations:', err);
-        // Fallback to demo
-        setOrganisations([{ org_id: 'org-1', name: 'MFI Demo Organisation' }]);
-        setSelectedOrgId('org-1');
-      } finally {
-        setIsLoading(false);
-      }
+  const fetchOrganisations = async () => {
+    if (!user) {
+      setOrganisations([]);
+      setSelectedOrgId(null);
+      setIsLoading(false);
+      return;
     }
 
+    try {
+      // Fetch organisations that the user belongs to
+      const { data, error } = await supabase
+        .from('organisations')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+
+      const orgs = (data || []) as Organisation[];
+      setOrganisations(orgs);
+      
+      // Auto-select first org if none selected
+      if (orgs.length > 0 && !selectedOrgId) {
+        setSelectedOrgId(orgs[0].org_id);
+      } else if (orgs.length === 0) {
+        setSelectedOrgId(null);
+      }
+    } catch (err) {
+      console.error('Failed to fetch organisations:', err);
+      setOrganisations([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchOrganisations();
-  }, []);
+  }, [user]);
+
+  const selectedOrg = organisations.find(org => org.org_id === selectedOrgId) || null;
 
   return (
-    <OrganisationContext.Provider value={{ organisations, selectedOrgId, setSelectedOrgId, isLoading }}>
+    <OrganisationContext.Provider value={{ 
+      organisations, 
+      selectedOrg,
+      selectedOrgId, 
+      setSelectedOrgId, 
+      isLoading,
+      refetch: fetchOrganisations
+    }}>
       {children}
     </OrganisationContext.Provider>
   );
