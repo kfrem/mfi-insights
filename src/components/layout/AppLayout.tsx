@@ -18,7 +18,7 @@ import {
   AlertTriangle,
   Users,
   Menu,
-  X
+  Settings
 } from 'lucide-react';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -60,6 +60,7 @@ const navItems = [
   { path: '/user-management', label: 'User Management', icon: Users },
   { path: '/audit-log', label: 'Audit Trail', icon: History },
   { path: '/sync-conflicts', label: 'Sync Conflicts', icon: AlertTriangle },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
 function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {

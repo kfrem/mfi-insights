@@ -22,6 +22,7 @@ import FieldOperations from "./pages/FieldOperations";
 import AuditLog from "./pages/AuditLog";
 import SyncConflicts from "./pages/SyncConflicts";
 import UserManagement from "./pages/UserManagement";
+import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import OrganisationOnboarding from "./pages/OrganisationOnboarding";
@@ -72,6 +73,7 @@ const App = () => (
                             <Route path="/audit-log" element={<AuditLog />} />
                             <Route path="/sync-conflicts" element={<SyncConflicts />} />
                             <Route path="/user-management" element={<UserManagement />} />
+                            <Route path="/settings" element={<Settings />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </AppLayout>
