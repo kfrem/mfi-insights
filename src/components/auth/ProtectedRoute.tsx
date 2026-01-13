@@ -47,3 +47,8 @@ export function ProtectedRoute({ children, requireOrg = true }: ProtectedRoutePr
 
   return <>{children}</>;
 }
+
+// Helper to clear demo mode - can be used when navigating away
+export function clearDemoMode() {
+  sessionStorage.removeItem('mfi_demo_mode');
+}

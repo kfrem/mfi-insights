@@ -50,6 +50,11 @@ const features = [
     icon: FileText,
     title: 'Loan Workflows',
     description: 'Application to disbursement pipeline with approval hierarchies'
+  },
+  {
+    icon: Wallet,
+    title: 'Investor Portal',
+    description: 'Real-time investment tracking, dividend history, and portfolio allocation for shareholders'
   }
 ];
 
