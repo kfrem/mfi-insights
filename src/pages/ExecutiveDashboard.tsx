@@ -1,6 +1,7 @@
 import { Wallet, Users, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { BogClassificationTable } from '@/components/dashboard/BogClassificationTable';
+import { RefreshIndicator } from '@/components/dashboard/RefreshIndicator';
 import { useExecKpis, useBogClassification } from '@/hooks/useMfiData';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { DrilldownConfig } from '@/components/drilldown/types';
@@ -55,8 +56,13 @@ export default function ExecutiveDashboard() {
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <header className="page-header">
-        <h1 className="page-title">Executive Dashboard</h1>
-        <p className="page-subtitle">Key performance indicators and portfolio health</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="page-title">Executive Dashboard</h1>
+            <p className="page-subtitle">Key performance indicators and portfolio health</p>
+          </div>
+          <RefreshIndicator />
+        </div>
       </header>
 
       {/* KPI Cards */}

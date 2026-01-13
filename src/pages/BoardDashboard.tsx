@@ -5,6 +5,7 @@ import { ExecutiveSummaryPanel } from '@/components/board/ExecutiveSummaryPanel'
 import { StrategicKPIsPanel } from '@/components/board/StrategicKPIsPanel';
 import { RiskAnalysisPanel } from '@/components/board/RiskAnalysisPanel';
 import { TrendsAndPeerPanel } from '@/components/board/TrendsAndPeerPanel';
+import { RefreshIndicator } from '@/components/dashboard/RefreshIndicator';
 import { useBoardExecutiveSummary, useStrategicKPIs, useRiskMetrics, useQuarterlyTrends, usePeerComparison } from '@/hooks/useBoardData';
 import { BoardPeriod } from '@/types/board';
 import { Briefcase } from 'lucide-react';
@@ -28,16 +29,19 @@ export default function BoardDashboard() {
           </h1>
           <p className="page-subtitle">Strategic overview and governance reporting</p>
         </div>
-        <Select value={period} onValueChange={(v) => setPeriod(v as BoardPeriod)}>
-          <SelectTrigger className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="weekly">Weekly</SelectItem>
-            <SelectItem value="monthly">Monthly</SelectItem>
-            <SelectItem value="quarterly">Quarterly</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-4">
+          <RefreshIndicator />
+          <Select value={period} onValueChange={(v) => setPeriod(v as BoardPeriod)}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="weekly">Weekly</SelectItem>
+              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="quarterly">Quarterly</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </header>
 
       <Tabs defaultValue="summary" className="mt-6">

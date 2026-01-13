@@ -3,6 +3,7 @@ import { DailyOperationsPanel } from '@/components/management/DailyOperationsPan
 import { CollectionsChart, DisbursementsChart } from '@/components/management/PerformanceCharts';
 import { StaffProductivityPanel } from '@/components/management/StaffProductivityPanel';
 import { ArrearsTrackerPanel, ActivityLogPanel } from '@/components/management/ArrearsActivityPanels';
+import { RefreshIndicator } from '@/components/dashboard/RefreshIndicator';
 import { 
   LayoutDashboard, 
   TrendingUp, 
@@ -15,13 +16,18 @@ export default function ManagementDashboard() {
   return (
     <div className="p-8">
       <header className="page-header">
-        <h1 className="page-title flex items-center gap-3">
-          <LayoutDashboard className="h-8 w-8 text-primary" />
-          Management Dashboard
-        </h1>
-        <p className="page-subtitle">
-          Daily operations, collections performance, and staff productivity
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="page-title flex items-center gap-3">
+              <LayoutDashboard className="h-8 w-8 text-primary" />
+              Management Dashboard
+            </h1>
+            <p className="page-subtitle">
+              Daily operations, collections performance, and staff productivity
+            </p>
+          </div>
+          <RefreshIndicator />
+        </div>
       </header>
 
       <Tabs defaultValue="operations" className="space-y-6">
