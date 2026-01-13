@@ -23,6 +23,7 @@ import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, LineChart, Lin
 import { AddShareholderForm } from '@/components/shareholders/AddShareholderForm';
 import { RecordTransactionForm } from '@/components/shareholders/RecordTransactionForm';
 import { ProcessDividendForm } from '@/components/shareholders/ProcessDividendForm';
+import { DividendPaymentManager } from '@/components/shareholders/DividendPaymentManager';
 import { ShareholdersList } from '@/components/shareholders/ShareholdersList';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganisation } from '@/contexts/OrganisationContext';
@@ -155,10 +156,11 @@ export default function ShareholderDashboard() {
             </Badge>
           )}
           {(isAdmin || isDemoMode) && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <AddShareholderForm />
               <RecordTransactionForm shareholders={allShareholders || []} />
               <ProcessDividendForm shareholders={allShareholders || []} />
+              <DividendPaymentManager />
             </div>
           )}
         </div>
