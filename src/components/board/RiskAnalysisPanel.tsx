@@ -4,6 +4,8 @@ import { RiskMetrics } from '@/types/board';
 import { AlertTriangle, Shield, Building, Globe, TrendingDown } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { useDrilldown } from '@/components/drilldown/DrilldownContext';
+import { DrilldownConfig } from '@/components/drilldown/types';
 
 interface RiskAnalysisPanelProps {
   data: RiskMetrics | undefined;
@@ -19,6 +21,37 @@ function formatCurrency(value: number): string {
 const COLORS = ['#2563eb', '#0891b2', '#059669', '#d97706', '#dc2626', '#7c3aed'];
 
 export function RiskAnalysisPanel({ data, isLoading }: RiskAnalysisPanelProps) {
+  const drilldown = useDrilldown();
+
+  const concentrationConfig: DrilldownConfig = {
+    metricId: 'concentration_risk',
+    title: 'Portfolio Concentration Risk',
+    hasSource: true,
+    sourceDescription: 'Top borrowers by outstanding principal',
+    calculation: 'Sum of outstanding principal for top N borrowers / Total Gross Portfolio'
+  };
+
+  const sectorConfig: DrilldownConfig = {
+    metricId: 'sector_concentration',
+    title: 'Sector Concentration',
+    hasSource: false,
+    calculation: 'Outstanding principal by sector / Total Gross Portfolio'
+  };
+
+  const liquidityConfig: DrilldownConfig = {
+    metricId: 'liquidity_risk',
+    title: 'Liquidity Risk',
+    hasSource: false,
+    calculation: 'Funding Gap = (Assets maturing in 30 days) - (Liabilities maturing in 30 days)'
+  };
+
+  const operationalConfig: DrilldownConfig = {
+    metricId: 'operational_risk',
+    title: 'Operational Risk',
+    hasSource: false,
+    calculation: 'Aggregated from fraud incidents, system downtime, and customer complaints'
+  };
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -48,7 +81,10 @@ export function RiskAnalysisPanel({ data, isLoading }: RiskAnalysisPanelProps) {
         </h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Concentration Risk */}
-          <Card>
+          <Card 
+            className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+            onClick={() => drilldown.openDrilldown(concentrationConfig)}
+          >
             <CardHeader>
               <CardTitle className="text-base">Portfolio Concentration</CardTitle>
             </CardHeader>
@@ -57,7 +93,9 @@ export function RiskAnalysisPanel({ data, isLoading }: RiskAnalysisPanelProps) {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span>Top 10 Borrowers</span>
-                    <span className={data.concentration_top_10 > 15 ? 'text-red-500 font-medium' : ''}>{data.concentration_top_10.toFixed(1)}%</span>
+                    <span className={`underline decoration-dotted underline-offset-4 decoration-primary/40 ${data.concentration_top_10 > 15 ? 'text-red-500 font-medium' : ''}`}>
+                      {data.concentration_top_10.toFixed(1)}%
+                    </span>
                   </div>
                   <Progress value={data.concentration_top_10} className="h-2" />
                   <p className="text-xs text-muted-foreground mt-1">Threshold: 15%</p>
@@ -65,7 +103,9 @@ export function RiskAnalysisPanel({ data, isLoading }: RiskAnalysisPanelProps) {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span>Top 20 Borrowers</span>
-                    <span className={data.concentration_top_20 > 25 ? 'text-red-500 font-medium' : ''}>{data.concentration_top_20.toFixed(1)}%</span>
+                    <span className={`underline decoration-dotted underline-offset-4 decoration-primary/40 ${data.concentration_top_20 > 25 ? 'text-red-500 font-medium' : ''}`}>
+                      {data.concentration_top_20.toFixed(1)}%
+                    </span>
                   </div>
                   <Progress value={data.concentration_top_20} className="h-2" />
                   <p className="text-xs text-muted-foreground mt-1">Threshold: 25%</p>
@@ -75,7 +115,10 @@ export function RiskAnalysisPanel({ data, isLoading }: RiskAnalysisPanelProps) {
           </Card>
 
           {/* Sector Concentration */}
-          <Card>
+          <Card 
+            className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+            onClick={() => drilldown.openDrilldown(sectorConfig)}
+          >
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Building className="h-4 w-4" />
@@ -133,7 +176,10 @@ export function RiskAnalysisPanel({ data, isLoading }: RiskAnalysisPanelProps) {
       {/* Liquidity & Operational Risk */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Liquidity Risk */}
-        <Card>
+        <Card 
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          onClick={() => drilldown.openDrilldown(liquidityConfig)}
+        >
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-blue-500" />
@@ -145,19 +191,23 @@ export function RiskAnalysisPanel({ data, isLoading }: RiskAnalysisPanelProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Funding Gap</p>
-                  <p className={`text-xl font-bold ${data.funding_gap < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                  <p className={`text-xl font-bold underline decoration-dotted underline-offset-4 decoration-primary/40 ${data.funding_gap < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                     {formatCurrency(data.funding_gap)}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Loan-to-Deposit</p>
-                  <p className="text-xl font-bold">{data.loan_to_deposit_ratio.toFixed(1)}%</p>
+                  <p className="text-xl font-bold underline decoration-dotted underline-offset-4 decoration-primary/40">
+                    {data.loan_to_deposit_ratio.toFixed(1)}%
+                  </p>
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span>Deposit Concentration (Top 10)</span>
-                  <span>{data.deposit_concentration.toFixed(1)}%</span>
+                  <span className="underline decoration-dotted underline-offset-4 decoration-primary/40">
+                    {data.deposit_concentration.toFixed(1)}%
+                  </span>
                 </div>
                 <Progress value={data.deposit_concentration} className="h-2" />
               </div>
@@ -166,7 +216,10 @@ export function RiskAnalysisPanel({ data, isLoading }: RiskAnalysisPanelProps) {
         </Card>
 
         {/* Operational Risk */}
-        <Card>
+        <Card 
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          onClick={() => drilldown.openDrilldown(operationalConfig)}
+        >
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="h-4 w-4 text-purple-500" />
@@ -177,7 +230,9 @@ export function RiskAnalysisPanel({ data, isLoading }: RiskAnalysisPanelProps) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Fraud Incidents</p>
-                <p className="text-xl font-bold">{data.fraud_incidents}</p>
+                <p className="text-xl font-bold underline decoration-dotted underline-offset-4 decoration-primary/40">
+                  {data.fraud_incidents}
+                </p>
                 <p className="text-xs text-muted-foreground">{formatCurrency(data.fraud_amount)} total</p>
               </div>
               <div>
