@@ -15,6 +15,9 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 import { formatDate } from '@/lib/dateUtils';
+import { useDrilldown } from '@/components/drilldown/DrilldownContext';
+import { DrilldownConfig } from '@/components/drilldown/types';
+import { CollectionsDrilldown, DisbursementsDrilldown } from '@/components/drilldown/views';
 
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-GH', {
@@ -27,6 +30,33 @@ const formatCurrency = (val: number) =>
 export function DailyOperationsPanel() {
   const { data: metrics, isLoading } = useDailyMetrics();
   const { data: targets } = useTargetVsActual();
+  const drilldown = useDrilldown();
+
+  const collectionsConfig: DrilldownConfig = {
+    metricId: 'daily_collections',
+    title: "Today's Collections",
+    hasSource: true,
+    sourceDescription: 'All repayments collected today',
+    calculation: 'Sum of all repayment amounts with payment_date = today',
+    component: <CollectionsDrilldown />
+  };
+
+  const disbursementsConfig: DrilldownConfig = {
+    metricId: 'daily_disbursements',
+    title: "Today's Disbursements",
+    hasSource: true,
+    sourceDescription: 'All loans disbursed today',
+    calculation: 'Sum of disbursed_amount where disbursement_date = today',
+    component: <DisbursementsDrilldown />
+  };
+
+  const arrearsRecoveryConfig: DrilldownConfig = {
+    metricId: 'arrears_recovery',
+    title: 'Arrears Recovery',
+    hasSource: true,
+    sourceDescription: 'Payments received from loans that were in arrears',
+    calculation: 'Sum of repayments on loans with days_overdue > 0'
+  };
 
   if (isLoading) {
     return (
@@ -62,7 +92,10 @@ export function DailyOperationsPanel() {
       {/* Main KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Collections */}
-        <Card>
+        <Card 
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          onClick={() => drilldown.openDrilldown(collectionsConfig)}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
               <span>Today's Collections</span>
@@ -70,7 +103,9 @@ export function DailyOperationsPanel() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(metrics.collections_actual)}</div>
+            <div className="text-2xl font-bold underline decoration-dotted underline-offset-4 decoration-primary/40">
+              {formatCurrency(metrics.collections_actual)}
+            </div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-muted-foreground">
                 Target: {formatCurrency(metrics.collections_target)}
@@ -91,7 +126,10 @@ export function DailyOperationsPanel() {
         </Card>
 
         {/* Disbursements */}
-        <Card>
+        <Card 
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          onClick={() => drilldown.openDrilldown(disbursementsConfig)}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
               <span>Today's Disbursements</span>
@@ -99,7 +137,9 @@ export function DailyOperationsPanel() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(metrics.disbursement_actual)}</div>
+            <div className="text-2xl font-bold underline decoration-dotted underline-offset-4 decoration-primary/40">
+              {formatCurrency(metrics.disbursement_actual)}
+            </div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-muted-foreground">
                 Target: {formatCurrency(metrics.disbursement_target)}
@@ -120,7 +160,10 @@ export function DailyOperationsPanel() {
         </Card>
 
         {/* Arrears Recovery */}
-        <Card>
+        <Card 
+          className="cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
+          onClick={() => drilldown.openDrilldown(arrearsRecoveryConfig)}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
               <span>Arrears Recovery</span>
@@ -128,7 +171,9 @@ export function DailyOperationsPanel() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(metrics.arrears_recovered)}</div>
+            <div className="text-2xl font-bold underline decoration-dotted underline-offset-4 decoration-primary/40">
+              {formatCurrency(metrics.arrears_recovered)}
+            </div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-muted-foreground">
                 Total Arrears: {formatCurrency(metrics.total_arrears)}
@@ -141,6 +186,7 @@ export function DailyOperationsPanel() {
           </CardContent>
         </Card>
       </div>
+
 
       {/* Target vs Actual Table */}
       {targets && targets.length > 0 && (
