@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 import { MapPin, Check, X, Eye, Image, PenTool, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -114,7 +114,7 @@ export function FieldCollectionsList({ canVerify = false, filter = 'all' }: Fiel
               {filteredCollections?.map((collection) => (
                 <TableRow key={collection.id}>
                   <TableCell className="font-medium">
-                    {format(new Date(collection.collection_date), 'dd MMM yyyy HH:mm')}
+                    {formatDate(new Date(collection.collection_date), 'dd MMM yyyy HH:mm')}
                   </TableCell>
                   <TableCell>
                     {collection.clients 
@@ -263,7 +263,7 @@ export function FieldCollectionsList({ canVerify = false, filter = 'all' }: Fiel
                 <div>
                   <p className="text-sm text-muted-foreground">Date & Time</p>
                   <p className="font-medium">
-                    {format(new Date(selectedDetails.collection_date), 'PPpp')}
+                    {formatDate(new Date(selectedDetails.collection_date), 'PPpp')}
                   </p>
                 </div>
                 <div>

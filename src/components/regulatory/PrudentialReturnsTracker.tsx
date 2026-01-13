@@ -11,14 +11,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, differenceInDays, parseISO } from 'date-fns';
+import { formatDate, differenceInDays, parseISO } from '@/lib/dateUtils';
 
 export function PrudentialReturnsTracker() {
   const { data: returns, isLoading } = usePrudentialReturns();
 
   const handleExportCSV = () => {
     if (!returns) return;
-    exportToCSV(returns, `prudential-returns-${format(new Date(), 'yyyy-MM-dd')}`, [
+    exportToCSV(returns, `prudential-returns-${formatDate(new Date(), 'yyyy-MM-dd')}`, [
       { key: 'return_category', header: 'Category' },
       { key: 'return_name', header: 'Return Name' },
       { key: 'frequency', header: 'Frequency' },
@@ -180,10 +180,10 @@ export function PrudentialReturnsTracker() {
                       </Badge>
                     </td>
                     <td className="text-muted-foreground">
-                      {ret.last_submitted ? format(parseISO(ret.last_submitted), 'dd MMM yyyy') : '-'}
+                      {ret.last_submitted ? formatDate(parseISO(ret.last_submitted), 'dd MMM yyyy') : '-'}
                     </td>
                     <td>
-                      {format(parseISO(ret.next_due), 'dd MMM yyyy')}
+                      {formatDate(parseISO(ret.next_due), 'dd MMM yyyy')}
                     </td>
                     <td>
                       {getStatusBadge(ret.status, ret.next_due)}

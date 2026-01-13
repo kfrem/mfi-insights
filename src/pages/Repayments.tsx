@@ -1,6 +1,6 @@
 import { useRepaymentDaily } from '@/hooks/useMfiData';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, parseISO } from 'date-fns';
+import { formatDate, parseISO } from '@/lib/dateUtils';
 import { Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,7 +35,7 @@ export default function Repayments() {
 
   const chartData = repayments?.map((r) => ({
     ...r,
-    date: format(parseISO(r.payment_date), 'MMM dd'),
+    date: formatDate(parseISO(r.payment_date), 'MMM dd'),
   })) ?? [];
 
   return (
@@ -150,7 +150,7 @@ export default function Repayments() {
             <tbody>
               {[...(repayments ?? [])].reverse().map((r) => (
                 <tr key={r.payment_date}>
-                  <td className="text-sm">{format(parseISO(r.payment_date), 'MMM dd yyyy')}</td>
+                  <td className="text-sm">{formatDate(parseISO(r.payment_date), 'MMM dd yyyy')}</td>
                   <td className="text-right font-medium text-sm">{formatCurrency(r.total_amount)}</td>
                   <td className="text-right text-sm">{r.payment_count}</td>
                 </tr>

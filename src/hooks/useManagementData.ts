@@ -10,12 +10,12 @@ import type {
   DailyActivityLog,
   TargetVsActual,
 } from '@/types/management';
-import { format, subDays, startOfWeek, startOfMonth } from 'date-fns';
+import { formatDate, subDays, startOfWeek, startOfMonth } from '@/lib/dateUtils';
 
 // Mock data generators
 const generateMockDailyMetrics = (orgId: string): DailyOperationsMetrics => ({
   org_id: orgId,
-  date: format(new Date(), 'yyyy-MM-dd'),
+  date: formatDate(new Date(), 'yyyy-MM-dd'),
   collections_target: 85000,
   collections_actual: 72500,
   collections_rate: 85.3,
@@ -40,7 +40,7 @@ const generateMockCollectionsPerformance = (): CollectionsPerformance[] => {
     const target = 80000 + Math.random() * 20000;
     const actual = target * (0.75 + Math.random() * 0.35);
     data.push({
-      period: format(date, 'yyyy-MM-dd'),
+      period: formatDate(date, 'yyyy-MM-dd'),
       target: Math.round(target),
       actual: Math.round(actual),
       rate: Math.round((actual / target) * 100 * 10) / 10,
@@ -60,7 +60,7 @@ const generateMockDisbursementPerformance = (): DisbursementPerformance[] => {
     const actual = target * (0.7 + Math.random() * 0.4);
     const loanCount = Math.floor(5 + Math.random() * 10);
     data.push({
-      period: format(date, 'yyyy-MM-dd'),
+      period: formatDate(date, 'yyyy-MM-dd'),
       target: Math.round(target),
       actual: Math.round(actual),
       rate: Math.round((actual / target) * 100 * 10) / 10,

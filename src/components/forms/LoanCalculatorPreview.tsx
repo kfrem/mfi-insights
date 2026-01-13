@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Calculator, Calendar, TrendingUp, Wallet, AlertCircle, Info, AlertTriangle } from 'lucide-react';
-import { format, addDays, addWeeks, addMonths } from 'date-fns';
+import { formatDate, addDays, addWeeks, addMonths } from '@/lib/dateUtils';
 import {
   Tooltip,
   TooltipContent,
@@ -584,7 +584,7 @@ export function LoanCalculatorPreview({
                   return (
                     <TableRow key={item.paymentNo} className={item.paymentNo === 1 ? 'bg-green-50 dark:bg-green-950/20' : ''}>
                       <TableCell className="font-medium">{item.paymentNo}</TableCell>
-                      <TableCell>{format(item.dueDate, 'dd MMM yyyy')}</TableCell>
+                      <TableCell>{formatDate(item.dueDate, 'dd MMM yyyy')}</TableCell>
                       <TableCell className="text-right">{formatCurrency(item.principal)}</TableCell>
                       <TableCell className="text-right text-amber-600">{formatCurrency(item.interest)}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(item.totalPayment)}</TableCell>

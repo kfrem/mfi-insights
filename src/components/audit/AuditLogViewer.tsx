@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 import { 
   History, 
   User, 
@@ -95,7 +95,7 @@ export function AuditLogViewer() {
     const csv = [
       ['Timestamp', 'Action', 'Entity', 'Entity ID', 'User Agent'].join(','),
       ...logs.data.map(log => [
-        format(new Date(log.created_at), 'yyyy-MM-dd HH:mm:ss'),
+        formatDate(new Date(log.created_at), 'yyyy-MM-dd HH:mm:ss'),
         log.action_type,
         log.entity_type,
         log.entity_id || '',
@@ -107,7 +107,7 @@ export function AuditLogViewer() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `audit-log-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.download = `audit-log-${formatDate(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
   };
 
@@ -180,7 +180,7 @@ export function AuditLogViewer() {
               {logs.data?.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell className="font-mono text-sm">
-                    {format(new Date(log.created_at), 'dd MMM yyyy HH:mm:ss')}
+                    {formatDate(new Date(log.created_at), 'dd MMM yyyy HH:mm:ss')}
                   </TableCell>
                   <TableCell>
                     {getActionBadge(log.action_type as ActionType)}
@@ -227,7 +227,7 @@ export function AuditLogViewer() {
                 <div>
                   <p className="text-sm text-muted-foreground">Timestamp</p>
                   <p className="font-medium">
-                    {format(new Date(selectedLog.created_at), 'PPpp')}
+                    {formatDate(new Date(selectedLog.created_at), 'PPpp')}
                   </p>
                 </div>
                 <div>

@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-GH', {
@@ -28,7 +28,7 @@ export function StaffProductivityPanel() {
 
   const handleExportCSV = () => {
     if (!staff) return;
-    exportToCSV(staff, `staff-productivity-${format(new Date(), 'yyyy-MM-dd')}`, [
+    exportToCSV(staff, `staff-productivity-${formatDate(new Date(), 'yyyy-MM-dd')}`, [
       { key: 'staff_name', header: 'Staff Name' },
       { key: 'role', header: 'Role' },
       { key: 'branch', header: 'Branch' },

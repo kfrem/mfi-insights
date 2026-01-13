@@ -30,7 +30,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLoansForWorkflow, useTransitionLoanStatus, useLoanAuditTrail } from '@/hooks/useLoanWorkflow';
 import { STATUS_CONFIG, STATUS_TRANSITIONS, type LoanStatus, type LoanWithClient } from '@/types/loanWorkflow';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 import { 
   Loader2, 
   Clock, 
@@ -220,7 +220,7 @@ function AuditTrailPanel({ loanId }: { loanId: string | null }) {
               <StatusBadge status={entry.new_status as LoanStatus} />
             </div>
             <p className="text-sm text-muted-foreground">
-              {format(new Date(entry.changed_at), 'PPpp')}
+              {formatDate(new Date(entry.changed_at), 'PPpp')}
             </p>
             {entry.notes && (
               <p className="text-sm bg-muted/50 rounded p-2 mt-2">{entry.notes}</p>
@@ -371,7 +371,7 @@ export function LoanWorkflowPanel() {
                             <StatusBadge status={loan.status} />
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {format(new Date(loan.application_date), 'dd MMM yyyy')}
+                            {formatDate(new Date(loan.application_date), 'dd MMM yyyy')}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center justify-end gap-2">

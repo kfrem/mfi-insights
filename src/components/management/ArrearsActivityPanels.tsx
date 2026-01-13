@@ -14,7 +14,7 @@ import {
   CheckCircle,
   ArrowRight
 } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { formatDate, parseISO } from '@/lib/dateUtils';
 
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-GH', {
@@ -116,9 +116,9 @@ export function ArrearsTrackerPanel() {
             <div className="mt-3 pt-3 border-t flex items-center justify-between">
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span>Outstanding: {formatCurrency(a.principal_outstanding)}</span>
-                <span>Last payment: {format(parseISO(a.last_payment_date), 'dd MMM yyyy')}</span>
+                <span>Last payment: {formatDate(parseISO(a.last_payment_date), 'dd MMM yyyy')}</span>
                 {a.last_contact_date && (
-                  <span>Last contact: {format(parseISO(a.last_contact_date), 'dd MMM')}</span>
+                  <span>Last contact: {formatDate(parseISO(a.last_contact_date), 'dd MMM')}</span>
                 )}
               </div>
               <Badge variant="outline" className="flex items-center gap-1">
@@ -193,7 +193,7 @@ export function ActivityLogPanel() {
                       {activity.activity_type}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {format(parseISO(activity.timestamp), 'HH:mm')}
+                      {formatDate(parseISO(activity.timestamp), 'HH:mm')}
                     </span>
                   </div>
                   <p className="text-sm mt-1">{activity.description}</p>
