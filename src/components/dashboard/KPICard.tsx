@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { DrilldownConfig } from '@/components/drilldown/types';
+import { useDrilldown } from '@/components/drilldown/DrilldownContext';
 
 interface KPICardProps {
   title: string;
@@ -11,6 +13,7 @@ interface KPICardProps {
   trendValue?: string;
   variant?: 'default' | 'elevated';
   format?: 'currency' | 'percent' | 'number';
+  drilldownConfig?: DrilldownConfig;
 }
 
 export function KPICard({
@@ -22,7 +25,10 @@ export function KPICard({
   trendValue,
   variant = 'default',
   format = 'number',
+  drilldownConfig,
 }: KPICardProps) {
+  const drilldown = useDrilldown();
+
   const formatValue = (val: string | number): string => {
     if (typeof val === 'string') return val;
     
@@ -43,11 +49,27 @@ export function KPICard({
 
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
 
+  const handleClick = () => {
+    if (drilldownConfig) {
+      drilldown.openDrilldown(drilldownConfig);
+    }
+  };
+
+  const isClickable = !!drilldownConfig;
+
   return (
-    <div className={cn(
-      variant === 'elevated' ? 'kpi-card-elevated' : 'kpi-card',
-      'animate-fade-in'
-    )}>
+    <div 
+      className={cn(
+        variant === 'elevated' ? 'kpi-card-elevated' : 'kpi-card',
+        'animate-fade-in',
+        isClickable && 'cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all'
+      )}
+      onClick={handleClick}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={isClickable ? (e) => e.key === 'Enter' && handleClick() : undefined}
+      title={isClickable ? 'Click for details' : undefined}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1 min-w-0 flex-1">
           <p className={cn(
@@ -58,7 +80,8 @@ export function KPICard({
           </p>
           <p className={cn(
             'text-lg md:text-2xl font-semibold tracking-tight truncate',
-            variant === 'elevated' ? 'text-primary-foreground' : 'text-foreground'
+            variant === 'elevated' ? 'text-primary-foreground' : 'text-foreground',
+            isClickable && 'underline decoration-dotted underline-offset-4 decoration-primary/40'
           )}>
             {formatValue(value)}
           </p>
