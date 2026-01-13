@@ -7,6 +7,7 @@ import { OrganisationProvider } from "@/contexts/OrganisationContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { DrilldownProvider, GlobalDrilldownModal } from "@/components/drilldown";
 import ExecutiveDashboard from "./pages/ExecutiveDashboard";
 import BoardDashboard from "./pages/BoardDashboard";
 import ManagementDashboard from "./pages/ManagementDashboard";
@@ -38,39 +39,42 @@ const App = () => (
     <TooltipProvider>
       <AuthProvider>
         <OrganisationProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Routes>
-                        <Route path="/" element={<ExecutiveDashboard />} />
-                        <Route path="/board" element={<BoardDashboard />} />
-                        <Route path="/management" element={<ManagementDashboard />} />
-                        <Route path="/departments" element={<DepartmentalReports />} />
-                        <Route path="/regulatory-reports" element={<RegulatoryReports />} />
-                        <Route path="/financial-reports" element={<FinancialReports />} />
-                        <Route path="/portfolio-aging" element={<PortfolioAging />} />
-                        <Route path="/repayments" element={<Repayments />} />
-                        <Route path="/field-operations" element={<FieldOperations />} />
-                        <Route path="/data-entry" element={<DataEntry />} />
-                        <Route path="/audit-log" element={<AuditLog />} />
-                        <Route path="/sync-conflicts" element={<SyncConflicts />} />
-                        <Route path="/user-management" element={<UserManagement />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </AppLayout>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </BrowserRouter>
+          <DrilldownProvider>
+            <Toaster />
+            <Sonner />
+            <GlobalDrilldownModal />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route
+                  path="/*"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <Routes>
+                          <Route path="/" element={<ExecutiveDashboard />} />
+                          <Route path="/board" element={<BoardDashboard />} />
+                          <Route path="/management" element={<ManagementDashboard />} />
+                          <Route path="/departments" element={<DepartmentalReports />} />
+                          <Route path="/regulatory-reports" element={<RegulatoryReports />} />
+                          <Route path="/financial-reports" element={<FinancialReports />} />
+                          <Route path="/portfolio-aging" element={<PortfolioAging />} />
+                          <Route path="/repayments" element={<Repayments />} />
+                          <Route path="/field-operations" element={<FieldOperations />} />
+                          <Route path="/data-entry" element={<DataEntry />} />
+                          <Route path="/audit-log" element={<AuditLog />} />
+                          <Route path="/sync-conflicts" element={<SyncConflicts />} />
+                          <Route path="/user-management" element={<UserManagement />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </BrowserRouter>
+          </DrilldownProvider>
         </OrganisationProvider>
       </AuthProvider>
     </TooltipProvider>
