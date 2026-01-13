@@ -23,6 +23,8 @@ import AuditLog from "./pages/AuditLog";
 import SyncConflicts from "./pages/SyncConflicts";
 import UserManagement from "./pages/UserManagement";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
+import OrganisationOnboarding from "./pages/OrganisationOnboarding";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
@@ -47,7 +49,9 @@ const App = () => (
               <GlobalDrilldownModal />
               <BrowserRouter>
                 <Routes>
-                  <Route path="/login" element={<Login />} />
+                <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/onboarding" element={<ProtectedRoute requireOrg={false}><OrganisationOnboarding /></ProtectedRoute>} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route
                     path="/*"
