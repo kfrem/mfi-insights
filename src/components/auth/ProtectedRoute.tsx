@@ -13,8 +13,11 @@ export function ProtectedRoute({ children, requireOrg = true }: ProtectedRoutePr
   const { organisations, isLoading: orgLoading } = useOrganisation();
   const location = useLocation();
 
-  // Show loading while checking auth
-  if (authLoading) {
+  // Check if in demo mode (allows bypassing auth)
+  const isDemoMode = sessionStorage.getItem('mfi_demo_mode') === 'true';
+
+  // Show loading while checking auth (skip if demo mode)
+  if (!isDemoMode && authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -22,13 +25,13 @@ export function ProtectedRoute({ children, requireOrg = true }: ProtectedRoutePr
     );
   }
 
-  // Redirect to login if not authenticated
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+  // Redirect to landing if not authenticated and not in demo mode
+  if (!isDemoMode && !isAuthenticated) {
+    return <Navigate to="/welcome" replace />;
   }
 
-  // Show loading while checking organisations
-  if (requireOrg && orgLoading) {
+  // Show loading while checking organisations (skip for demo mode)
+  if (!isDemoMode && requireOrg && orgLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -37,7 +40,8 @@ export function ProtectedRoute({ children, requireOrg = true }: ProtectedRoutePr
   }
 
   // Redirect to onboarding if user has no organisations (except on onboarding page)
-  if (requireOrg && organisations.length === 0 && location.pathname !== '/onboarding') {
+  // Skip for demo mode since demo org is always available
+  if (!isDemoMode && requireOrg && organisations.length === 0 && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
 

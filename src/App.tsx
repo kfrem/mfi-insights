@@ -28,6 +28,9 @@ import Register from "./pages/Register";
 import OrganisationOnboarding from "./pages/OrganisationOnboarding";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import LandingPage from "./pages/LandingPage";
+import ActivateLicense from "./pages/ActivateLicense";
+import DemoAccess from "./pages/DemoAccess";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,10 +53,16 @@ const App = () => (
               <GlobalDrilldownModal />
               <BrowserRouter>
                 <Routes>
-                <Route path="/login" element={<Login />} />
+                  {/* Public marketing & access routes */}
+                  <Route path="/welcome" element={<LandingPage />} />
+                  <Route path="/activate" element={<ActivateLicense />} />
+                  <Route path="/demo" element={<DemoAccess />} />
+                  <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/onboarding" element={<ProtectedRoute requireOrg={false}><OrganisationOnboarding /></ProtectedRoute>} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  
+                  {/* Protected app routes */}
                   <Route
                     path="/*"
                     element={
