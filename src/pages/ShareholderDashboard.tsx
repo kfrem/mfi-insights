@@ -13,12 +13,21 @@ import {
   DollarSign,
   Calendar,
   BarChart3,
-  Users
+  Users,
+  Settings
 } from 'lucide-react';
 import { useShareholderData } from '@/hooks/useShareholderData';
 import { formatGHS } from '@/lib/utils';
 import { format } from 'date-fns';
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
+import { AddShareholderForm } from '@/components/shareholders/AddShareholderForm';
+import { RecordTransactionForm } from '@/components/shareholders/RecordTransactionForm';
+import { ProcessDividendForm } from '@/components/shareholders/ProcessDividendForm';
+import { ShareholdersList } from '@/components/shareholders/ShareholdersList';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrganisation } from '@/contexts/OrganisationContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
@@ -32,6 +41,26 @@ export default function ShareholderDashboard() {
     myPortfolioSummary,
     isLoading 
   } = useShareholderData();
+  const { user } = useAuth();
+  const { selectedOrgId } = useOrganisation();
+
+  // Check if user is admin/executive
+  const { data: userRole } = useQuery({
+    queryKey: ['user-role', selectedOrgId, user?.id],
+    queryFn: async () => {
+      if (!selectedOrgId || !user?.id) return null;
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('org_id', selectedOrgId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      return data?.role;
+    },
+    enabled: !!selectedOrgId && !!user?.id,
+  });
+
+  const isAdmin = userRole === 'ADMIN' || userRole === 'MANAGER';
 
   // Check if in demo mode
   const isDemoMode = sessionStorage.getItem('mfi_demo_mode') === 'true';
@@ -119,11 +148,20 @@ export default function ShareholderDashboard() {
             Track your investment performance, dividends, and portfolio allocation
           </p>
         </div>
-        {isDemoMode && (
-          <Badge variant="outline" className="bg-accent/10 text-accent border-accent/30">
-            Demo Portfolio
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          {isDemoMode && (
+            <Badge variant="outline" className="bg-accent/10 text-accent border-accent/30">
+              Demo Portfolio
+            </Badge>
+          )}
+          {(isAdmin || isDemoMode) && (
+            <div className="flex items-center gap-2">
+              <AddShareholderForm />
+              <RecordTransactionForm shareholders={allShareholders || []} />
+              <ProcessDividendForm shareholders={allShareholders || []} />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Key Metrics */}
@@ -290,8 +328,14 @@ export default function ShareholderDashboard() {
       </div>
 
       {/* Tabs for Dividends and Transactions */}
-      <Tabs defaultValue="dividends" className="space-y-4">
+      <Tabs defaultValue={isAdmin || isDemoMode ? 'manage' : 'dividends'} className="space-y-4">
         <TabsList>
+          {(isAdmin || isDemoMode) && (
+            <TabsTrigger value="manage" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Manage Investors
+            </TabsTrigger>
+          )}
           <TabsTrigger value="dividends" className="gap-2">
             <DollarSign className="h-4 w-4" />
             Dividend History
@@ -307,6 +351,16 @@ export default function ShareholderDashboard() {
             </TabsTrigger>
           )}
         </TabsList>
+
+        {/* Management Tab - Admin Only */}
+        {(isAdmin || isDemoMode) && (
+          <TabsContent value="manage">
+            <ShareholdersList 
+              shareholders={allShareholders || []} 
+              isLoading={isLoading} 
+            />
+          </TabsContent>
+        )}
 
         <TabsContent value="dividends" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
