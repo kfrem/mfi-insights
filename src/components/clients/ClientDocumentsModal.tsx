@@ -8,7 +8,7 @@ import { useOrganisation } from '@/contexts/OrganisationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { FileText, Download, Eye, FolderOpen, Calendar, Tag } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 import type { Client } from '@/types/mfi';
 
 const DOCUMENT_TYPES: Record<string, string> = {
@@ -157,7 +157,7 @@ export function ClientDocumentsModal({ client, open, onOpenChange }: ClientDocum
                         <span>•</span>
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {format(new Date(doc.uploaded_at), 'dd MMM yyyy')}
+                          {formatDate(new Date(doc.uploaded_at), 'dd MMM yyyy')}
                         </span>
                       </div>
                     </div>

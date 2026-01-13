@@ -14,7 +14,7 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-GH', {
@@ -52,7 +52,7 @@ export function DailyOperationsPanel() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="h-4 w-4" />
-          <span className="text-sm">{format(new Date(), 'EEEE, MMMM d, yyyy')}</span>
+          <span className="text-sm">{formatDate(new Date(), 'EEEE, MMMM d, yyyy')}</span>
         </div>
         <Badge variant="outline" className="bg-primary/10 text-primary">
           Live Dashboard

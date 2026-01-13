@@ -11,7 +11,7 @@ import type {
   IncomeQuality,
   DisbursementQuality,
 } from '@/types/financial';
-import { format, subDays, subMonths } from 'date-fns';
+import { formatDate, subDays, subMonths } from '@/lib/dateUtils';
 
 // Mock Balance Sheet
 const generateMockBalanceSheet = (orgId: string): BalanceSheet => {
@@ -74,7 +74,7 @@ const generateMockBalanceSheet = (orgId: string): BalanceSheet => {
 
   return {
     org_id: orgId,
-    report_date: format(new Date(), 'yyyy-MM-dd'),
+    report_date: formatDate(new Date(), 'yyyy-MM-dd'),
     assets,
     liabilities,
     equity,
@@ -136,7 +136,7 @@ const generateMockIncomeStatement = (orgId: string): IncomeStatement => {
 
   return {
     org_id: orgId,
-    report_date: format(new Date(), 'yyyy-MM-dd'),
+    report_date: formatDate(new Date(), 'yyyy-MM-dd'),
     period: 'yearly',
     interest_income,
     interest_expense,
@@ -156,7 +156,7 @@ const generateMockIncomeStatement = (orgId: string): IncomeStatement => {
 // Mock Financial Ratios
 const generateMockFinancialRatios = (orgId: string): FinancialRatios => ({
   org_id: orgId,
-  report_date: format(new Date(), 'yyyy-MM-dd'),
+  report_date: formatDate(new Date(), 'yyyy-MM-dd'),
   // Profitability
   net_interest_margin: 18.2,
   operational_self_sufficiency: 115.8,
@@ -195,7 +195,7 @@ const generateMockPARAgingBuckets = (orgId: string): PARAgingBuckets => {
   
   return {
     org_id: orgId,
-    report_date: format(new Date(), 'yyyy-MM-dd'),
+    report_date: formatDate(new Date(), 'yyyy-MM-dd'),
     current: {
       loan_count: 285,
       outstanding_balance: 20540000,
@@ -247,7 +247,7 @@ const generateMockPARAgingBuckets = (orgId: string): PARAgingBuckets => {
 // Mock Governance & Risk Metrics
 const generateMockGovernanceRiskMetrics = (orgId: string): GovernanceRiskMetrics => ({
   org_id: orgId,
-  report_date: format(new Date(), 'yyyy-MM-dd'),
+  report_date: formatDate(new Date(), 'yyyy-MM-dd'),
   audit_findings: {
     total_findings: 24,
     high_priority_open: 3,
@@ -277,7 +277,7 @@ const generateMockGovernanceRiskMetrics = (orgId: string): GovernanceRiskMetrics
     unreconciled_items_count: 15,
     unreconciled_items_value: 28500,
     days_unreconciled_avg: 5,
-    last_reconciliation_date: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
+    last_reconciliation_date: formatDate(subDays(new Date(), 1), 'yyyy-MM-dd'),
   },
   governance_health_score: 72,
   risk_level: 'Medium',
@@ -311,7 +311,7 @@ const generateMockCashFlowForecast = (orgId: string): CashFlowForecast => {
 
   return {
     org_id: orgId,
-    forecast_date: format(new Date(), 'yyyy-MM-dd'),
+    forecast_date: formatDate(new Date(), 'yyyy-MM-dd'),
     period: 'weekly',
     opening_cash_balance,
     inflows,
@@ -327,7 +327,7 @@ const generateMockCashFlowForecast = (orgId: string): CashFlowForecast => {
 // Mock Deposit Concentration
 const generateMockDepositConcentration = (orgId: string): DepositConcentration => ({
   org_id: orgId,
-  report_date: format(new Date(), 'yyyy-MM-dd'),
+  report_date: formatDate(new Date(), 'yyyy-MM-dd'),
   top_10_depositors_value: 1200000,
   top_10_depositors_percentage: 30.0,
   top_20_depositors_value: 1800000,
@@ -347,7 +347,7 @@ const generateMockDepositConcentration = (orgId: string): DepositConcentration =
 // Mock Income Quality
 const generateMockIncomeQuality = (orgId: string): IncomeQuality => ({
   org_id: orgId,
-  report_date: format(new Date(), 'yyyy-MM-dd'),
+  report_date: formatDate(new Date(), 'yyyy-MM-dd'),
   interest_income_cash: 5255000,
   interest_income_accrued: 680000,
   accrued_income_percentage: 11.5,
@@ -364,7 +364,7 @@ const generateMockIncomeQuality = (orgId: string): IncomeQuality => ({
 // Mock Disbursement Quality
 const generateMockDisbursementQuality = (orgId: string): DisbursementQuality => ({
   org_id: orgId,
-  report_date: format(new Date(), 'yyyy-MM-dd'),
+  report_date: formatDate(new Date(), 'yyyy-MM-dd'),
   period: 'quarterly',
   total_disbursed: 8500000,
   disbursement_count: 145,

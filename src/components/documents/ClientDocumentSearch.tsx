@@ -9,7 +9,7 @@ import { useOrganisation } from '@/contexts/OrganisationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Search, FileText, Download, Eye, Loader2, FolderOpen } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 
 const DOCUMENT_TYPES = [
   { value: 'all', label: 'All Types' },
@@ -240,7 +240,7 @@ export function ClientDocumentSearch() {
                             {formatFileSize(doc.file_size_bytes)}
                           </TableCell>
                           <TableCell className="text-muted-foreground">
-                            {format(new Date(doc.uploaded_at), 'dd MMM yyyy')}
+                            {formatDate(new Date(doc.uploaded_at), 'dd MMM yyyy')}
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">

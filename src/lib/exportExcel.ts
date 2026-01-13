@@ -1,5 +1,5 @@
 // Excel export utility for BoG regulatory reports
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 
 interface ExcelColumn<T> {
   key: keyof T | string;
@@ -171,7 +171,7 @@ export function exportCARToExcel(car: any): void {
     },
   ];
 
-  exportToExcel(sheets as any, `CAR-Report-${format(new Date(), 'yyyy-MM-dd')}`);
+  exportToExcel(sheets as any, `CAR-Report-${formatDate(new Date(), 'yyyy-MM-dd')}`);
 }
 
 export function exportLiquidityToExcel(liquidity: any): void {
@@ -227,5 +227,5 @@ export function exportLiquidityToExcel(liquidity: any): void {
     },
   ];
 
-  exportToExcel(sheets as any, `Liquidity-Report-${format(new Date(), 'yyyy-MM-dd')}`);
+  exportToExcel(sheets as any, `Liquidity-Report-${formatDate(new Date(), 'yyyy-MM-dd')}`);
 }

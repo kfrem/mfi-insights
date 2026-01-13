@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, DollarSign, TrendingDown, AlertTriangle, Download, ChevronDown, ChevronUp } from 'lucide-react';
-import { format, addDays, addWeeks, addMonths } from 'date-fns';
+import { formatDate, addDays, addWeeks, addMonths } from '@/lib/dateUtils';
 
 interface AmortizationScheduleProps {
   principal: number;
@@ -317,7 +317,7 @@ export function LoanAmortizationSchedule({
                   {displayedSchedule.map((row) => (
                     <TableRow key={row.paymentNumber} className="text-xs">
                       <TableCell className="font-medium">{row.paymentNumber}</TableCell>
-                      <TableCell>{format(row.dueDate, 'dd MMM yyyy')}</TableCell>
+                        <TableCell>{formatDate(row.dueDate, 'dd MMM yyyy')}</TableCell>
                       <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
                       <TableCell className="text-right text-amber-600">{formatCurrency(row.interestPayment)}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(row.totalPayment)}</TableCell>
@@ -362,7 +362,7 @@ export function LoanAmortizationSchedule({
                     return (
                       <TableRow key={row.paymentNumber} className="text-xs">
                         <TableCell className="font-medium">{row.paymentNumber}</TableCell>
-                        <TableCell>{format(row.dueDate, 'dd MMM yyyy')}</TableCell>
+                        <TableCell>{formatDate(row.dueDate, 'dd MMM yyyy')}</TableCell>
                         <TableCell className="text-right">{formatCurrency(row.cumulativePrincipal)}</TableCell>
                         <TableCell className="text-right text-amber-600">{formatCurrency(row.cumulativeInterest)}</TableCell>
                         <TableCell className="text-right font-medium">{formatCurrency(row.cumulativePrincipal + row.cumulativeInterest)}</TableCell>

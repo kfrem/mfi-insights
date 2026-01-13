@@ -29,7 +29,7 @@ import { useCreateLoan, useClients, useClientExposure } from '@/hooks/useMfiData
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { useTierLoanLimits } from '@/hooks/useBogTiers';
 import { Loader2, Info, AlertTriangle } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 import { LOAN_CATEGORIES, getLoanProduct, getLoanProductsByCategory } from '@/data/ghanaLoanTypes';
 import { LoanCalculatorPreview } from './LoanCalculatorPreview';
 import { LoanAffordabilityCheck } from './LoanAffordabilityCheck';
@@ -99,7 +99,7 @@ export function CreateLoanForm() {
       interest_calc_frequency: 'MONTHLY',
       interest_method: 'FLAT',
       term_months: 12,
-      disbursement_date: format(new Date(), 'yyyy-MM-dd'),
+      disbursement_date: formatDate(new Date(), 'yyyy-MM-dd'),
       purpose: '',
       repayment_frequency: 'MONTHLY',
       penalty_type: 'NONE',
@@ -849,7 +849,7 @@ export function CreateLoanForm() {
                 penaltyType={form.watch('penalty_type') || 'NONE'}
                 penaltyValue={form.watch('penalty_value') || 0}
                 penaltyGraceDays={form.watch('penalty_grace_days') || 0}
-                startDate={watchedDisbursementDate || format(new Date(), 'yyyy-MM-dd')}
+                startDate={watchedDisbursementDate || formatDate(new Date(), 'yyyy-MM-dd')}
                 showFullSchedule={true}
               />
             </div>

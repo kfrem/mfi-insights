@@ -22,7 +22,7 @@ import {
 import { usePostRepayment, useActiveLoans } from '@/hooks/useMfiData';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 
 const repaymentSchema = z.object({
   loan_id: z.string().min(1, 'Please select a loan'),
@@ -43,7 +43,7 @@ export function PostRepaymentForm() {
     defaultValues: {
       loan_id: '',
       amount: 0,
-      payment_date: format(new Date(), 'yyyy-MM-dd'),
+      payment_date: formatDate(new Date(), 'yyyy-MM-dd'),
       reference: '',
     },
   });
@@ -69,7 +69,7 @@ export function PostRepaymentForm() {
     form.reset({
       loan_id: '',
       amount: 0,
-      payment_date: format(new Date(), 'yyyy-MM-dd'),
+      payment_date: formatDate(new Date(), 'yyyy-MM-dd'),
       reference: '',
     });
   };

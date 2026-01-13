@@ -15,7 +15,7 @@ import {
   DialogFooter 
 } from '@/components/ui/dialog';
 import { Shield, User, Briefcase, Users, CreditCard, Settings } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 
 const ROLE_CONFIG: Record<UserRole, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
   ADMIN: { label: 'Admin', icon: Shield, color: 'bg-destructive text-destructive-foreground' },
@@ -136,7 +136,7 @@ export function UserRoleManager() {
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {format(new Date(user.created_at), 'MMM d, yyyy')}
+                      {formatDate(new Date(user.created_at), 'MMM d, yyyy')}
                     </TableCell>
                     <TableCell>
                       <Button

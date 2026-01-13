@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parseISO } from 'date-fns';
+import { formatDate, parseISO } from '@/lib/dateUtils';
 
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-GH', {
@@ -26,7 +26,7 @@ export function AMLReportsPanel() {
 
   const handleExportCSV = () => {
     if (!reports) return;
-    exportToCSV(reports, `aml-reports-${format(new Date(), 'yyyy-MM-dd')}`, [
+    exportToCSV(reports, `aml-reports-${formatDate(new Date(), 'yyyy-MM-dd')}`, [
       { key: 'report_id', header: 'Report ID' },
       { key: 'report_type', header: 'Type' },
       { key: 'client_name', header: 'Client Name' },
@@ -166,7 +166,7 @@ export function AMLReportsPanel() {
                     </td>
                     <td className="font-medium">{report.client_name}</td>
                     <td className="font-mono text-xs">{report.ghana_card}</td>
-                    <td>{format(parseISO(report.transaction_date), 'dd MMM yyyy')}</td>
+                    <td>{formatDate(parseISO(report.transaction_date), 'dd MMM yyyy')}</td>
                     <td className="text-right font-medium">{formatCurrency(report.transaction_amount)}</td>
                     <td className="text-sm">{report.transaction_type}</td>
                     <td>

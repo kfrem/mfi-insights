@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 
 export function NetworkStatusIndicator() {
   const { 
@@ -126,7 +126,7 @@ export function NetworkStatusIndicator() {
           {/* Last Sync Time */}
           {lastSyncTime && (
             <p className="text-xs text-muted-foreground text-center">
-              Last synced: {format(lastSyncTime, 'MMM d, h:mm a')}
+              Last synced: {formatDate(lastSyncTime, 'MMM d, h:mm a')}
             </p>
           )}
 

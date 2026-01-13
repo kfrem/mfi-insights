@@ -9,7 +9,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { format, parseISO } from 'date-fns';
+import { formatDate, parseISO } from '@/lib/dateUtils';
 
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-GH', {
@@ -49,7 +49,7 @@ export function CollectionsChart() {
 
   // Format data for chart - show last 14 days
   const chartData = collections.slice(-14).map(c => ({
-    date: format(parseISO(c.period), 'MMM d'),
+    date: formatDate(parseISO(c.period), 'MMM d'),
     target: c.target,
     actual: c.actual,
     rate: c.rate,
@@ -143,7 +143,7 @@ export function DisbursementsChart() {
 
   // Format data for chart - show last 14 days
   const chartData = disbursements.slice(-14).map(d => ({
-    date: format(parseISO(d.period), 'MMM d'),
+    date: formatDate(parseISO(d.period), 'MMM d'),
     target: d.target,
     actual: d.actual,
     loans: d.loan_count,
