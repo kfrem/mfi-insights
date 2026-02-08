@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganisation } from '@/contexts/OrganisationContext';
-import { classifyLoanByDaysOverdue, calculateProvision, calculatePARRate } from '@/lib/financial';
+import { classifyLoanByDaysOverdue, calculateProvision, calculatePARRate, calculateCAR, calculateLiquidityRatio } from '@/lib/financial';
+import { buildCARInputs, buildLiquidityInputs, type TrialBalanceRow } from '@/lib/accountingMappings';
 import type {
   CapitalAdequacyRatio,
   LiquidityRatio,
@@ -15,7 +16,7 @@ import { differenceInDays } from '@/lib/dateUtils';
 
 /**
  * Computes portfolio metrics (PAR rates, loan classification, provisions)
- * directly from the loans table. No mock data.
+ * directly from the loans table.
  */
 export function usePortfolioMetrics() {
   const { selectedOrgId } = useOrganisation();
@@ -101,16 +102,12 @@ export function usePortfolioMetrics() {
   });
 }
 
-// ─── Hooks that require accounting tables (not yet in schema) ────────────────
-//
-// CAR, Liquidity, Prudential Returns, and CTR/STR require accounting data
-// (chart of accounts, journal entries, capital structure, liquid assets)
-// that doesn't exist in the current database schema.
-//
-// These hooks return null until the accounting tables are created.
-// The pure calculation functions in src/lib/financial.ts are ready to use
-// once the data inputs are available.
+// ─── Hooks that compute from accounting data ─────────────────────────────────
 
+/**
+ * Capital Adequacy Ratio — computed from equity and asset accounts
+ * in the chart of accounts, tagged with car_category.
+ */
 export function useCapitalAdequacy() {
   const { selectedOrgId } = useOrganisation();
 
@@ -118,14 +115,46 @@ export function useCapitalAdequacy() {
     queryKey: ['capital-adequacy', selectedOrgId],
     queryFn: async (): Promise<CapitalAdequacyRatio | null> => {
       if (!selectedOrgId) return null;
-      // CAR requires Tier I/II capital components and risk-weighted asset data
-      // which need dedicated accounting tables. Return null until available.
-      return null;
+
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase.rpc('get_trial_balance', {
+        p_org_id: selectedOrgId,
+        p_as_of_date: today,
+      });
+
+      if (error) throw new Error(`Failed to load CAR data: ${error.message}`);
+      if (!data || data.length === 0) return null;
+
+      const rows = data as TrialBalanceRow[];
+      if (rows.every(r => r.balance === 0)) return null;
+
+      const { tier_one, tier_two, rwa } = buildCARInputs(rows);
+      const result = calculateCAR(tier_one, tier_two, rwa, 10);
+
+      return {
+        org_id: selectedOrgId,
+        report_date: today,
+        tier_one,
+        tier_two,
+        risk_weighted_assets: rwa,
+        adjusted_tier_one: result.adjusted_tier_one,
+        total_tier_two: result.total_tier_two,
+        capped_tier_two: result.capped_tier_two,
+        adjusted_capital_base: result.adjusted_capital_base,
+        total_rwa: result.total_rwa,
+        car_ratio: result.car_ratio,
+        is_compliant: result.is_compliant,
+        minimum_requirement: 10,
+      };
     },
     enabled: !!selectedOrgId,
   });
 }
 
+/**
+ * Liquidity Ratio — computed from liquid asset and current liability accounts
+ * tagged with liquidity_category.
+ */
 export function useLiquidityRatio() {
   const { selectedOrgId } = useOrganisation();
 
@@ -133,14 +162,42 @@ export function useLiquidityRatio() {
     queryKey: ['liquidity-ratio', selectedOrgId],
     queryFn: async (): Promise<LiquidityRatio | null> => {
       if (!selectedOrgId) return null;
-      // Liquidity ratio requires liquid asset and current liability breakdowns
-      // which need dedicated accounting tables. Return null until available.
-      return null;
+
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase.rpc('get_trial_balance', {
+        p_org_id: selectedOrgId,
+        p_as_of_date: today,
+      });
+
+      if (error) throw new Error(`Failed to load liquidity data: ${error.message}`);
+      if (!data || data.length === 0) return null;
+
+      const rows = data as TrialBalanceRow[];
+      if (rows.every(r => r.balance === 0)) return null;
+
+      const { liquid_assets, current_liabilities } = buildLiquidityInputs(rows);
+      const result = calculateLiquidityRatio(liquid_assets, current_liabilities, 10);
+
+      return {
+        org_id: selectedOrgId,
+        report_date: today,
+        liquid_assets,
+        current_liabilities,
+        total_liquid_assets: result.total_liquid_assets,
+        total_current_liabilities: result.total_current_liabilities,
+        liquidity_ratio: result.liquidity_ratio,
+        is_compliant: result.is_compliant,
+        minimum_requirement: 10,
+      };
     },
     enabled: !!selectedOrgId,
   });
 }
 
+/**
+ * Prudential Returns — tracking submission status.
+ * Returns empty array until a submissions tracking table is created.
+ */
 export function usePrudentialReturns() {
   const { selectedOrgId } = useOrganisation();
 
@@ -148,13 +205,16 @@ export function usePrudentialReturns() {
     queryKey: ['prudential-returns', selectedOrgId],
     queryFn: async (): Promise<PrudentialReturnSummary[]> => {
       if (!selectedOrgId) return [];
-      // Prudential returns tracking needs a submissions table. Return empty until available.
       return [];
     },
     enabled: !!selectedOrgId,
   });
 }
 
+/**
+ * Transaction Reports (CTR/STR) for AML compliance.
+ * Returns empty array until a dedicated AML reporting table is created.
+ */
 export function useTransactionReports() {
   const { selectedOrgId } = useOrganisation();
 
@@ -162,7 +222,6 @@ export function useTransactionReports() {
     queryKey: ['transaction-reports', selectedOrgId],
     queryFn: async (): Promise<TransactionReport[]> => {
       if (!selectedOrgId) return [];
-      // CTR/STR reports need a dedicated AML transaction reporting table. Return empty until available.
       return [];
     },
     enabled: !!selectedOrgId,
