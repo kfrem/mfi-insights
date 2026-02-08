@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,29 +10,41 @@ import { DashboardRefreshProvider } from "@/contexts/DashboardRefreshContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { DrilldownProvider, GlobalDrilldownModal } from "@/components/drilldown";
-import ExecutiveDashboard from "./pages/ExecutiveDashboard";
-import BoardDashboard from "./pages/BoardDashboard";
-import ManagementDashboard from "./pages/ManagementDashboard";
-import DepartmentalReports from "./pages/DepartmentalReports";
-import RegulatoryReports from "./pages/RegulatoryReports";
-import FinancialReports from "./pages/FinancialReports";
-import PortfolioAging from "./pages/PortfolioAging";
-import Repayments from "./pages/Repayments";
-import DataEntry from "./pages/DataEntry";
-import FieldOperations from "./pages/FieldOperations";
-import AuditLog from "./pages/AuditLog";
-import SyncConflicts from "./pages/SyncConflicts";
-import UserManagement from "./pages/UserManagement";
-import Settings from "./pages/Settings";
-import ShareholderDashboard from "./pages/ShareholderDashboard";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import OrganisationOnboarding from "./pages/OrganisationOnboarding";
-import ResetPassword from "./pages/ResetPassword";
-import NotFound from "./pages/NotFound";
-import LandingPage from "./pages/LandingPage";
-import ActivateLicense from "./pages/ActivateLicense";
-import DemoAccess from "./pages/DemoAccess";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Loader2 } from "lucide-react";
+
+// Lazy-loaded route components for code splitting
+const ExecutiveDashboard = lazy(() => import("./pages/ExecutiveDashboard"));
+const BoardDashboard = lazy(() => import("./pages/BoardDashboard"));
+const ManagementDashboard = lazy(() => import("./pages/ManagementDashboard"));
+const DepartmentalReports = lazy(() => import("./pages/DepartmentalReports"));
+const RegulatoryReports = lazy(() => import("./pages/RegulatoryReports"));
+const FinancialReports = lazy(() => import("./pages/FinancialReports"));
+const PortfolioAging = lazy(() => import("./pages/PortfolioAging"));
+const Repayments = lazy(() => import("./pages/Repayments"));
+const DataEntry = lazy(() => import("./pages/DataEntry"));
+const FieldOperations = lazy(() => import("./pages/FieldOperations"));
+const AuditLog = lazy(() => import("./pages/AuditLog"));
+const SyncConflicts = lazy(() => import("./pages/SyncConflicts"));
+const UserManagement = lazy(() => import("./pages/UserManagement"));
+const Settings = lazy(() => import("./pages/Settings"));
+const ShareholderDashboard = lazy(() => import("./pages/ShareholderDashboard"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const OrganisationOnboarding = lazy(() => import("./pages/OrganisationOnboarding"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const ActivateLicense = lazy(() => import("./pages/ActivateLicense"));
+const DemoAccess = lazy(() => import("./pages/DemoAccess"));
+
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,62 +56,70 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <OrganisationProvider>
-          <DashboardRefreshProvider>
-            <DrilldownProvider>
-              <Toaster />
-              <Sonner />
-              <GlobalDrilldownModal />
-              <BrowserRouter>
-                <Routes>
-                  {/* Public marketing & access routes */}
-                  <Route path="/welcome" element={<LandingPage />} />
-                  <Route path="/activate" element={<ActivateLicense />} />
-                  <Route path="/demo" element={<DemoAccess />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/onboarding" element={<ProtectedRoute requireOrg={false}><OrganisationOnboarding /></ProtectedRoute>} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  
-                  {/* Protected app routes */}
-                  <Route
-                    path="/*"
-                    element={
-                      <ProtectedRoute>
-                        <AppLayout>
-                          <Routes>
-                            <Route path="/" element={<ExecutiveDashboard />} />
-                            <Route path="/board" element={<BoardDashboard />} />
-                            <Route path="/shareholders" element={<ShareholderDashboard />} />
-                            <Route path="/management" element={<ManagementDashboard />} />
-                            <Route path="/departments" element={<DepartmentalReports />} />
-                            <Route path="/regulatory-reports" element={<RegulatoryReports />} />
-                            <Route path="/financial-reports" element={<FinancialReports />} />
-                            <Route path="/portfolio-aging" element={<PortfolioAging />} />
-                            <Route path="/repayments" element={<Repayments />} />
-                            <Route path="/field-operations" element={<FieldOperations />} />
-                            <Route path="/data-entry" element={<DataEntry />} />
-                            <Route path="/audit-log" element={<AuditLog />} />
-                            <Route path="/sync-conflicts" element={<SyncConflicts />} />
-                            <Route path="/user-management" element={<UserManagement />} />
-                            <Route path="/settings" element={<Settings />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Routes>
-                        </AppLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                </Routes>
-              </BrowserRouter>
-            </DrilldownProvider>
-          </DashboardRefreshProvider>
-        </OrganisationProvider>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <OrganisationProvider>
+            <DashboardRefreshProvider>
+              <DrilldownProvider>
+                <Toaster />
+                <Sonner />
+                <GlobalDrilldownModal />
+                <BrowserRouter>
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      {/* Public marketing & access routes */}
+                      <Route path="/welcome" element={<LandingPage />} />
+                      <Route path="/activate" element={<ActivateLicense />} />
+                      <Route path="/demo" element={<DemoAccess />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/onboarding" element={<ProtectedRoute requireOrg={false}><OrganisationOnboarding /></ProtectedRoute>} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
+
+                      {/* Protected app routes */}
+                      <Route
+                        path="/*"
+                        element={
+                          <ProtectedRoute>
+                            <AppLayout>
+                              <ErrorBoundary>
+                                <Suspense fallback={<PageLoader />}>
+                                  <Routes>
+                                    <Route path="/" element={<ExecutiveDashboard />} />
+                                    <Route path="/board" element={<BoardDashboard />} />
+                                    <Route path="/shareholders" element={<ShareholderDashboard />} />
+                                    <Route path="/management" element={<ManagementDashboard />} />
+                                    <Route path="/departments" element={<DepartmentalReports />} />
+                                    <Route path="/regulatory-reports" element={<RegulatoryReports />} />
+                                    <Route path="/financial-reports" element={<FinancialReports />} />
+                                    <Route path="/portfolio-aging" element={<PortfolioAging />} />
+                                    <Route path="/repayments" element={<Repayments />} />
+                                    <Route path="/field-operations" element={<FieldOperations />} />
+                                    <Route path="/data-entry" element={<DataEntry />} />
+                                    <Route path="/audit-log" element={<AuditLog />} />
+                                    <Route path="/sync-conflicts" element={<SyncConflicts />} />
+                                    <Route path="/user-management" element={<UserManagement />} />
+                                    <Route path="/settings" element={<Settings />} />
+                                    <Route path="*" element={<NotFound />} />
+                                  </Routes>
+                                </Suspense>
+                              </ErrorBoundary>
+                            </AppLayout>
+                          </ProtectedRoute>
+                        }
+                      />
+                    </Routes>
+                  </Suspense>
+                </BrowserRouter>
+              </DrilldownProvider>
+            </DashboardRefreshProvider>
+          </OrganisationProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

@@ -60,9 +60,9 @@ export function formatDate(date: Date, pattern: string): string {
   // Seconds
   result = result.replace('ss', pad(seconds));
   
-  // AM/PM
+  // AM/PM — use word boundary to avoid matching 'a' in month names like 'Jan'
   const ampm = hours >= 12 ? 'PM' : 'AM';
-  result = result.replace('a', ampm.toLowerCase());
+  result = result.replace(/\ba\b/, ampm.toLowerCase());
   
   return result;
 }

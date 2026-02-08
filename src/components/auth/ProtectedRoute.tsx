@@ -13,8 +13,8 @@ export function ProtectedRoute({ children, requireOrg = true }: ProtectedRoutePr
   const { organisations, isLoading: orgLoading } = useOrganisation();
   const location = useLocation();
 
-  // Check if in demo mode (allows bypassing auth)
-  const isDemoMode = sessionStorage.getItem('mfi_demo_mode') === 'true';
+  // Demo mode only allowed in development builds — production requires real auth
+  const isDemoMode = import.meta.env.DEV && sessionStorage.getItem('mfi_demo_mode') === 'true';
 
   // Show loading while checking auth (skip if demo mode)
   if (!isDemoMode && authLoading) {
@@ -40,7 +40,6 @@ export function ProtectedRoute({ children, requireOrg = true }: ProtectedRoutePr
   }
 
   // Redirect to onboarding if user has no organisations (except on onboarding page)
-  // Skip for demo mode since demo org is always available
   if (!isDemoMode && requireOrg && organisations.length === 0 && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }

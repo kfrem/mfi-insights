@@ -16,6 +16,12 @@ export default function DemoAccess() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Demo mode is only available in development builds
+    if (!import.meta.env.DEV) {
+      navigate('/welcome');
+      return;
+    }
+
     // Mark session as demo mode
     sessionStorage.setItem('mfi_demo_mode', 'true');
 
