@@ -6,9 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Building2, Key, ArrowLeft, Loader2, CheckCircle, Shield } from 'lucide-react';
-
-// In production, this would validate against a backend
-const VALID_LICENSE_CODES = ['MFI-2024-TRIAL', 'MFI-2024-STARTER', 'MFI-2024-PRO', 'MFI-2024-ENTERPRISE'];
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ActivateLicense() {
   const [licenseCode, setLicenseCode] = useState('');
@@ -22,22 +20,38 @@ export default function ActivateLicense() {
     setError(null);
     setIsValidating(true);
 
-    // Simulate validation delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const normalizedCode = licenseCode.trim().toUpperCase();
 
-    const normalizedCode = licenseCode.trim().toUpperCase();
-    
-    if (VALID_LICENSE_CODES.includes(normalizedCode)) {
-      setIsValid(true);
-      // Store the license code for the onboarding flow
-      sessionStorage.setItem('mfi_license_code', normalizedCode);
-      
-      // Wait a moment to show success, then redirect to registration
-      setTimeout(() => {
-        navigate('/register');
-      }, 1500);
-    } else {
-      setError('Invalid license code. Please check your code and try again.');
+      const { data, error: rpcError } = await supabase.rpc('validate_license_key', {
+        license_code: normalizedCode,
+      });
+
+      if (rpcError) {
+        setError('Unable to validate license. Please try again later.');
+        setIsValidating(false);
+        return;
+      }
+
+      const result = data as { valid: boolean; error?: string; tier?: string; max_users?: number; valid_days?: number };
+
+      if (result.valid) {
+        setIsValid(true);
+        // Store license info for the onboarding/registration flow
+        sessionStorage.setItem('mfi_license_code', normalizedCode);
+        sessionStorage.setItem('mfi_license_tier', result.tier ?? '');
+        sessionStorage.setItem('mfi_license_max_users', String(result.max_users ?? 0));
+        sessionStorage.setItem('mfi_license_valid_days', String(result.valid_days ?? 0));
+
+        setTimeout(() => {
+          navigate('/register');
+        }, 1500);
+      } else {
+        setError(result.error ?? 'Invalid license code.');
+        setIsValidating(false);
+      }
+    } catch {
+      setError('Network error. Please check your connection and try again.');
       setIsValidating(false);
     }
   };
@@ -80,7 +94,7 @@ export default function ActivateLicense() {
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
-          
+
           <div className="flex justify-center mb-4">
             <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Key className="h-7 w-7 text-white" />
@@ -98,7 +112,7 @@ export default function ActivateLicense() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="license">License Code</Label>
               <Input
@@ -115,7 +129,7 @@ export default function ActivateLicense() {
                 Format: MFI-YEAR-PLAN (e.g., MFI-2024-PRO)
               </p>
             </div>
-            
+
             <Button type="submit" className="w-full gap-2" disabled={isValidating || !licenseCode.trim()}>
               {isValidating ? (
                 <>
@@ -136,9 +150,9 @@ export default function ActivateLicense() {
             <p className="text-xs text-muted-foreground mb-3">
               Contact your MFI Pro representative to obtain a license code, or try our demo first.
             </p>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="w-full"
               onClick={() => navigate('/demo')}
             >
