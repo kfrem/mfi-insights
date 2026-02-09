@@ -115,14 +115,23 @@ export default function LandingPage() {
                 <Play className="h-5 w-5" />
                 Try Live Demo
               </Button>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 variant="outline"
                 className="border-white/30 text-white hover:bg-white/10 hover:text-white gap-2 text-base"
                 onClick={() => navigate('/activate')}
               >
                 <Key className="h-5 w-5" />
                 Activate License
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white/30 text-white hover:bg-white/10 hover:text-white gap-2 text-base"
+                onClick={() => navigate('/sales')}
+              >
+                <Globe className="h-5 w-5" />
+                Other Countries
               </Button>
             </div>
           </div>

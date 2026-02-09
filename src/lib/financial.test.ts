@@ -11,7 +11,13 @@ import {
   assessAffordability,
   calculatePARRate,
   formatGHS,
+  classifyLoan,
+  calculateProvisionFromConfig,
+  formatCurrency,
 } from './financial';
+import { ghanaConfig } from './regulatory/ghana';
+import { bceaoConfig } from './regulatory/bceao';
+import { kenyaConfig } from './regulatory/kenya';
 import type {
   TierOneCapital,
   TierTwoCapital,
@@ -453,5 +459,91 @@ describe('BOG_PROVISION_RATES', () => {
     expect(BOG_PROVISION_RATES.Substandard).toBe(0.25);
     expect(BOG_PROVISION_RATES.Doubtful).toBe(0.50);
     expect(BOG_PROVISION_RATES.Loss).toBe(1.00);
+  });
+});
+
+// ─── Config-driven classification (multi-country) ───────────────────────────
+
+describe('classifyLoan (config-driven)', () => {
+  it('classifies correctly with Ghana/BoG buckets', () => {
+    const buckets = ghanaConfig.loanClassification.buckets;
+    expect(classifyLoan(0, buckets).name).toBe('Current');
+    expect(classifyLoan(15, buckets).name).toBe('OLEM');
+    expect(classifyLoan(60, buckets).name).toBe('Substandard');
+    expect(classifyLoan(120, buckets).name).toBe('Doubtful');
+    expect(classifyLoan(200, buckets).name).toBe('Loss');
+  });
+
+  it('classifies correctly with BCEAO buckets', () => {
+    const buckets = bceaoConfig.loanClassification.buckets;
+    expect(classifyLoan(0, buckets).name).toBe('Sain');
+    expect(classifyLoan(45, buckets).name).toBe('Sensible');
+    expect(classifyLoan(150, buckets).name).toBe('Impayé');
+    expect(classifyLoan(300, buckets).name).toBe('Douteux');
+    expect(classifyLoan(400, buckets).name).toBe('Perte');
+  });
+
+  it('classifies correctly with Kenya/CBK buckets', () => {
+    const buckets = kenyaConfig.loanClassification.buckets;
+    expect(classifyLoan(10, buckets).name).toBe('Normal');
+    expect(classifyLoan(60, buckets).name).toBe('Watch');
+    expect(classifyLoan(120, buckets).name).toBe('Substandard');
+    expect(classifyLoan(250, buckets).name).toBe('Doubtful');
+    expect(classifyLoan(400, buckets).name).toBe('Loss');
+  });
+});
+
+describe('calculateProvisionFromConfig (config-driven)', () => {
+  it('uses Ghana provision rates', () => {
+    const buckets = ghanaConfig.loanClassification.buckets;
+    const result = calculateProvisionFromConfig(100_000, 15, buckets);
+    expect(result.bucket.name).toBe('OLEM');
+    expect(result.provisionAmount).toBe(5_000); // 5% of 100k
+  });
+
+  it('uses BCEAO provision rates (0% for Sain)', () => {
+    const buckets = bceaoConfig.loanClassification.buckets;
+    const result = calculateProvisionFromConfig(100_000, 0, buckets);
+    expect(result.bucket.name).toBe('Sain');
+    expect(result.provisionAmount).toBe(0); // 0% for current/sain
+  });
+
+  it('uses Kenya provision rates (3% for Watch)', () => {
+    const buckets = kenyaConfig.loanClassification.buckets;
+    const result = calculateProvisionFromConfig(100_000, 60, buckets);
+    expect(result.bucket.name).toBe('Watch');
+    expect(result.provisionAmount).toBe(3_000); // 3% of 100k
+  });
+});
+
+describe('assessAffordability with custom thresholds', () => {
+  it('uses BCEAO thresholds (33% DTI approved vs 30% Ghana)', () => {
+    // DTI = 32%, Safety Cushion = 28%
+    // Ghana: CAUTION (32 > 30)
+    // BCEAO: APPROVED (32 <= 33)
+    const ghResult = assessAffordability(5000, 1000, 1600);
+    expect(ghResult.result).toBe('CAUTION');
+
+    const bceaoResult = assessAffordability(5000, 1000, 1600, bceaoConfig.affordability);
+    expect(bceaoResult.result).toBe('APPROVED');
+  });
+});
+
+describe('formatCurrency (config-driven)', () => {
+  it('formats GHS correctly', () => {
+    const result = formatCurrency(1234.56, ghanaConfig.currency);
+    expect(result).toContain('1,234.56');
+  });
+
+  it('formats XOF without decimals', () => {
+    const result = formatCurrency(5000, bceaoConfig.currency);
+    expect(result).toContain('5');
+    // XOF has 0 decimal digits
+    expect(result).not.toContain('.00');
+  });
+
+  it('formats KES correctly', () => {
+    const result = formatCurrency(75000.50, kenyaConfig.currency);
+    expect(result).toContain('75,000.50');
   });
 });

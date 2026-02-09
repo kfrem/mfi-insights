@@ -1,6 +1,9 @@
 /**
  * Pure financial calculation functions for MFI regulatory and loan calculations.
  * These are extracted from hooks/components so they can be unit tested.
+ *
+ * Functions accept an optional RegulatoryConfig for multi-country support.
+ * When no config is provided, Ghana/BoG defaults are used for backward compatibility.
  */
 
 import type {
@@ -10,6 +13,7 @@ import type {
   LiquidAssets,
   CurrentLiabilities,
 } from '@/types/regulatory';
+import type { ClassificationBucket, AffordabilityThresholds, CurrencyConfig } from '@/lib/regulatory/types';
 
 // ─── Capital Adequacy Ratio (CAR) ────────────────────────────────────────────
 
@@ -113,7 +117,9 @@ export function calculateLiquidityRatio(
   };
 }
 
-// ─── BoG Loan Classification & Provisioning ──────────────────────────────────
+// ─── Loan Classification & Provisioning ──────────────────────────────────────
+// Ghana/BoG defaults kept for backward compatibility.
+// Use classifyLoan() and calculateProvisionFromConfig() for multi-country support.
 
 export type BogBucket = 'Current' | 'OLEM' | 'Substandard' | 'Doubtful' | 'Loss';
 
@@ -125,6 +131,7 @@ export const BOG_PROVISION_RATES: Record<BogBucket, number> = {
   Loss: 1.00,
 };
 
+/** @deprecated Use classifyLoan() with a RegulatoryConfig for multi-country support */
 export function classifyLoanByDaysOverdue(daysOverdue: number): BogBucket {
   if (daysOverdue <= 0) return 'Current';
   if (daysOverdue <= 30) return 'OLEM';
@@ -133,8 +140,34 @@ export function classifyLoanByDaysOverdue(daysOverdue: number): BogBucket {
   return 'Loss';
 }
 
+/** @deprecated Use calculateProvisionFromConfig() for multi-country support */
 export function calculateProvision(outstandingBalance: number, bucket: BogBucket): number {
   return outstandingBalance * BOG_PROVISION_RATES[bucket];
+}
+
+// ─── Config-driven classification & provisioning ────────────────────────────
+
+export function classifyLoan(
+  daysOverdue: number,
+  buckets: ClassificationBucket[],
+): ClassificationBucket {
+  // Buckets must be sorted by daysOverdueMin ascending
+  const sorted = [...buckets].sort((a, b) => a.daysOverdueMin - b.daysOverdueMin);
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    if (daysOverdue >= sorted[i].daysOverdueMin) {
+      return sorted[i];
+    }
+  }
+  return sorted[0];
+}
+
+export function calculateProvisionFromConfig(
+  outstandingBalance: number,
+  daysOverdue: number,
+  buckets: ClassificationBucket[],
+): { bucket: ClassificationBucket; provisionAmount: number } {
+  const bucket = classifyLoan(daysOverdue, buckets);
+  return { bucket, provisionAmount: outstandingBalance * bucket.provisionRate };
 }
 
 // ─── Interest Calculations ───────────────────────────────────────────────────
@@ -181,16 +214,24 @@ export function assessAffordability(
   monthlyIncome: number,
   monthlyExpenses: number,
   monthlyRepayment: number,
+  thresholds?: AffordabilityThresholds,
 ): { dti: number; safetyCushion: number; result: AffordabilityResult } {
+  const t = thresholds ?? {
+    approvedMaxDTI: 30,
+    approvedMinSafetyCushion: 20,
+    cautionMaxDTI: 40,
+    cautionMinSafetyCushion: 10,
+  };
+
   const disposableIncome = monthlyIncome - monthlyExpenses;
   const dti = monthlyIncome === 0 ? 100 : (monthlyRepayment / monthlyIncome) * 100;
   const netDisposable = disposableIncome - monthlyRepayment;
   const safetyCushion = monthlyIncome === 0 ? 0 : (netDisposable / monthlyIncome) * 100;
 
   let result: AffordabilityResult;
-  if (dti <= 30 && safetyCushion >= 20) {
+  if (dti <= t.approvedMaxDTI && safetyCushion >= t.approvedMinSafetyCushion) {
     result = 'APPROVED';
-  } else if (dti <= 40 && safetyCushion >= 10) {
+  } else if (dti <= t.cautionMaxDTI && safetyCushion >= t.cautionMinSafetyCushion) {
     result = 'CAUTION';
   } else {
     result = 'REJECTED';
@@ -211,11 +252,21 @@ export function calculatePARRate(
 
 // ─── Currency Formatting ─────────────────────────────────────────────────────
 
+/** @deprecated Use formatCurrency() with a CurrencyConfig for multi-country support */
 export function formatGHS(amount: number): string {
   return new Intl.NumberFormat('en-GH', {
     style: 'currency',
     currency: 'GHS',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+export function formatCurrency(amount: number, currencyConfig: CurrencyConfig): string {
+  return new Intl.NumberFormat(currencyConfig.locale, {
+    style: 'currency',
+    currency: currencyConfig.code,
+    minimumFractionDigits: currencyConfig.decimalDigits,
+    maximumFractionDigits: currencyConfig.decimalDigits,
   }).format(amount);
 }

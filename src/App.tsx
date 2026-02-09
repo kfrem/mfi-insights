@@ -7,11 +7,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { OrganisationProvider } from "@/contexts/OrganisationContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DashboardRefreshProvider } from "@/contexts/DashboardRefreshContext";
+import { RegulatoryProvider } from "@/contexts/RegulatoryContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { DrilldownProvider, GlobalDrilldownModal } from "@/components/drilldown";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Loader2 } from "lucide-react";
+import '@/lib/i18n'; // Initialize i18n
 
 // Lazy-loaded route components for code splitting
 const ExecutiveDashboard = lazy(() => import("./pages/ExecutiveDashboard"));
@@ -37,6 +39,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
 const ActivateLicense = lazy(() => import("./pages/ActivateLicense"));
 const DemoAccess = lazy(() => import("./pages/DemoAccess"));
+const SalesDemo = lazy(() => import("./pages/SalesDemo"));
 
 function PageLoader() {
   return (
@@ -59,64 +62,68 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <OrganisationProvider>
-            <DashboardRefreshProvider>
-              <DrilldownProvider>
-                <Toaster />
-                <Sonner />
-                <GlobalDrilldownModal />
-                <BrowserRouter>
-                  <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                      {/* Public marketing & access routes */}
-                      <Route path="/welcome" element={<LandingPage />} />
-                      <Route path="/activate" element={<ActivateLicense />} />
-                      <Route path="/demo" element={<DemoAccess />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      <Route path="/onboarding" element={<ProtectedRoute requireOrg={false}><OrganisationOnboarding /></ProtectedRoute>} />
-                      <Route path="/reset-password" element={<ResetPassword />} />
+        <RegulatoryProvider>
+          <AuthProvider>
+            <OrganisationProvider>
+              <DashboardRefreshProvider>
+                <DrilldownProvider>
+                  <Toaster />
+                  <Sonner />
+                  <GlobalDrilldownModal />
+                  <BrowserRouter>
+                    <Suspense fallback={<PageLoader />}>
+                      <Routes>
+                        {/* Public marketing & access routes */}
+                        <Route path="/welcome" element={<LandingPage />} />
+                        <Route path="/activate" element={<ActivateLicense />} />
+                        <Route path="/sales" element={<SalesDemo />} />
+                        <Route path="/demo" element={<DemoAccess />} />
+                        <Route path="/demo-access" element={<DemoAccess />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="/onboarding" element={<ProtectedRoute requireOrg={false}><OrganisationOnboarding /></ProtectedRoute>} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
 
-                      {/* Protected app routes */}
-                      <Route
-                        path="/*"
-                        element={
-                          <ProtectedRoute>
-                            <AppLayout>
-                              <ErrorBoundary>
-                                <Suspense fallback={<PageLoader />}>
-                                  <Routes>
-                                    <Route path="/" element={<ExecutiveDashboard />} />
-                                    <Route path="/board" element={<BoardDashboard />} />
-                                    <Route path="/shareholders" element={<ShareholderDashboard />} />
-                                    <Route path="/management" element={<ManagementDashboard />} />
-                                    <Route path="/departments" element={<DepartmentalReports />} />
-                                    <Route path="/regulatory-reports" element={<RegulatoryReports />} />
-                                    <Route path="/financial-reports" element={<FinancialReports />} />
-                                    <Route path="/portfolio-aging" element={<PortfolioAging />} />
-                                    <Route path="/repayments" element={<Repayments />} />
-                                    <Route path="/field-operations" element={<FieldOperations />} />
-                                    <Route path="/data-entry" element={<DataEntry />} />
-                                    <Route path="/audit-log" element={<AuditLog />} />
-                                    <Route path="/sync-conflicts" element={<SyncConflicts />} />
-                                    <Route path="/user-management" element={<UserManagement />} />
-                                    <Route path="/settings" element={<Settings />} />
-                                    <Route path="*" element={<NotFound />} />
-                                  </Routes>
-                                </Suspense>
-                              </ErrorBoundary>
-                            </AppLayout>
-                          </ProtectedRoute>
-                        }
-                      />
-                    </Routes>
-                  </Suspense>
-                </BrowserRouter>
-              </DrilldownProvider>
-            </DashboardRefreshProvider>
-          </OrganisationProvider>
-        </AuthProvider>
+                        {/* Protected app routes */}
+                        <Route
+                          path="/*"
+                          element={
+                            <ProtectedRoute>
+                              <AppLayout>
+                                <ErrorBoundary>
+                                  <Suspense fallback={<PageLoader />}>
+                                    <Routes>
+                                      <Route path="/" element={<ExecutiveDashboard />} />
+                                      <Route path="/board" element={<BoardDashboard />} />
+                                      <Route path="/shareholders" element={<ShareholderDashboard />} />
+                                      <Route path="/management" element={<ManagementDashboard />} />
+                                      <Route path="/departments" element={<DepartmentalReports />} />
+                                      <Route path="/regulatory-reports" element={<RegulatoryReports />} />
+                                      <Route path="/financial-reports" element={<FinancialReports />} />
+                                      <Route path="/portfolio-aging" element={<PortfolioAging />} />
+                                      <Route path="/repayments" element={<Repayments />} />
+                                      <Route path="/field-operations" element={<FieldOperations />} />
+                                      <Route path="/data-entry" element={<DataEntry />} />
+                                      <Route path="/audit-log" element={<AuditLog />} />
+                                      <Route path="/sync-conflicts" element={<SyncConflicts />} />
+                                      <Route path="/user-management" element={<UserManagement />} />
+                                      <Route path="/settings" element={<Settings />} />
+                                      <Route path="*" element={<NotFound />} />
+                                    </Routes>
+                                  </Suspense>
+                                </ErrorBoundary>
+                              </AppLayout>
+                            </ProtectedRoute>
+                          }
+                        />
+                      </Routes>
+                    </Suspense>
+                  </BrowserRouter>
+                </DrilldownProvider>
+              </DashboardRefreshProvider>
+            </OrganisationProvider>
+          </AuthProvider>
+        </RegulatoryProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>

@@ -102,9 +102,18 @@ MFI Clarity is approximately **85% complete** for a production market launch. Th
 
 ---
 
-## 4. LOW PRIORITY — Post-Launch Improvements
+## 4. MULTI-COUNTRY EXPANSION — Completed Architecture
 
-- [ ] **Multi-language support (i18n)** — Ghanaian MFIs may need Twi, Ewe, or Ga interfaces.
+- [x] **Regulatory configuration architecture** — Pluggable `RegulatoryConfig` type with country-specific configs for Ghana (BoG), WAEMU/BCEAO (francophone), and Kenya (CBK). New countries can be added by creating a single config file.
+- [x] **Config-driven financial calculations** — `classifyLoan()`, `calculateProvisionFromConfig()`, `assessAffordability()`, `formatCurrency()` all accept regulatory config for multi-country support. Legacy BoG functions preserved for backward compatibility.
+- [x] **i18n (English + French)** — `react-i18next` initialized with English and French translations covering all major UI sections. Language auto-switches with country selection.
+- [x] **Sales demo page** — `/sales` route with interactive country selector, regulatory framework comparison, classification bucket preview, institution tier cards, and bilingual feature showcase. Designed for pitching to potential buyers.
+- [x] **RegulatoryContext** — React context providing `config`, `formatCurrency`, `formatCurrencyCompact`, and `setCountry()` throughout the app.
+- [ ] **Per-country chart of accounts** — Current BoG-aligned chart of accounts needs parameterization per country.
+- [ ] **Component-level i18n migration** — Core UI uses hardcoded English strings; needs systematic migration to `useTranslation()` calls.
+
+## 5. LOW PRIORITY — Post-Launch Improvements
+
 - [ ] **Advanced analytics** — Trend analysis, predictive PAR modeling, peer benchmarking.
 - [ ] **API for third-party integrations** — Mobile money (MTN MoMo, Vodafone Cash), core banking, credit bureaus.
 - [ ] **White-labeling** — Allow MFIs to customize branding, colors, and logos.
@@ -119,7 +128,7 @@ MFI Clarity is approximately **85% complete** for a production market launch. Th
 | `npm run build` | **PASS** | 676 KB initial bundle (code-split) |
 | `npm run lint` | **PASS** | ESLint configured and passing |
 | `npm audit` | **2 dev-only** | Remaining issues in esbuild/vite (not shipped) |
-| Tests | **123 PASS** | 48 financial + 19 date utils + 27 offlineDb + 22 syncService + 7 offlineCounts |
+| Tests | **133 PASS** | 58 financial + 19 date utils + 27 offlineDb + 22 syncService + 7 offlineCounts |
 | TypeScript | **PASS** | No type errors in build |
 | PWA | **CONFIGURED** | Service worker + manifest generated |
 | RLS Audit | **PASS** | All 17 tables org-scoped with RBAC |
