@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { getExternalSupabase } from '@/integrations/external-supabase/client';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,8 +49,11 @@ export default function OrganisationOnboarding() {
     setError(null);
 
     try {
+      // Use the external client (which has the authenticated session)
+      const client = getExternalSupabase() || supabase;
+
       // 1. Create the organisation
-      const { data: orgData, error: orgError } = await supabase
+      const { data: orgData, error: orgError } = await client
         .from('organisations')
         .insert({
           name: formData.name,
@@ -74,7 +78,7 @@ export default function OrganisationOnboarding() {
       const orgId = orgData.org_id;
 
       // 2. Add user to the organisation
-      const { error: membershipError } = await supabase
+      const { error: membershipError } = await client
         .from('user_organizations')
         .insert({
           user_id: user.id,
@@ -84,7 +88,7 @@ export default function OrganisationOnboarding() {
       if (membershipError) throw membershipError;
 
       // 3. Assign ADMIN role to the creating user
-      const { error: roleError } = await supabase
+      const { error: roleError } = await client
         .from('user_roles')
         .insert({
           user_id: user.id,
@@ -95,7 +99,7 @@ export default function OrganisationOnboarding() {
       if (roleError) throw roleError;
 
       // 4. Create default organisation settings
-      const { error: settingsError } = await supabase
+      const { error: settingsError } = await client
         .from('organisation_settings')
         .insert({
           org_id: orgId,
