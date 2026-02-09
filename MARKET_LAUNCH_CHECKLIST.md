@@ -30,7 +30,7 @@ MFI Clarity is approximately **85% complete** for a production market launch. Th
 - [x] **Set up test framework** — Vitest configured with jsdom environment.
 - [x] **Unit tests for financial calculations** — 48 tests covering CAR, liquidity, BoG classification, provisioning, interest, affordability, PAR rates, currency formatting.
 - [x] **Unit tests for BoG classification logic** — 6 dedicated tests for Current/OLEM/Substandard/Doubtful/Loss bucketing.
-- [ ] **Unit tests for offline sync & conflict resolution** — IndexedDB sync queue and conflict detection still untested.
+- [x] **Unit tests for offline sync & conflict resolution** — 56 tests: offlineDb (27), syncService (22), offlineCounts (7). Covers IndexedDB CRUD, dependency-ordered sync, conflict detection, retry logic, ID resolution.
 - [ ] **Integration tests for auth flows** — Login, registration, password reset, protected route enforcement.
 - [ ] **E2E tests for critical paths** — Loan creation → disbursement → repayment → classification. Consider Playwright or Cypress.
 
@@ -119,7 +119,7 @@ MFI Clarity is approximately **85% complete** for a production market launch. Th
 | `npm run build` | **PASS** | 676 KB initial bundle (code-split) |
 | `npm run lint` | **PASS** | ESLint configured and passing |
 | `npm audit` | **2 dev-only** | Remaining issues in esbuild/vite (not shipped) |
-| Tests | **67 PASS** | 48 financial + 19 date utility tests |
+| Tests | **123 PASS** | 48 financial + 19 date utils + 27 offlineDb + 22 syncService + 7 offlineCounts |
 | TypeScript | **PASS** | No type errors in build |
 | PWA | **CONFIGURED** | Service worker + manifest generated |
 | RLS Audit | **PASS** | All 17 tables org-scoped with RBAC |
@@ -133,7 +133,7 @@ MFI Clarity is approximately **85% complete** for a production market launch. Th
 | Category | Done | Remaining |
 |----------|------|-----------|
 | Security hardening | 4/7 | CSP headers, HTTPS enforcement, key rotation |
-| Testing | 3/6 | Offline sync, auth integration, E2E |
+| Testing | 4/6 | Auth integration, E2E |
 | Data integrity | 3/5 | Decimal handling audit, DB constraints, accounting infrastructure |
 | Infrastructure | 4/7 | Env config, DB backups, health monitoring |
 | Feature completeness | 1/7 | PDF/Excel export, bulk import, SMS, onboarding |
