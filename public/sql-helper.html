@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MFI SQL Migration Helper</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:900px;margin:0 auto;padding:20px;background:#f5f5f5}
+h1{color:#333;text-align:center}
+.step{background:#fff;border-radius:8px;padding:20px;margin:20px 0;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.step h2{color:#1a73e8;margin-top:0}
+.step p{color:#666}
+button{background:#1a73e8;color:#fff;border:none;padding:15px 30px;border-radius:6px;cursor:pointer;font-size:18px;font-weight:bold;width:100%;margin-top:10px}
+button:hover{background:#1557b0}
+button.copied{background:#34a853}
+.warning{background:#fff3cd;border:1px solid #ffc107;padding:15px;border-radius:6px;margin:10px 0}
+.info{background:#d1ecf1;border:1px solid #0dcaf0;padding:15px;border-radius:6px;margin:10px 0}
+pre{background:#f8f9fa;border:1px solid #dee2e6;padding:10px;border-radius:4px;overflow-x:auto;max-height:200px;font-size:11px}
+</style>
+</head>
+<body>
+<h1>MFI Insights - SQL Migration Helper</h1>
+<div class="warning"><strong>IMPORTANT:</strong> Run these steps IN ORDER. Click the button to copy, then paste (Ctrl+V) in a NEW query tab in Supabase SQL Editor, then click Run.</div>
+
+<div class="step">
+<h2>Step 0: CLEANUP (Run First!)</h2>
+<p>This removes the incorrectly created tables and enums so we can start fresh.</p>
+<button onclick="copySQL(0, this)">Click to Copy CLEANUP SQL</button>
+<details><summary>Preview SQL</summary><pre id="pre0"></pre></details>
+</div>
+
+<div class="step">
+<h2>Step 1: Core Tables (Run Second)</h2>
+<p>Creates all MFI tables: organisations, users, clients, loans, repayments, etc.</p>
+<button onclick="copySQL(1, this)">Click to Copy CORE TABLES SQL</button>
+<details><summary>Preview SQL</summary><pre id="pre1"></pre></details>
+</div>
+
+<div class="step">
+<h2>Step 2: Functions & Policies (Run Third)</h2>
+<p>Creates helper functions, RLS policies, and the onboarding RPC function.</p>
+<button onclick="copySQL(2, this)">Click to Copy FUNCTIONS & POLICIES SQL</button>
+<details><summary>Preview SQL</summary><pre id="pre2"></pre></details>
+</div>
+
+<div class="info"><strong>After all 3 steps succeed:</strong> Update your Netlify environment variables and trigger "Clear cache and deploy site".</div>
+
+<script>
+var sqls = [];
+
+sqls[0] = `-- CLEANUP: Remove incorrectly created tables and enums
+-- (These were created with wrong schemas in earlier attempts)
+
+DROP TABLE IF EXISTS public.shareholder_transactions CASCADE;
+DROP TABLE IF EXISTS public.dividend_payouts CASCADE;
+DROP TABLE IF EXISTS public.shareholders CASCADE;
+DROP TABLE IF EXISTS public.client_documents CASCADE;
+DROP TABLE IF EXISTS public.field_collections CASCADE;
+DROP TABLE IF EXISTS public.loan_status_audit CASCADE;
+DROP TABLE IF EXISTS public.activity_audit_log CASCADE;
+DROP TABLE IF EXISTS public.group_members CASCADE;
+DROP TABLE IF EXISTS public.repayments CASCADE;
+DROP TABLE IF EXISTS public.loans CASCADE;
+DROP TABLE IF EXISTS public.clients CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+DROP TABLE IF EXISTS public.bog_tier_config CASCADE;
+DROP TABLE IF EXISTS public.organisation_settings CASCADE;
+DROP TABLE IF EXISTS public.user_roles CASCADE;
+DROP TABLE IF EXISTS public.user_organizations CASCADE;
+DROP TABLE IF EXISTS public.organisations CASCADE;
+
+DROP TYPE IF EXISTS public.user_role CASCADE;
+DROP TYPE IF EXISTS public.bog_tier CASCADE;
+DROP TYPE IF EXISTS public.bog_mfi_tier CASCADE;
+DROP TYPE IF EXISTS public.loan_status CASCADE;
+DROP TYPE IF EXISTS public.repayment_method CASCADE;
+DROP TYPE IF EXISTS public.client_type CASCADE;
+DROP TYPE IF EXISTS public.group_member_role CASCADE;
+DROP TYPE IF EXISTS public.interest_calc_frequency CASCADE;
+DROP TYPE IF EXISTS public.repayment_frequency CASCADE;
+DROP TYPE IF EXISTS public.interest_method CASCADE;
+DROP TYPE IF EXISTS public.penalty_type CASCADE;
+
+-- Restore backup tables if they exist
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='clients_old_backup') THEN
+    ALTER TABLE public.clients_old_backup RENAME TO clients;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='profiles_old_backup') THEN
+    ALTER TABLE public.profiles_old_backup RENAME TO profiles;
+  END IF;
+END $$;
+`;
+
+sqls[1] = `-- ============================================================
+-- MFI INSIGHTS - PART 1: CORE TABLES AND FUNCTIONS
+-- Run this FIRST in Supabase SQL Editor
+-- ============================================================
+
+-- Rename existing conflicting tables (if they exist)
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'clients') THEN
+    ALTER TABLE public.clients RENAME TO _old_clients;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'profiles') THEN
+    ALTER TABLE public.profiles RENAME TO _old_profiles;
+  END IF;
+END $$;
+
+-- Create updated_at trigger function
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SET search_path = public;
+
+-- Create enums
+DO $$ BEGIN
+  CREATE TYPE public.client_type AS ENUM ('INDIVIDUAL', 'GROUP', 'COOPERATIVE', 'SME');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE public.group_member_role AS ENUM ('LEADER', 'SECRETARY', 'MEMBER');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE public.bog_mfi_tier AS ENUM ('TIER_1_RCB', 'TIER_2_SL', 'TIER_3_FH', 'TIER_4_MFC');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE public.interest_calc_frequency AS ENUM ('DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'QUARTERLY', 'ANNUALLY');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE public.repayment_frequency AS ENUM ('DAILY', 'WEEKLY', 'FORTNIGHTLY', 'MONTHLY');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE public.interest_method AS ENUM ('FLAT', 'REDUCING_BALANCE');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE public.penalty_type AS ENUM ('NONE', 'FLAT_AMOUNT', 'PERCENT_OVERDUE', 'PERCENT_INSTALLMENT', 'DAILY_RATE');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE public.loan_status AS ENUM ('PENDING', 'APPROVED', 'DISBURSED', 'ACTIVE', 'COMPLETED', 'DEFAULTED', 'WRITTEN_OFF', 'REJECTED');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE public.user_role AS ENUM ('ADMIN', 'MANAGER', 'FIELD_OFFICER', 'TELLER', 'BOARD_DIRECTOR');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- ============================================================
+-- ORGANISATIONS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.organisations (
+  org_id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  trading_name TEXT,
+  address TEXT,
+  city TEXT,
+  region TEXT,
+  postal_code TEXT,
+  country TEXT DEFAULT 'Ghana',
+  phone TEXT,
+  email TEXT,
+  website TEXT,
+  logo_url TEXT,
+  registration_number TEXT,
+  tax_id TEXT,
+  is_demo BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.organisations ENABLE ROW LEVEL SECURITY;
+
+CREATE TRIGGER update_organisations_updated_at
+BEFORE UPDATE ON public.organisations
+FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ============================================================
+-- USER_ORGANIZATIONS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.user_organizations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  org_id uuid NOT NULL REFERENCES public.organisations(org_id) ON DELETE CASCADE,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  UNIQUE (user_id, org_id)
+);
+
+ALTER TABLE public.user_organizations ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- USER_ROLES TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.user_roles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  org_id uuid NOT NULL,
+  role public.user_role NOT NULL DEFAULT 'FIELD_OFFICER',
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  UNIQUE (user_id, org_id, role)
+);
+
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- ORGANISATION_SETTINGS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.organisation_settings (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  org_id UUID NOT NULL UNIQUE,
+  bog_tier public.bog_mfi_tier NOT NULL DEFAULT 'TIER_4_MFC',
+  license_number TEXT,
+  license_expiry DATE,
+  max_single_obligor_limit NUMERIC,
+  max_loan_amount NUMERIC,
+  min_capital_requirement NUMERIC,
+  prudential_return_frequency TEXT DEFAULT 'MONTHLY',
+  car_threshold NUMERIC DEFAULT 10.0,
+  liquidity_threshold NUMERIC DEFAULT 15.0,
+  net_worth NUMERIC DEFAULT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.organisation_settings ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE public.organisation_settings
+ADD CONSTRAINT fk_organisation_settings_org
+FOREIGN KEY (org_id) REFERENCES public.organisations(org_id)
+ON DELETE CASCADE;
+
+CREATE TRIGGER update_org_settings_updated_at
+BEFORE UPDATE ON public.organisation_settings
+FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ============================================================
+-- BOG_TIER_CONFIG TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.bog_tier_config (
+  tier public.bog_mfi_tier PRIMARY KEY,
+  tier_name TEXT NOT NULL,
+  tier_description TEXT,
+  min_capital_ghs NUMERIC NOT NULL,
+  max_loan_per_borrower_ghs NUMERIC,
+  single_obligor_limit_percent NUMERIC DEFAULT 25,
+  car_requirement NUMERIC DEFAULT 10,
+  liquidity_requirement NUMERIC DEFAULT 15,
+  prudential_frequency TEXT DEFAULT 'MONTHLY',
+  requires_bog_license BOOLEAN DEFAULT true
+);
+
+ALTER TABLE public.bog_tier_config ENABLE ROW LEVEL SECURITY;
+
+INSERT INTO public.bog_tier_config (tier, tier_name, tier_description, min_capital_ghs, max_loan_per_borrower_ghs, single_obligor_limit_percent, car_requirement, liquidity_requirement, prudential_frequency)
+VALUES
+  ('TIER_1_RCB', 'Rural & Community Bank', 'Licensed rural and community banks', 1000000, NULL, 25, 10, 15, 'MONTHLY'),
+  ('TIER_2_SL', 'Savings & Loans Company', 'Non-bank financial institutions', 15000000, NULL, 25, 10, 15, 'MONTHLY'),
+  ('TIER_3_FH', 'Finance House', 'Specialized credit institutions', 8000000, NULL, 25, 10, 15, 'MONTHLY'),
+  ('TIER_4_MFC', 'Microfinance Company', 'Microfinance institutions', 500000, 50000, 10, 10, 20, 'MONTHLY')
+ON CONFLICT DO NOTHING;
+
+-- ============================================================
+-- PROFILES TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL UNIQUE,
+  email TEXT NOT NULL,
+  display_name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE TRIGGER update_profiles_updated_at
+BEFORE UPDATE ON public.profiles
+FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ============================================================
+-- CLIENTS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.clients (
+  client_id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  org_id UUID NOT NULL,
+  client_type public.client_type NOT NULL DEFAULT 'INDIVIDUAL',
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
+  ghana_card_number TEXT NOT NULL,
+  ghana_card_expiry DATE NOT NULL,
+  date_of_birth DATE NOT NULL,
+  gender TEXT NOT NULL CHECK (gender IN ('M', 'F')),
+  nationality TEXT NOT NULL DEFAULT 'Ghanaian',
+  phone TEXT,
+  email TEXT,
+  address TEXT,
+  proof_of_residence_type TEXT,
+  occupation TEXT NOT NULL,
+  risk_category TEXT NOT NULL CHECK (risk_category IN ('LOW', 'MEDIUM', 'HIGH')),
+  source_of_funds TEXT NOT NULL,
+  monthly_income NUMERIC,
+  monthly_expenses NUMERIC,
+  group_name TEXT,
+  registration_number TEXT,
+  registration_date DATE,
+  assigned_officer_id uuid REFERENCES auth.users(id),
+  status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'INACTIVE', 'DECEASED', 'MERGED')),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_clients_org_id ON public.clients(org_id);
+CREATE INDEX IF NOT EXISTS idx_clients_client_type ON public.clients(client_type);
+CREATE INDEX IF NOT EXISTS idx_clients_ghana_card ON public.clients(ghana_card_number);
+CREATE INDEX IF NOT EXISTS idx_clients_assigned_officer ON public.clients(assigned_officer_id);
+
+CREATE TRIGGER update_clients_updated_at
+BEFORE UPDATE ON public.clients
+FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ============================================================
+-- GROUP_MEMBERS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.group_members (
+  member_id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  org_id UUID NOT NULL,
+  client_id UUID NOT NULL REFERENCES public.clients(client_id) ON DELETE CASCADE,
+  role public.group_member_role NOT NULL DEFAULT 'MEMBER',
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
+  ghana_card_number TEXT NOT NULL,
+  ghana_card_expiry DATE NOT NULL,
+  date_of_birth DATE NOT NULL,
+  gender TEXT NOT NULL CHECK (gender IN ('M', 'F')),
+  nationality TEXT NOT NULL DEFAULT 'Ghanaian',
+  phone TEXT,
+  email TEXT,
+  address TEXT,
+  proof_of_residence_type TEXT,
+  occupation TEXT NOT NULL,
+  risk_category TEXT NOT NULL CHECK (risk_category IN ('LOW', 'MEDIUM', 'HIGH')),
+  source_of_funds TEXT NOT NULL,
+  monthly_income NUMERIC,
+  monthly_expenses NUMERIC,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.group_members ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_group_members_client_id ON public.group_members(client_id);
+CREATE INDEX IF NOT EXISTS idx_group_members_org_id ON public.group_members(org_id);
+
+CREATE TRIGGER update_group_members_updated_at
+BEFORE UPDATE ON public.group_members
+FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ============================================================
+-- LOANS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.loans (
+  loan_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID NOT NULL,
+  client_id UUID NOT NULL REFERENCES public.clients(client_id) ON DELETE RESTRICT,
+  loan_type TEXT NOT NULL,
+  purpose TEXT,
+  principal NUMERIC NOT NULL CHECK (principal > 0),
+  interest_rate NUMERIC NOT NULL CHECK (interest_rate >= 0),
+  term_months INTEGER NOT NULL CHECK (term_months > 0),
+  interest_method public.interest_method NOT NULL DEFAULT 'REDUCING_BALANCE',
+  interest_calc_frequency public.interest_calc_frequency NOT NULL DEFAULT 'MONTHLY',
+  repayment_frequency public.repayment_frequency NOT NULL DEFAULT 'MONTHLY',
+  penalty_type public.penalty_type NOT NULL DEFAULT 'NONE',
+  penalty_value NUMERIC DEFAULT 0,
+  penalty_grace_days INTEGER DEFAULT 0,
+  application_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  approval_date DATE,
+  disbursement_date DATE,
+  expected_end_date DATE,
+  actual_end_date DATE,
+  disbursed_amount NUMERIC,
+  total_interest NUMERIC,
+  total_repayable NUMERIC,
+  outstanding_principal NUMERIC,
+  outstanding_interest NUMERIC,
+  status public.loan_status NOT NULL DEFAULT 'PENDING',
+  approved_by UUID,
+  disbursed_by UUID,
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.loans ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_loans_client_id ON public.loans(client_id);
+CREATE INDEX IF NOT EXISTS idx_loans_org_id ON public.loans(org_id);
+CREATE INDEX IF NOT EXISTS idx_loans_status ON public.loans(status);
+
+CREATE TRIGGER update_loans_updated_at
+BEFORE UPDATE ON public.loans
+FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ============================================================
+-- REPAYMENTS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.repayments (
+  repayment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID NOT NULL,
+  loan_id UUID NOT NULL REFERENCES public.loans(loan_id) ON DELETE RESTRICT,
+  amount NUMERIC NOT NULL CHECK (amount > 0),
+  principal_portion NUMERIC DEFAULT 0,
+  interest_portion NUMERIC DEFAULT 0,
+  penalty_portion NUMERIC DEFAULT 0,
+  payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  payment_method TEXT,
+  reference TEXT,
+  received_by UUID,
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.repayments ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_repayments_loan_id ON public.repayments(loan_id);
+CREATE INDEX IF NOT EXISTS idx_repayments_org_id ON public.repayments(org_id);
+
+-- ============================================================
+-- LOAN_STATUS_AUDIT TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.loan_status_audit (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  loan_id uuid NOT NULL REFERENCES public.loans(loan_id) ON DELETE CASCADE,
+  org_id uuid NOT NULL,
+  previous_status text,
+  new_status text NOT NULL,
+  changed_by uuid,
+  changed_at timestamp with time zone NOT NULL DEFAULT now(),
+  notes text,
+  approval_amount numeric,
+  rejection_reason text
+);
+
+ALTER TABLE public.loan_status_audit ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_loan_status_audit_loan_id ON public.loan_status_audit(loan_id);
+CREATE INDEX IF NOT EXISTS idx_loan_status_audit_org_id ON public.loan_status_audit(org_id);
+
+-- ============================================================
+-- ACTIVITY_AUDIT_LOG TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.activity_audit_log (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL,
+  user_id uuid REFERENCES auth.users(id),
+  action_type text NOT NULL,
+  entity_type text NOT NULL,
+  entity_id uuid,
+  old_values jsonb,
+  new_values jsonb,
+  ip_address text,
+  user_agent text,
+  metadata jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.activity_audit_log ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_org_created ON public.activity_audit_log(org_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_log_user ON public.activity_audit_log(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON public.activity_audit_log(entity_type, entity_id);
+
+-- ============================================================
+-- FIELD_COLLECTIONS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.field_collections (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL,
+  repayment_id uuid REFERENCES public.repayments(repayment_id) ON DELETE CASCADE,
+  loan_id uuid NOT NULL,
+  client_id uuid NOT NULL,
+  collected_by uuid REFERENCES auth.users(id) NOT NULL,
+  amount_collected numeric NOT NULL,
+  collection_date timestamp with time zone NOT NULL DEFAULT now(),
+  latitude numeric,
+  longitude numeric,
+  location_accuracy numeric,
+  location_address text,
+  receipt_photo_url text,
+  signature_url text,
+  collection_method text,
+  mobile_money_reference text,
+  client_confirmation boolean DEFAULT false,
+  notes text,
+  status text DEFAULT 'PENDING',
+  verified_by uuid REFERENCES auth.users(id),
+  verified_at timestamp with time zone,
+  rejection_reason text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.field_collections ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_field_collections_org ON public.field_collections(org_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_field_collections_collector ON public.field_collections(collected_by, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_field_collections_loan ON public.field_collections(loan_id);
+CREATE INDEX IF NOT EXISTS idx_field_collections_client ON public.field_collections(client_id);
+
+CREATE TRIGGER update_field_collections_updated_at
+BEFORE UPDATE ON public.field_collections
+FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ============================================================
+-- CLIENT_DOCUMENTS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.client_documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id UUID NOT NULL,
+  org_id UUID NOT NULL,
+  file_name TEXT NOT NULL,
+  file_path TEXT NOT NULL,
+  document_type TEXT NOT NULL,
+  description TEXT,
+  tags TEXT[],
+  uploaded_by UUID REFERENCES auth.users(id),
+  uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  file_size_bytes INTEGER,
+  mime_type TEXT
+);
+
+ALTER TABLE public.client_documents ENABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_client_documents_client_id ON public.client_documents(client_id);
+CREATE INDEX IF NOT EXISTS idx_client_documents_org_id ON public.client_documents(org_id);
+CREATE INDEX IF NOT EXISTS idx_client_documents_document_type ON public.client_documents(document_type);
+
+-- ============================================================
+-- SHAREHOLDERS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.shareholders (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES public.organisations(org_id) ON DELETE CASCADE,
+  user_id UUID,
+  full_name TEXT NOT NULL,
+  email TEXT,
+  phone TEXT,
+  address TEXT,
+  share_units INTEGER NOT NULL DEFAULT 0,
+  share_unit_value NUMERIC(15,2) NOT NULL DEFAULT 100.00,
+  total_investment NUMERIC(15,2) NOT NULL DEFAULT 0.00,
+  investment_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED')),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.shareholders ENABLE ROW LEVEL SECURITY;
+
+CREATE TRIGGER update_shareholders_updated_at
+BEFORE UPDATE ON public.shareholders
+FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ============================================================
+-- DIVIDEND_PAYOUTS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.dividend_payouts (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES public.organisations(org_id) ON DELETE CASCADE,
+  shareholder_id UUID NOT NULL REFERENCES public.shareholders(id) ON DELETE CASCADE,
+  payout_date DATE NOT NULL,
+  dividend_rate NUMERIC(5,4) NOT NULL,
+  shares_at_payout INTEGER NOT NULL,
+  amount NUMERIC(15,2) NOT NULL,
+  payment_method TEXT,
+  payment_reference TEXT,
+  status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PAID', 'CANCELLED')),
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.dividend_payouts ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- SHAREHOLDER_TRANSACTIONS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.shareholder_transactions (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  org_id UUID NOT NULL REFERENCES public.organisations(org_id) ON DELETE CASCADE,
+  shareholder_id UUID NOT NULL REFERENCES public.shareholders(id) ON DELETE CASCADE,
+  transaction_type TEXT NOT NULL CHECK (transaction_type IN ('INVESTMENT', 'WITHDRAWAL', 'DIVIDEND_REINVEST', 'SHARE_TRANSFER_IN', 'SHARE_TRANSFER_OUT')),
+  share_units INTEGER NOT NULL,
+  unit_value NUMERIC(15,2) NOT NULL,
+  total_amount NUMERIC(15,2) NOT NULL,
+  transaction_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  notes TEXT,
+  processed_by UUID,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.shareholder_transactions ENABLE ROW LEVEL SECURITY;
+
+-- Insert demo organisation
+INSERT INTO public.organisations (org_id, name, trading_name, address, city, region, country, phone, email, is_demo)
+VALUES (
+  'a0000000-0000-0000-0000-000000000001',
+  'Demo Microfinance Institution',
+  'Demo MFI',
+  '123 Finance Street',
+  'Accra',
+  'Greater Accra',
+  'Ghana',
+  '+233 20 000 0000',
+  'demo@mfi-demo.com',
+  true
+) ON CONFLICT DO NOTHING;
+`;
+
+sqls[2] = `-- ============================================================
+-- MFI INSIGHTS - PART 2: HELPER FUNCTIONS AND RLS POLICIES
+-- Run this SECOND in Supabase SQL Editor
+-- ============================================================
+
+-- ============================================================
+-- HELPER FUNCTIONS (Security Definer)
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.user_belongs_to_org(_user_id uuid, _org_id uuid)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT CASE
+    WHEN _user_id IS NULL OR _org_id IS NULL THEN FALSE
+    ELSE EXISTS (
+      SELECT 1 FROM public.user_organizations
+      WHERE user_id = _user_id AND org_id = _org_id
+    )
+  END
+$$;
+
+CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _org_id uuid, _role user_role)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT CASE
+    WHEN _user_id IS NULL OR _org_id IS NULL OR _role IS NULL THEN FALSE
+    ELSE EXISTS (
+      SELECT 1 FROM public.user_roles
+      WHERE user_id = _user_id AND org_id = _org_id AND role = _role
+    )
+  END
+$$;
+
+CREATE OR REPLACE FUNCTION public.has_any_role(_user_id uuid, _org_id uuid)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT CASE
+    WHEN _user_id IS NULL OR _org_id IS NULL THEN FALSE
+    ELSE EXISTS (
+      SELECT 1 FROM public.user_roles
+      WHERE user_id = _user_id AND org_id = _org_id
+    )
+  END
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_executive(_user_id uuid, _org_id uuid)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT CASE
+    WHEN _user_id IS NULL OR _org_id IS NULL THEN FALSE
+    ELSE has_role(_user_id, _org_id, 'ADMIN') OR has_role(_user_id, _org_id, 'MANAGER')
+  END
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_board_member(_user_id uuid, _org_id uuid)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT CASE
+    WHEN _user_id IS NULL OR _org_id IS NULL THEN FALSE
+    ELSE has_role(_user_id, _org_id, 'BOARD_DIRECTOR')
+  END
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_authenticated()
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT auth.uid() IS NOT NULL
+$$;
+
+-- ============================================================
+-- ONBOARDING FUNCTION
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.create_organisation_with_admin(
+  _name text,
+  _trading_name text DEFAULT NULL,
+  _address text DEFAULT NULL,
+  _city text DEFAULT NULL,
+  _region text DEFAULT NULL,
+  _postal_code text DEFAULT NULL,
+  _country text DEFAULT 'Ghana',
+  _phone text DEFAULT NULL,
+  _email text DEFAULT NULL,
+  _website text DEFAULT NULL,
+  _registration_number text DEFAULT NULL,
+  _tax_id text DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  _org_id uuid;
+  _user_id uuid;
+BEGIN
+  _user_id := auth.uid();
+  IF _user_id IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+
+  INSERT INTO public.organisations (name, trading_name, address, city, region, postal_code, country, phone, email, website, registration_number, tax_id, is_demo)
+  VALUES (_name, _trading_name, _address, _city, _region, _postal_code, _country, _phone, _email, _website, _registration_number, _tax_id, false)
+  RETURNING org_id INTO _org_id;
+
+  INSERT INTO public.user_organizations (user_id, org_id)
+  VALUES (_user_id, _org_id);
+
+  INSERT INTO public.user_roles (user_id, org_id, role)
+  VALUES (_user_id, _org_id, 'ADMIN');
+
+  INSERT INTO public.organisation_settings (org_id, bog_tier)
+  VALUES (_org_id, 'TIER_4_MFC');
+
+  RETURN _org_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.create_organisation_with_admin TO authenticated;
+
+-- ============================================================
+-- AUDIT LOGGING FUNCTION
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.log_activity(
+  _org_id uuid, _action_type text, _entity_type text,
+  _entity_id uuid DEFAULT NULL, _old_values jsonb DEFAULT NULL,
+  _new_values jsonb DEFAULT NULL, _metadata jsonb DEFAULT NULL
+)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $$
+BEGIN
+  IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;
+  IF _org_id IS NULL OR _action_type IS NULL OR _entity_type IS NULL THEN RAISE EXCEPTION 'Missing required fields'; END IF;
+  IF NOT public.user_belongs_to_org(auth.uid(), _org_id) THEN RAISE EXCEPTION 'Not a member of this organization'; END IF;
+  INSERT INTO public.activity_audit_log (org_id, action_type, entity_type, entity_id, old_values, new_values, metadata, user_id)
+  VALUES (_org_id, _action_type, _entity_type, _entity_id, _old_values, _new_values, _metadata, auth.uid());
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.log_activity(uuid, text, text, uuid, jsonb, jsonb, jsonb) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.log_activity(uuid, text, text, uuid, jsonb, jsonb, jsonb) TO authenticated;
+
+-- ============================================================
+-- LOAN STATUS CHANGE TRIGGER
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.log_loan_status_change()
+RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  IF OLD.status IS DISTINCT FROM NEW.status THEN
+    INSERT INTO public.loan_status_audit (loan_id, org_id, previous_status, new_status, changed_by, approval_amount, notes)
+    VALUES (NEW.loan_id, NEW.org_id, OLD.status::text, NEW.status::text, auth.uid(),
+      CASE WHEN NEW.status = 'DISBURSED' THEN NEW.disbursed_amount ELSE NULL END, NEW.notes);
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trigger_log_loan_status_change ON public.loans;
+CREATE TRIGGER trigger_log_loan_status_change
+AFTER UPDATE ON public.loans FOR EACH ROW
+EXECUTE FUNCTION public.log_loan_status_change();
+
+-- ============================================================
+-- RLS POLICIES - ORGANISATIONS
+-- ============================================================
+
+CREATE POLICY "Users can view their organisations" ON public.organisations
+FOR SELECT USING (
+  EXISTS (SELECT 1 FROM user_organizations uo WHERE uo.org_id = organisations.org_id AND uo.user_id = auth.uid())
+  OR is_demo = true
+);
+
+CREATE POLICY "Authenticated users can create organisations" ON public.organisations
+FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Executives can update organisation details" ON public.organisations
+FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM user_organizations uo WHERE uo.org_id = organisations.org_id AND uo.user_id = auth.uid() AND is_executive(auth.uid(), uo.org_id))
+);
+
+-- ============================================================
+-- RLS POLICIES - USER_ORGANIZATIONS
+-- ============================================================
+
+CREATE POLICY "Users can view org memberships" ON public.user_organizations
+FOR SELECT USING (user_belongs_to_org(auth.uid(), org_id) OR auth.uid() = user_id);
+
+CREATE POLICY "Users can create their own org membership" ON public.user_organizations
+FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Executives can insert org memberships" ON public.user_organizations
+FOR INSERT WITH CHECK (is_executive(auth.uid(), org_id));
+
+CREATE POLICY "Executives can delete org memberships" ON public.user_organizations
+FOR DELETE USING (is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - USER_ROLES
+-- ============================================================
+
+CREATE POLICY "Users can view roles in their org" ON public.user_roles
+FOR SELECT USING (user_belongs_to_org(auth.uid(), org_id));
+
+CREATE POLICY "Users can create their own initial role" ON public.user_roles
+FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Executives can insert roles" ON public.user_roles
+FOR INSERT WITH CHECK (is_executive(auth.uid(), org_id));
+
+CREATE POLICY "Executives can update roles" ON public.user_roles
+FOR UPDATE USING (is_executive(auth.uid(), org_id));
+
+CREATE POLICY "Executives can delete roles" ON public.user_roles
+FOR DELETE USING (is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - ORGANISATION_SETTINGS
+-- ============================================================
+
+CREATE POLICY "Users can view org settings" ON public.organisation_settings
+FOR SELECT USING (user_belongs_to_org(auth.uid(), org_id));
+
+CREATE POLICY "Authenticated users can create org settings" ON public.organisation_settings
+FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Executives can update org settings" ON public.organisation_settings
+FOR UPDATE USING (user_belongs_to_org(auth.uid(), org_id) AND is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - BOG_TIER_CONFIG
+-- ============================================================
+
+CREATE POLICY "Authenticated users can read tier config" ON public.bog_tier_config
+FOR SELECT USING (auth.uid() IS NOT NULL);
+
+-- ============================================================
+-- RLS POLICIES - PROFILES
+-- ============================================================
+
+CREATE POLICY "Users can view own profile" ON public.profiles
+FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Executives can view org profiles" ON public.profiles
+FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.user_organizations viewer
+    JOIN public.user_organizations target ON target.org_id = viewer.org_id
+    WHERE viewer.user_id = auth.uid() AND target.user_id = profiles.user_id
+    AND public.is_executive(auth.uid(), viewer.org_id)
+  )
+);
+
+CREATE POLICY "Users can update own profile" ON public.profiles
+FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Authenticated users can insert profiles" ON public.profiles
+FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+-- ============================================================
+-- RLS POLICIES - CLIENTS
+-- ============================================================
+
+CREATE POLICY "Users can view clients" ON public.clients
+FOR SELECT USING (
+  user_belongs_to_org(auth.uid(), org_id) AND (
+    is_executive(auth.uid(), org_id) OR is_board_member(auth.uid(), org_id) OR assigned_officer_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Users can insert clients" ON public.clients
+FOR INSERT WITH CHECK (
+  user_belongs_to_org(auth.uid(), org_id) AND NOT is_board_member(auth.uid(), org_id)
+);
+
+CREATE POLICY "Users can update clients" ON public.clients
+FOR UPDATE USING (
+  user_belongs_to_org(auth.uid(), org_id) AND (is_executive(auth.uid(), org_id) OR assigned_officer_id = auth.uid())
+);
+
+CREATE POLICY "Executives can delete clients" ON public.clients
+FOR DELETE USING (user_belongs_to_org(auth.uid(), org_id) AND is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - LOANS
+-- ============================================================
+
+CREATE POLICY "Users can view loans" ON public.loans
+FOR SELECT USING (
+  user_belongs_to_org(auth.uid(), org_id) AND (
+    is_executive(auth.uid(), org_id) OR is_board_member(auth.uid(), org_id) OR
+    EXISTS (SELECT 1 FROM public.clients c WHERE c.client_id = loans.client_id AND c.assigned_officer_id = auth.uid())
+  )
+);
+
+CREATE POLICY "Users can insert loans" ON public.loans
+FOR INSERT WITH CHECK (user_belongs_to_org(auth.uid(), org_id) AND NOT is_board_member(auth.uid(), org_id));
+
+CREATE POLICY "Users can update loans" ON public.loans
+FOR UPDATE USING (
+  user_belongs_to_org(auth.uid(), org_id) AND (
+    is_executive(auth.uid(), org_id) OR
+    EXISTS (SELECT 1 FROM public.clients c WHERE c.client_id = loans.client_id AND c.assigned_officer_id = auth.uid())
+  )
+);
+
+CREATE POLICY "Executives can delete loans" ON public.loans
+FOR DELETE USING (user_belongs_to_org(auth.uid(), org_id) AND is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - REPAYMENTS
+-- ============================================================
+
+CREATE POLICY "Users can view repayments" ON public.repayments
+FOR SELECT USING (
+  user_belongs_to_org(auth.uid(), org_id) AND (
+    is_executive(auth.uid(), org_id) OR is_board_member(auth.uid(), org_id) OR
+    EXISTS (SELECT 1 FROM public.loans l JOIN public.clients c ON l.client_id = c.client_id WHERE l.loan_id = repayments.loan_id AND c.assigned_officer_id = auth.uid())
+  )
+);
+
+CREATE POLICY "Users can insert repayments" ON public.repayments
+FOR INSERT WITH CHECK (user_belongs_to_org(auth.uid(), org_id) AND NOT is_board_member(auth.uid(), org_id));
+
+CREATE POLICY "Users can update repayments" ON public.repayments
+FOR UPDATE USING (user_belongs_to_org(auth.uid(), org_id) AND is_executive(auth.uid(), org_id));
+
+CREATE POLICY "Executives can delete repayments" ON public.repayments
+FOR DELETE USING (user_belongs_to_org(auth.uid(), org_id) AND is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - AUDIT TABLES
+-- ============================================================
+
+CREATE POLICY "Executives and board can view loan status audit" ON public.loan_status_audit
+FOR SELECT USING (user_belongs_to_org(auth.uid(), org_id) AND (is_executive(auth.uid(), org_id) OR is_board_member(auth.uid(), org_id)));
+
+CREATE POLICY "Executives can insert loan status audit" ON public.loan_status_audit
+FOR INSERT WITH CHECK (user_belongs_to_org(auth.uid(), org_id) AND is_executive(auth.uid(), org_id));
+
+CREATE POLICY "Executives and board can view activity audit" ON public.activity_audit_log
+FOR SELECT USING (is_executive(auth.uid(), org_id) OR is_board_member(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - FIELD_COLLECTIONS
+-- ============================================================
+
+CREATE POLICY "Users can view field collections" ON public.field_collections
+FOR SELECT USING (
+  user_belongs_to_org(auth.uid(), org_id) AND (
+    is_executive(auth.uid(), org_id) OR is_board_member(auth.uid(), org_id) OR collected_by = auth.uid()
+  )
+);
+
+CREATE POLICY "Users can insert field collections" ON public.field_collections
+FOR INSERT WITH CHECK (user_belongs_to_org(auth.uid(), org_id) AND auth.uid() = collected_by);
+
+CREATE POLICY "Users can update field collections" ON public.field_collections
+FOR UPDATE USING (user_belongs_to_org(auth.uid(), org_id) AND (is_executive(auth.uid(), org_id) OR collected_by = auth.uid()));
+
+-- ============================================================
+-- RLS POLICIES - CLIENT_DOCUMENTS
+-- ============================================================
+
+CREATE POLICY "Users can view client documents" ON public.client_documents
+FOR SELECT USING (user_belongs_to_org(auth.uid(), org_id));
+
+CREATE POLICY "Users can upload client documents" ON public.client_documents
+FOR INSERT WITH CHECK (user_belongs_to_org(auth.uid(), org_id) AND auth.uid() = uploaded_by);
+
+CREATE POLICY "Users can update client documents" ON public.client_documents
+FOR UPDATE USING (user_belongs_to_org(auth.uid(), org_id) AND (is_executive(auth.uid(), org_id) OR uploaded_by = auth.uid()));
+
+CREATE POLICY "Executives can delete client documents" ON public.client_documents
+FOR DELETE USING (user_belongs_to_org(auth.uid(), org_id) AND is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - GROUP_MEMBERS
+-- ============================================================
+
+CREATE POLICY "Users can view group members" ON public.group_members
+FOR SELECT USING (user_belongs_to_org(auth.uid(), org_id));
+
+CREATE POLICY "Users can insert group members" ON public.group_members
+FOR INSERT WITH CHECK (user_belongs_to_org(auth.uid(), org_id));
+
+CREATE POLICY "Users can update group members" ON public.group_members
+FOR UPDATE USING (user_belongs_to_org(auth.uid(), org_id));
+
+CREATE POLICY "Executives can delete group members" ON public.group_members
+FOR DELETE USING (user_belongs_to_org(auth.uid(), org_id) AND is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - SHAREHOLDERS
+-- ============================================================
+
+CREATE POLICY "Executives can view shareholders" ON public.shareholders
+FOR SELECT USING (is_executive(auth.uid(), org_id) OR is_board_member(auth.uid(), org_id));
+
+CREATE POLICY "Shareholders can view own record" ON public.shareholders
+FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "Executives can manage shareholders" ON public.shareholders
+FOR ALL USING (is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - DIVIDEND_PAYOUTS
+-- ============================================================
+
+CREATE POLICY "Executives can view dividend payouts" ON public.dividend_payouts
+FOR SELECT USING (is_executive(auth.uid(), org_id) OR is_board_member(auth.uid(), org_id));
+
+CREATE POLICY "Shareholders can view own dividends" ON public.dividend_payouts
+FOR SELECT USING (EXISTS (SELECT 1 FROM public.shareholders s WHERE s.id = shareholder_id AND s.user_id = auth.uid()));
+
+CREATE POLICY "Executives can manage dividend payouts" ON public.dividend_payouts
+FOR ALL USING (is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- RLS POLICIES - SHAREHOLDER_TRANSACTIONS
+-- ============================================================
+
+CREATE POLICY "Executives can view shareholder transactions" ON public.shareholder_transactions
+FOR SELECT USING (is_executive(auth.uid(), org_id) OR is_board_member(auth.uid(), org_id));
+
+CREATE POLICY "Shareholders can view own transactions" ON public.shareholder_transactions
+FOR SELECT USING (EXISTS (SELECT 1 FROM public.shareholders s WHERE s.id = shareholder_id AND s.user_id = auth.uid()));
+
+CREATE POLICY "Executives can manage shareholder transactions" ON public.shareholder_transactions
+FOR ALL USING (is_executive(auth.uid(), org_id));
+
+-- ============================================================
+-- ENABLE REALTIME
+-- ============================================================
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.loans;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.repayments;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.clients;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.field_collections;
+`;
+
+function copySQL(idx, btn) {
+  navigator.clipboard.writeText(sqls[idx]).then(function() {
+    btn.textContent = 'COPIED! Now paste in Supabase SQL Editor';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = ['Click to Copy CLEANUP SQL', 'Click to Copy CORE TABLES SQL', 'Click to Copy FUNCTIONS & POLICIES SQL'][idx];
+      btn.classList.remove('copied');
+    }, 5000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = sqls[idx];
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'COPIED! Now paste in Supabase SQL Editor';
+    btn.classList.add('copied');
+  });
+}
+
+document.getElementById('pre0').textContent = sqls[0];
+document.getElementById('pre1').textContent = sqls[1].substring(0, 500) + '\n... (full SQL will be copied when you click the button)';
+document.getElementById('pre2').textContent = sqls[2].substring(0, 500) + '\n... (full SQL will be copied when you click the button)';
+</script>
+</body>
+</html>
