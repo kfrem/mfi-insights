@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Building2, CheckCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { GHANA_REGIONS } from '@/data/ghanaLocations';
 
 export default function OrganisationOnboarding() {
@@ -106,7 +107,7 @@ export default function OrganisationOnboarding() {
 
       setStep('success');
     } catch (err: any) {
-      console.error('Failed to create organisation:', err);
+      logger.error('Failed to create organisation', 'OrganisationOnboarding', { error: err?.message || String(err) });
       setError(err.message || 'Failed to create organisation');
     } finally {
       setIsSubmitting(false);

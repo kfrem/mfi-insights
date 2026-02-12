@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganisation } from '@/contexts/OrganisationContext';
+import { logger } from '@/lib/logger';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 type TableName = 'loans' | 'repayments' | 'clients' | 'field_collections';
@@ -84,7 +85,7 @@ export function useRealtimeSubscription(options: UseRealtimeOptions = {}) {
           filter: `org_id=eq.${selectedOrgId}`,
         },
         (payload) => {
-          console.log(`[Realtime] ${table} change:`, payload.eventType);
+          logger.debug(`${table} change: ${payload.eventType}`, 'RealtimeSubscription');
           invalidateQueriesForTable(table);
         }
       );
@@ -93,10 +94,10 @@ export function useRealtimeSubscription(options: UseRealtimeOptions = {}) {
     // Subscribe to the channel
     channel.subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        console.log('[Realtime] Subscribed to dashboard updates');
+        logger.info('Subscribed to dashboard updates', 'RealtimeSubscription');
         isSubscribedRef.current = true;
       } else if (status === 'CHANNEL_ERROR') {
-        console.error('[Realtime] Channel error, will retry...');
+        logger.error('Channel error, will retry...', 'RealtimeSubscription');
         isSubscribedRef.current = false;
       }
     });
@@ -106,7 +107,7 @@ export function useRealtimeSubscription(options: UseRealtimeOptions = {}) {
     // Cleanup on unmount or when dependencies change
     return () => {
       if (channelRef.current) {
-        console.log('[Realtime] Unsubscribing from dashboard updates');
+        logger.info('Unsubscribing from dashboard updates', 'RealtimeSubscription');
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
         isSubscribedRef.current = false;

@@ -14,6 +14,7 @@ import {
   Loan
 } from '@/types/mfi';
 import { useOrganisation } from '@/contexts/OrganisationContext';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
 // Type-safe schema query helper for external schemas (mfi/mfi_reporting)
@@ -26,7 +27,7 @@ const schemaQuery = (schema: string, table: string) => {
 // Check if external database is available
 const checkExternalDb = () => {
   if (!isExternalSupabaseConfigured()) {
-    console.warn('External Supabase not configured, using local/mock data');
+    logger.warn('External Supabase not configured, using local/mock data', 'MfiData');
     return false;
   }
   return true;

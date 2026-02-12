@@ -48,28 +48,40 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
-const navItems = [
+interface NavItem {
+  path: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  roles?: string[];
+}
+
+const navItems: NavItem[] = [
   { path: '/', label: 'Executive Dashboard', icon: LayoutDashboard },
-  { path: '/board', label: 'Board Dashboard', icon: Briefcase },
-  { path: '/shareholders', label: 'Investor Portal', icon: PieChart },
-  { path: '/management', label: 'Management', icon: Activity },
-  { path: '/departments', label: 'Departments', icon: Building },
-  { path: '/regulatory-reports', label: 'BoG Reports', icon: Shield },
-  { path: '/financial-reports', label: 'Financial Reports', icon: FileText },
+  { path: '/board', label: 'Board Dashboard', icon: Briefcase, roles: ['ADMIN', 'BOARD_DIRECTOR', 'MANAGER'] },
+  { path: '/shareholders', label: 'Investor Portal', icon: PieChart, roles: ['ADMIN', 'BOARD_DIRECTOR', 'MANAGER'] },
+  { path: '/management', label: 'Management', icon: Activity, roles: ['ADMIN', 'MANAGER'] },
+  { path: '/departments', label: 'Departments', icon: Building, roles: ['ADMIN', 'MANAGER'] },
+  { path: '/regulatory-reports', label: 'BoG Reports', icon: Shield, roles: ['ADMIN', 'MANAGER'] },
+  { path: '/financial-reports', label: 'Financial Reports', icon: FileText, roles: ['ADMIN', 'MANAGER'] },
   { path: '/portfolio-aging', label: 'Portfolio Ageing', icon: TrendingDown },
   { path: '/repayments', label: 'Repayments', icon: DollarSign },
-  { path: '/field-operations', label: 'Field Operations', icon: MapPin },
-  { path: '/data-entry', label: 'Data Entry', icon: PlusCircle },
-  { path: '/user-management', label: 'User Management', icon: Users },
-  { path: '/audit-log', label: 'Audit Trail', icon: History },
-  { path: '/sync-conflicts', label: 'Sync Conflicts', icon: AlertTriangle },
-  { path: '/settings', label: 'Settings', icon: Settings },
+  { path: '/field-operations', label: 'Field Operations', icon: MapPin, roles: ['ADMIN', 'MANAGER', 'FIELD_OFFICER'] },
+  { path: '/data-entry', label: 'Data Entry', icon: PlusCircle, roles: ['ADMIN', 'MANAGER', 'TELLER', 'FIELD_OFFICER'] },
+  { path: '/user-management', label: 'User Management', icon: Users, roles: ['ADMIN'] },
+  { path: '/audit-log', label: 'Audit Trail', icon: History, roles: ['ADMIN'] },
+  { path: '/sync-conflicts', label: 'Sync Conflicts', icon: AlertTriangle, roles: ['ADMIN', 'MANAGER'] },
+  { path: '/settings', label: 'Settings', icon: Settings, roles: ['ADMIN'] },
 ];
 
 function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
   const location = useLocation();
-  const { organisations, selectedOrgId, setSelectedOrgId, isLoading } = useOrganisation();
-  const { user, signOut } = useAuth();
+  const { organisations, selectedOrgId, setSelectedOrgId, isLoading, isDemoMode } = useOrganisation();
+  const { user, signOut, userRoles } = useAuth();
+
+  const visibleNavItems = navItems.filter(item => {
+    if (!item.roles || isDemoMode) return true;
+    return userRoles.some(role => item.roles!.includes(role));
+  });
 
   return (
     <div className="flex flex-col h-full">
@@ -100,7 +112,7 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
 
       {/* Navigation */}
       <nav className="flex-1 p-3 lg:p-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
           

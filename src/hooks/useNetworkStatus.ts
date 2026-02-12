@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { syncAll, getPendingSyncCount, getPendingConflicts, SyncResult } from '@/lib/syncService';
 import { SyncConflict } from '@/lib/offlineDb';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
 export interface NetworkStatus {
@@ -26,7 +27,7 @@ export function useNetworkStatus() {
       const conflicts = await getPendingConflicts();
       setStatus((prev) => ({ ...prev, pendingSyncCount: count, conflicts }));
     } catch (error) {
-      console.error('Error updating pending count:', error);
+      logger.error('Error updating pending count', 'NetworkStatus', { error: error instanceof Error ? error.message : String(error) });
     }
   }, []);
 
@@ -62,7 +63,7 @@ export function useNetworkStatus() {
 
       return result;
     } catch (error) {
-      console.error('Sync error:', error);
+      logger.error('Sync error', 'NetworkStatus', { error: error instanceof Error ? error.message : String(error) });
       toast.error('Sync failed');
       setStatus((prev) => ({ ...prev, isSyncing: false }));
       return null;

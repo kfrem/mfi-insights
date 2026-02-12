@@ -6,17 +6,15 @@ import { Loader2 } from 'lucide-react';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireOrg?: boolean;
+  allowedRoles?: string[];
 }
 
-export function ProtectedRoute({ children, requireOrg = true }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { organisations, isLoading: orgLoading } = useOrganisation();
+export function ProtectedRoute({ children, requireOrg = true, allowedRoles }: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading: authLoading, userRoles } = useAuth();
+  const { organisations, isLoading: orgLoading, isDemoMode } = useOrganisation();
   const location = useLocation();
 
-  // Check if in demo mode (allows bypassing auth)
-  const isDemoMode = sessionStorage.getItem('mfi_demo_mode') === 'true';
-
-  // Show loading while checking auth (skip if demo mode)
+  // Show loading while checking auth (skip if demo mode - validated via context)
   if (!isDemoMode && authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -40,9 +38,16 @@ export function ProtectedRoute({ children, requireOrg = true }: ProtectedRoutePr
   }
 
   // Redirect to onboarding if user has no organisations (except on onboarding page)
-  // Skip for demo mode since demo org is always available
   if (!isDemoMode && requireOrg && organisations.length === 0 && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
+  }
+
+  // RBAC enforcement: if allowedRoles is specified, check that user has at least one
+  if (allowedRoles && allowedRoles.length > 0 && !isDemoMode) {
+    const hasRole = userRoles.some(role => allowedRoles.includes(role));
+    if (!hasRole) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <>{children}</>;

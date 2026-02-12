@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Organisation } from '@/types/organisation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/lib/logger';
 
 // Demo organisation ID - matches the one seeded in the database
 const DEMO_ORG_ID = 'a0000000-0000-0000-0000-000000000001';
@@ -43,7 +44,7 @@ export function OrganisationProvider({ children }: { children: ReactNode }) {
         setOrganisations([demoOrg]);
         setSelectedOrgId(DEMO_ORG_ID);
       } catch (err) {
-        console.error('Failed to fetch demo organisation:', err);
+        logger.error('Failed to fetch demo organisation', 'OrganisationContext', { error: err instanceof Error ? err.message : String(err) });
         setOrganisations([]);
       } finally {
         setIsLoading(false);
@@ -78,7 +79,7 @@ export function OrganisationProvider({ children }: { children: ReactNode }) {
         setSelectedOrgId(null);
       }
     } catch (err) {
-      console.error('Failed to fetch organisations:', err);
+      logger.error('Failed to fetch organisations', 'OrganisationContext', { error: err instanceof Error ? err.message : String(err) });
       setOrganisations([]);
     } finally {
       setIsLoading(false);

@@ -18,6 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { UserPlus, Loader2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -103,7 +104,7 @@ export function AddShareholderForm() {
       setOpen(false);
       form.reset();
     } catch (error: any) {
-      console.error('Error adding shareholder:', error);
+      logger.error('Error adding shareholder', 'AddShareholderForm', { error: error?.message || String(error) });
       toast.error(error.message || 'Failed to add shareholder');
     } finally {
       setIsSubmitting(false);

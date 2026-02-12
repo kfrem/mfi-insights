@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { Search, FileText, Download, Eye, Loader2, FolderOpen } from 'lucide-react';
 import { formatDate } from '@/lib/dateUtils';
 
@@ -78,7 +79,7 @@ export function ClientDocumentSearch() {
 
       setResults(data || []);
     } catch (error: any) {
-      console.error('Search error:', error);
+      logger.error('Search error', 'ClientDocumentSearch', { error: error?.message || String(error) });
       toast.error('Failed to search documents');
     } finally {
       setIsSearching(false);

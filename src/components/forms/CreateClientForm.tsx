@@ -31,6 +31,7 @@ import { GroupMemberForm, MemberData, emptyMember } from './GroupMemberForm';
 import { ClientType } from '@/types/mfi';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 // Ghana Card format: GHA-XXXXXXXXX-X (13 digits)
 const ghanaCardRegex = /^GHA-\d{9}-\d$/;
@@ -246,7 +247,7 @@ export function CreateClientForm() {
       form.reset();
       setMembers([]);
     } catch (error: any) {
-      console.error('Error creating client:', error);
+      logger.error('Error creating client', 'CreateClientForm', { error: error?.message || String(error) });
       toast.error(error.message || 'Failed to create client');
     } finally {
       setIsSubmitting(false);

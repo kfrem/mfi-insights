@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { logger } from '@/lib/logger';
 
 interface UsePollingRefreshOptions {
   /** Polling interval in milliseconds (default: 30000 = 30 seconds) */
@@ -45,7 +46,7 @@ export function usePollingRefresh(options: UsePollingRefreshOptions = {}) {
     
     setIsPolling(true);
     intervalRef.current = setInterval(refresh, interval);
-    console.log(`[Polling] Started with ${interval}ms interval`);
+    logger.debug(`Started with ${interval}ms interval`, 'PollingRefresh');
   }, [interval, refresh]);
 
   const stopPolling = useCallback(() => {
@@ -53,7 +54,7 @@ export function usePollingRefresh(options: UsePollingRefreshOptions = {}) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
       setIsPolling(false);
-      console.log('[Polling] Stopped');
+      logger.debug('Stopped', 'PollingRefresh');
     }
   }, []);
 

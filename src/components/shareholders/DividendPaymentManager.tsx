@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { CheckCircle2, Loader2, CreditCard, Search } from 'lucide-react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { formatGHS } from '@/lib/utils';
@@ -134,7 +135,7 @@ export function DividendPaymentManager() {
       setPaymentNotes('');
       setOpen(false);
     } catch (error: any) {
-      console.error('Error processing payments:', error);
+      logger.error('Error processing payments', 'DividendPaymentManager', { error: error?.message || String(error) });
       toast.error(error.message || 'Failed to process payments');
     } finally {
       setIsSubmitting(false);

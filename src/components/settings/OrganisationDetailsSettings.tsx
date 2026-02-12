@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Building2, Save } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { GHANA_REGIONS } from '@/data/ghanaLocations';
 
 export function OrganisationDetailsSettings() {
@@ -87,7 +88,7 @@ export function OrganisationDetailsSettings() {
         description: 'Your organisation details have been saved successfully.',
       });
     } catch (err: any) {
-      console.error('Failed to update organisation:', err);
+      logger.error('Failed to update organisation', 'OrganisationDetailsSettings', { error: err?.message || String(err) });
       toast({
         title: 'Error',
         description: err.message || 'Failed to update organisation details.',

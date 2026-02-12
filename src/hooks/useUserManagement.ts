@@ -160,6 +160,14 @@ export function useUpdateUserRole() {
     mutationFn: async ({ userId, role, action }: { userId: string; role: UserRole; action: 'add' | 'remove' }) => {
       if (!selectedOrgId) throw new Error('No organization selected');
 
+      // Server-side RLS enforces this, but fail fast on client
+      const { data: callerRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('org_id', selectedOrgId);
+      const isAdmin = callerRoles?.some(r => r.role === 'ADMIN');
+      if (!isAdmin) throw new Error('Only administrators can modify user roles');
+
       if (action === 'add') {
         const { error } = await supabase
           .from('user_roles')

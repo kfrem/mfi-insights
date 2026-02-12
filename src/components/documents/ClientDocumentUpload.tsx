@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { Upload, FileText, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const DOCUMENT_TYPES = [
@@ -243,7 +244,7 @@ export function ClientDocumentUpload() {
         ));
         successCount++;
       } catch (error: any) {
-        console.error('Upload error:', error);
+        logger.error('Upload error', 'ClientDocumentUpload', { error: error?.message || String(error) });
         // Update status to error
         setSelectedFiles(prev => prev.map((f, idx) => 
           idx === i ? { ...f, status: 'error', error: error.message } : f

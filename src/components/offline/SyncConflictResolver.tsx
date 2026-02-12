@@ -8,6 +8,7 @@ import { SyncConflict } from '@/lib/offlineDb';
 import { resolveConflict } from '@/lib/syncService';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
 const entityIcons = {
@@ -37,7 +38,7 @@ export function SyncConflictResolver() {
       await updatePendingCount();
     } catch (error) {
       toast.error('Failed to resolve conflict');
-      console.error(error);
+      logger.error('Failed to resolve conflict', 'SyncConflictResolver', { error: error instanceof Error ? error.message : String(error) });
     } finally {
       setResolving(null);
     }

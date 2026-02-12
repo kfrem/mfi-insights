@@ -26,6 +26,7 @@ import { useOrganisation } from '@/contexts/OrganisationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { ArrowUpDown, Loader2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Shareholder } from '@/types/shareholder';
@@ -123,7 +124,7 @@ export function RecordTransactionForm({ shareholders }: RecordTransactionFormPro
       setOpen(false);
       form.reset();
     } catch (error: any) {
-      console.error('Error recording transaction:', error);
+      logger.error('Error recording transaction', 'RecordTransactionForm', { error: error?.message || String(error) });
       toast.error(error.message || 'Failed to record transaction');
     } finally {
       setIsSubmitting(false);

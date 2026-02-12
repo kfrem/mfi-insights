@@ -26,6 +26,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { Banknote, Loader2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Shareholder } from '@/types/shareholder';
@@ -112,7 +113,7 @@ export function ProcessDividendForm({ shareholders }: ProcessDividendFormProps) 
       setOpen(false);
       form.reset();
     } catch (error: any) {
-      console.error('Error processing dividend:', error);
+      logger.error('Error processing dividend', 'ProcessDividendForm', { error: error?.message || String(error) });
       toast.error(error.message || 'Failed to process dividend');
     } finally {
       setIsSubmitting(false);

@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { FileText, Download, Eye, FolderOpen, Calendar, Tag } from 'lucide-react';
 import { formatDate } from '@/lib/dateUtils';
 import type { Client } from '@/types/mfi';
@@ -66,7 +67,7 @@ export function ClientDocumentsModal({ client, open, onOpenChange }: ClientDocum
       if (error) throw error;
       setDocuments(data || []);
     } catch (error: any) {
-      console.error('Error fetching documents:', error);
+      logger.error('Error fetching documents', 'ClientDocumentsModal', { error: error?.message || String(error) });
       toast.error('Failed to load documents');
     } finally {
       setIsLoading(false);

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Building2, CheckCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 type View = 'register' | 'verify';
 
@@ -61,7 +62,7 @@ export default function Register() {
           });
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
+          logger.error('Profile creation error', 'Register', { error: profileError.message || String(profileError) });
         }
       }
 
@@ -73,7 +74,7 @@ export default function Register() {
         navigate('/onboarding');
       }
     } catch (err: any) {
-      console.error('Registration error:', err);
+      logger.error('Registration error', 'Register', { error: err?.message || String(err) });
       setError(err.message || 'Failed to create account');
     } finally {
       setIsSubmitting(false);
