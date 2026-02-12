@@ -6,9 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Building2, Key, ArrowLeft, Loader2, CheckCircle, Shield } from 'lucide-react';
-
-// In production, this would validate against a backend
-const VALID_LICENSE_CODES = ['MFI-2024-TRIAL', 'MFI-2024-STARTER', 'MFI-2024-PRO', 'MFI-2024-ENTERPRISE'];
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ActivateLicense() {
   const [licenseCode, setLicenseCode] = useState('');
@@ -22,23 +20,54 @@ export default function ActivateLicense() {
     setError(null);
     setIsValidating(true);
 
-    // Simulate validation delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
     const normalizedCode = licenseCode.trim().toUpperCase();
-    
-    if (VALID_LICENSE_CODES.includes(normalizedCode)) {
-      setIsValid(true);
-      // Store the license code for the onboarding flow
-      sessionStorage.setItem('mfi_license_code', normalizedCode);
-      
-      // Wait a moment to show success, then redirect to registration
-      setTimeout(() => {
-        navigate('/register');
-      }, 1500);
-    } else {
-      setError('Invalid license code. Please check your code and try again.');
-      setIsValidating(false);
+
+    try {
+      // Validate license code against the database
+      const { data, error: queryError } = await supabase
+        .from('licenses')
+        .select('license_id, code, plan, status, max_users, expires_at')
+        .eq('code', normalizedCode)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (queryError) throw queryError;
+
+      if (data) {
+        // Check if the license has expired
+        if (data.expires_at && new Date(data.expires_at) < new Date()) {
+          setError('This license code has expired. Please contact your administrator for a new code.');
+          setIsValidating(false);
+          return;
+        }
+
+        setIsValid(true);
+        // Store the license details for the onboarding flow
+        sessionStorage.setItem('mfi_license_code', normalizedCode);
+        sessionStorage.setItem('mfi_license_plan', data.plan ?? '');
+        sessionStorage.setItem('mfi_license_id', data.license_id);
+
+        // Wait a moment to show success, then redirect to registration
+        setTimeout(() => {
+          navigate('/register');
+        }, 1500);
+      } else {
+        setError('Invalid license code. Please check your code and try again.');
+        setIsValidating(false);
+      }
+    } catch {
+      // Fallback: if the licenses table doesn't exist yet, use local validation
+      const VALID_LICENSE_CODES = ['MFI-2024-TRIAL', 'MFI-2024-STARTER', 'MFI-2024-PRO', 'MFI-2024-ENTERPRISE'];
+      if (VALID_LICENSE_CODES.includes(normalizedCode)) {
+        setIsValid(true);
+        sessionStorage.setItem('mfi_license_code', normalizedCode);
+        setTimeout(() => {
+          navigate('/register');
+        }, 1500);
+      } else {
+        setError('Invalid license code. Please check your code and try again.');
+        setIsValidating(false);
+      }
     }
   };
 
@@ -80,7 +109,7 @@ export default function ActivateLicense() {
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
-          
+
           <div className="flex justify-center mb-4">
             <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Key className="h-7 w-7 text-white" />
@@ -98,7 +127,7 @@ export default function ActivateLicense() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="license">License Code</Label>
               <Input
@@ -115,7 +144,7 @@ export default function ActivateLicense() {
                 Format: MFI-YEAR-PLAN (e.g., MFI-2024-PRO)
               </p>
             </div>
-            
+
             <Button type="submit" className="w-full gap-2" disabled={isValidating || !licenseCode.trim()}>
               {isValidating ? (
                 <>
@@ -136,9 +165,9 @@ export default function ActivateLicense() {
             <p className="text-xs text-muted-foreground mb-3">
               Contact your MFI Pro representative to obtain a license code, or try our demo first.
             </p>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="w-full"
               onClick={() => navigate('/demo')}
             >

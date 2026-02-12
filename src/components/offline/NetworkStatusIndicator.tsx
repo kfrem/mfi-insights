@@ -1,4 +1,5 @@
 import { Wifi, WifiOff, RefreshCw, AlertTriangle, Cloud, CloudOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -10,13 +11,14 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { formatDate } from '@/lib/dateUtils';
 
 export function NetworkStatusIndicator() {
-  const { 
-    isOnline, 
-    pendingSyncCount, 
-    conflicts, 
-    lastSyncTime, 
+  const navigate = useNavigate();
+  const {
+    isOnline,
+    pendingSyncCount,
+    conflicts,
+    lastSyncTime,
     isSyncing,
-    triggerSync 
+    triggerSync
   } = useNetworkStatus();
 
   const hasIssues = !isOnline || pendingSyncCount > 0 || conflicts.length > 0;
@@ -116,7 +118,7 @@ export function NetworkStatusIndicator() {
                 variant="outline" 
                 size="sm" 
                 className="mt-2 w-full"
-                onClick={() => {/* TODO: Navigate to conflict resolution */}}
+                onClick={() => navigate('/sync-conflicts')}
               >
                 Review Conflicts
               </Button>

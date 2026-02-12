@@ -7,6 +7,7 @@ import { AlertTriangle, Check, X, GitCompare, User, CreditCard, Wallet } from 'l
 import { SyncConflict } from '@/lib/offlineDb';
 import { resolveConflict } from '@/lib/syncService';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const entityIcons = {
@@ -25,12 +26,13 @@ const entityLabels = {
 
 export function SyncConflictResolver() {
   const { conflicts, updatePendingCount } = useNetworkStatus();
+  const { user } = useAuth();
   const [resolving, setResolving] = useState<string | null>(null);
 
   const handleResolve = async (conflictId: string, resolution: 'local' | 'server') => {
     setResolving(conflictId);
     try {
-      await resolveConflict(conflictId, resolution, 'current-user'); // TODO: Get actual user ID
+      await resolveConflict(conflictId, resolution, user?.id ?? 'unknown');
       toast.success(`Conflict resolved using ${resolution === 'local' ? 'local' : 'server'} data`);
       await updatePendingCount();
     } catch (error) {

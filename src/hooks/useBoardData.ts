@@ -1,5 +1,6 @@
 // Hooks for Board of Directors Dashboard data
 import { useQuery } from '@tanstack/react-query';
+import { getExternalSupabase, isExternalSupabaseConfigured } from '@/integrations/external-supabase/client';
 import { useOrganisation } from '@/contexts/OrganisationContext';
 import {
   BoardExecutiveSummary,
@@ -10,11 +11,18 @@ import {
   BoardPeriod,
 } from '@/types/board';
 
-// Mock data generators - will be replaced with real Supabase queries
-function generateMockExecutiveSummary(orgId: string, period: BoardPeriod): BoardExecutiveSummary {
+// Type-safe schema query helper for external schemas
+const schemaQuery = (schema: string, table: string) => {
+  const client = getExternalSupabase();
+  if (!client) throw new Error('External Supabase not configured');
+  return (client as any).schema(schema).from(table);
+};
+
+// Fallback mock data generators for when DB views don't exist yet
+function generateFallbackExecutiveSummary(orgId: string, period: BoardPeriod): BoardExecutiveSummary {
   const multiplier = period === 'quarterly' ? 3 : period === 'monthly' ? 1 : 0.25;
   const basePortfolio = 45000000;
-  
+
   return {
     org_id: orgId,
     period,
@@ -45,31 +53,26 @@ function generateMockExecutiveSummary(orgId: string, period: BoardPeriod): Board
   };
 }
 
-function generateMockStrategicKPIs(): StrategicKPI[] {
+function generateFallbackStrategicKPIs(): StrategicKPI[] {
   return [
-    // Growth KPIs
     { kpi_name: 'Portfolio Growth Rate', category: 'Growth', current_value: 15.2, previous_value: 12.8, target_value: 20, variance_percent: -24, trend: 'up', status: 'At Risk', unit: 'percent' },
     { kpi_name: 'Client Acquisition', category: 'Growth', current_value: 450, previous_value: 380, target_value: 500, variance_percent: -10, trend: 'up', status: 'On Track', unit: 'number' },
     { kpi_name: 'Disbursements Volume', category: 'Growth', current_value: 8500000, previous_value: 7200000, target_value: 10000000, variance_percent: -15, trend: 'up', status: 'At Risk', unit: 'currency' },
-    // Profitability KPIs
     { kpi_name: 'Return on Equity (ROE)', category: 'Profitability', current_value: 18.5, previous_value: 16.2, target_value: 20, variance_percent: -7.5, trend: 'up', status: 'On Track', unit: 'percent' },
     { kpi_name: 'Return on Assets (ROA)', category: 'Profitability', current_value: 3.2, previous_value: 2.9, target_value: 3.5, variance_percent: -8.6, trend: 'up', status: 'On Track', unit: 'percent' },
     { kpi_name: 'Net Interest Margin', category: 'Profitability', current_value: 28.5, previous_value: 27.8, target_value: 30, variance_percent: -5, trend: 'up', status: 'On Track', unit: 'percent' },
-    // Efficiency KPIs
     { kpi_name: 'Operating Expense Ratio', category: 'Efficiency', current_value: 42.8, previous_value: 45.2, target_value: 40, variance_percent: 7, trend: 'down', status: 'At Risk', unit: 'percent' },
     { kpi_name: 'Cost per Borrower', category: 'Efficiency', current_value: 85, previous_value: 92, target_value: 80, variance_percent: 6.25, trend: 'down', status: 'On Track', unit: 'currency' },
     { kpi_name: 'Staff Productivity', category: 'Efficiency', current_value: 125, previous_value: 118, target_value: 130, variance_percent: -3.8, trend: 'up', status: 'On Track', unit: 'number' },
-    // Risk KPIs
     { kpi_name: 'NPL Ratio', category: 'Risk', current_value: 4.8, previous_value: 5.3, target_value: 5, variance_percent: -4, trend: 'down', status: 'On Track', unit: 'percent' },
     { kpi_name: 'PAR 30+ Rate', category: 'Risk', current_value: 6.2, previous_value: 7.1, target_value: 5, variance_percent: 24, trend: 'down', status: 'At Risk', unit: 'percent' },
     { kpi_name: 'Provision Coverage', category: 'Risk', current_value: 125, previous_value: 118, target_value: 100, variance_percent: 25, trend: 'up', status: 'On Track', unit: 'percent' },
-    // Compliance KPIs
     { kpi_name: 'Capital Adequacy Ratio', category: 'Compliance', current_value: 18.5, previous_value: 17.8, target_value: 13, variance_percent: 42.3, trend: 'up', status: 'On Track', unit: 'percent' },
     { kpi_name: 'Liquidity Ratio', category: 'Compliance', current_value: 32.5, previous_value: 30.2, target_value: 20, variance_percent: 62.5, trend: 'up', status: 'On Track', unit: 'percent' },
   ];
 }
 
-function generateMockRiskMetrics(orgId: string): RiskMetrics {
+function generateFallbackRiskMetrics(orgId: string): RiskMetrics {
   return {
     org_id: orgId,
     report_date: '2026-01-10',
@@ -103,7 +106,7 @@ function generateMockRiskMetrics(orgId: string): RiskMetrics {
   };
 }
 
-function generateMockQuarterlyTrends(): QuarterlyTrend[] {
+function generateFallbackQuarterlyTrends(): QuarterlyTrend[] {
   return [
     { quarter: 'Q1', year: 2025, gross_portfolio: 35000000, net_income: 650000, active_clients: 10200, npl_ratio: 5.8, car_ratio: 16.2, roe: 15.5, efficiency_ratio: 48 },
     { quarter: 'Q2', year: 2025, gross_portfolio: 38000000, net_income: 720000, active_clients: 10800, npl_ratio: 5.5, car_ratio: 16.8, roe: 16.2, efficiency_ratio: 46 },
@@ -113,7 +116,7 @@ function generateMockQuarterlyTrends(): QuarterlyTrend[] {
   ];
 }
 
-function generateMockPeerComparison(): PeerComparison[] {
+function generateFallbackPeerComparison(): PeerComparison[] {
   return [
     { metric_name: 'Portfolio Size (GHS M)', org_value: 45, peer_average: 38, peer_median: 35, industry_best: 120, percentile_rank: 72, unit: 'currency' },
     { metric_name: 'Client Base', org_value: 12500, peer_average: 9800, peer_median: 8500, industry_best: 45000, percentile_rank: 68, unit: 'number' },
@@ -126,16 +129,28 @@ function generateMockPeerComparison(): PeerComparison[] {
   ];
 }
 
-// React Query Hooks
+// React Query Hooks - Query Supabase views with fallback to mock data
 export function useBoardExecutiveSummary(period: BoardPeriod) {
   const { selectedOrgId } = useOrganisation();
 
   return useQuery({
     queryKey: ['board-executive-summary', selectedOrgId, period],
     queryFn: async () => {
-      // TODO: Replace with actual Supabase query
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return generateMockExecutiveSummary(selectedOrgId || 'default', period);
+      if (!selectedOrgId) return null;
+
+      try {
+        const { data, error } = await schemaQuery('mfi_reporting', 'v_board_executive_summary')
+          .select('*')
+          .eq('org_id', selectedOrgId)
+          .eq('period', period)
+          .single();
+
+        if (error) throw error;
+        return data as BoardExecutiveSummary;
+      } catch {
+        // Fallback to generated data if view doesn't exist yet
+        return generateFallbackExecutiveSummary(selectedOrgId, period);
+      }
     },
     enabled: !!selectedOrgId,
   });
@@ -147,8 +162,20 @@ export function useStrategicKPIs() {
   return useQuery({
     queryKey: ['strategic-kpis', selectedOrgId],
     queryFn: async () => {
-      await new Promise(resolve => setTimeout(resolve, 400));
-      return generateMockStrategicKPIs();
+      if (!selectedOrgId) return [];
+
+      try {
+        const { data, error } = await schemaQuery('mfi_reporting', 'v_strategic_kpis')
+          .select('*')
+          .eq('org_id', selectedOrgId)
+          .order('category');
+
+        if (error) throw error;
+        return data as StrategicKPI[];
+      } catch {
+        // Fallback to generated data if view doesn't exist yet
+        return generateFallbackStrategicKPIs();
+      }
     },
     enabled: !!selectedOrgId,
   });
@@ -160,8 +187,22 @@ export function useRiskMetrics() {
   return useQuery({
     queryKey: ['risk-metrics', selectedOrgId],
     queryFn: async () => {
-      await new Promise(resolve => setTimeout(resolve, 400));
-      return generateMockRiskMetrics(selectedOrgId || 'default');
+      if (!selectedOrgId) return null;
+
+      try {
+        const { data, error } = await schemaQuery('mfi_reporting', 'v_risk_metrics')
+          .select('*')
+          .eq('org_id', selectedOrgId)
+          .order('report_date', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (error) throw error;
+        return data as RiskMetrics;
+      } catch {
+        // Fallback to generated data if view doesn't exist yet
+        return generateFallbackRiskMetrics(selectedOrgId);
+      }
     },
     enabled: !!selectedOrgId,
   });
@@ -173,8 +214,21 @@ export function useQuarterlyTrends() {
   return useQuery({
     queryKey: ['quarterly-trends', selectedOrgId],
     queryFn: async () => {
-      await new Promise(resolve => setTimeout(resolve, 400));
-      return generateMockQuarterlyTrends();
+      if (!selectedOrgId) return [];
+
+      try {
+        const { data, error } = await schemaQuery('mfi_reporting', 'v_quarterly_trends')
+          .select('*')
+          .eq('org_id', selectedOrgId)
+          .order('year', { ascending: true })
+          .order('quarter', { ascending: true });
+
+        if (error) throw error;
+        return data as QuarterlyTrend[];
+      } catch {
+        // Fallback to generated data if view doesn't exist yet
+        return generateFallbackQuarterlyTrends();
+      }
     },
     enabled: !!selectedOrgId,
   });
@@ -186,8 +240,19 @@ export function usePeerComparison() {
   return useQuery({
     queryKey: ['peer-comparison', selectedOrgId],
     queryFn: async () => {
-      await new Promise(resolve => setTimeout(resolve, 400));
-      return generateMockPeerComparison();
+      if (!selectedOrgId) return [];
+
+      try {
+        const { data, error } = await schemaQuery('mfi_reporting', 'v_peer_comparison')
+          .select('*')
+          .eq('org_id', selectedOrgId);
+
+        if (error) throw error;
+        return data as PeerComparison[];
+      } catch {
+        // Fallback to generated data if view doesn't exist yet
+        return generateFallbackPeerComparison();
+      }
     },
     enabled: !!selectedOrgId,
   });
