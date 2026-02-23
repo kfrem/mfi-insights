@@ -91,13 +91,13 @@ export default function LandingPage() {
           </Button>
         </nav>
 
-        <div className="relative z-10 container mx-auto px-4 py-16 lg:py-24">
+        <div className="relative z-10 container mx-auto px-4 py-10 sm:py-16 lg:py-24">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-4 py-2 rounded-full text-white/90 text-sm mb-6">
               <Globe className="h-4 w-4" />
               Trusted by MFIs across Ghana
             </div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Complete Microfinance
               <span className="block text-accent-foreground/90">Management Platform</span>
             </h1>
@@ -162,7 +162,7 @@ export default function LandingPage() {
           </div>
 
           {/* Mock Dashboard Preview */}
-          <div className="bg-card rounded-2xl border shadow-xl overflow-hidden max-w-5xl mx-auto">
+          <div className="bg-card rounded-2xl border shadow-xl overflow-hidden max-w-5xl mx-auto hidden sm:block">
             <div className="bg-sidebar p-3 flex items-center gap-2">
               <div className="flex gap-1.5">
                 <div className="h-3 w-3 rounded-full bg-red-400" />
@@ -174,7 +174,7 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="p-6 bg-background">
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <div className="bg-gradient-to-br from-primary to-primary/80 rounded-xl p-4 text-white">
                   <p className="text-sm opacity-80">Total Portfolio</p>
                   <p className="text-2xl font-bold">₵5,234,890</p>
@@ -208,9 +208,9 @@ export default function LandingPage() {
                     <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded">Collections</span>
                   </div>
                 </div>
-                <div className="h-32 flex items-end gap-2">
+                <div className="h-32 flex items-end gap-1 sm:gap-2 overflow-hidden">
                   {[65, 45, 78, 52, 88, 70, 95, 60, 82, 75, 90, 85].map((h, i) => (
-                    <div key={i} className="flex-1 flex flex-col gap-1">
+                    <div key={i} className="flex-1 min-w-0 flex flex-col gap-0.5 sm:gap-1">
                       <div className="bg-primary/80 rounded-t" style={{ height: `${h}%` }} />
                       <div className="bg-accent/60 rounded-b" style={{ height: `${h * 0.8}%` }} />
                     </div>
@@ -234,7 +234,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
             {features.map((feature, index) => (
               <Card key={index} className="group hover:shadow-lg transition-shadow border-border/50">
                 <CardContent className="p-6">
