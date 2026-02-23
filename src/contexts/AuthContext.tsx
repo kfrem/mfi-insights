@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { getExternalSupabase, isExternalSupabaseConfigured } from '@/integrations/external-supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -19,14 +19,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const client = getExternalSupabase();
-    if (!client) {
-      setIsLoading(false);
-      return;
-    }
-
     // Set up auth state listener FIRST
-    const { data: { subscription } } = client.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
@@ -35,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // THEN check for existing session
-    client.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
@@ -47,12 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const client = getExternalSupabase();
-    if (!client) {
-      return { error: new Error('Authentication not configured') };
-    }
-
-    const { error } = await client.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -61,10 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    const client = getExternalSupabase();
-    if (client) {
-      await client.auth.signOut();
-    }
+    await supabase.auth.signOut();
     setUser(null);
     setSession(null);
   };

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getExternalSupabase } from '@/integrations/external-supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,14 +40,7 @@ export default function Login() {
     setError(null);
     setIsSubmitting(true);
 
-    const client = getExternalSupabase();
-    if (!client) {
-      setError('Authentication not configured');
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { error } = await client.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
 
