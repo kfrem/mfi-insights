@@ -88,18 +88,58 @@ export function useExecKpis() {
     queryFn: async () => {
       if (!selectedOrgId) return null;
       
-      try {
-        const { data, error } = await schemaQuery('mfi_reporting', 'v_exec_kpis')
-          .select('*')
-          .eq('org_id', selectedOrgId)
-          .single();
-        
-        if (error) throw error;
-        return data as ExecKPI;
-      } catch {
-        // Return mock data if view doesn't exist
-        return { ...mockExecKpis, org_id: selectedOrgId };
-      }
+      // Compute KPIs from local tables
+      const { data: loans } = await supabase
+        .from('loans')
+        .select('principal, outstanding_principal, disbursed_amount, status, disbursement_date, expected_end_date')
+        .eq('org_id', selectedOrgId);
+      
+      const { data: repayments } = await supabase
+        .from('repayments')
+        .select('amount')
+        .eq('org_id', selectedOrgId);
+      
+      const activeLoans = (loans || []).filter(l => ['ACTIVE', 'DISBURSED'].includes(l.status));
+      const grossPortfolio = activeLoans.reduce((sum, l) => sum + (Number(l.outstanding_principal) || Number(l.disbursed_amount) || Number(l.principal) || 0), 0);
+      const totalDisbursed = (loans || []).filter(l => l.disbursed_amount).reduce((sum, l) => sum + (Number(l.disbursed_amount) || 0), 0);
+      const totalRepaid = (repayments || []).reduce((sum, r) => sum + Number(r.amount), 0);
+      
+      // Simple PAR calculation: loans past expected_end_date
+      const now = new Date();
+      const parLoans = activeLoans.filter(l => {
+        if (!l.expected_end_date) return false;
+        const endDate = new Date(l.expected_end_date);
+        const daysDiff = Math.floor((now.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24));
+        return daysDiff >= 30;
+      });
+      const par30Plus = parLoans.reduce((sum, l) => sum + (Number(l.outstanding_principal) || Number(l.principal) || 0), 0);
+      const par30Rate = grossPortfolio > 0 ? (par30Plus / grossPortfolio) * 100 : 0;
+      
+      // Simple provisions: 1% current, 25% substandard (30-90 days), 50% doubtful (90-180), 100% loss (180+)
+      let provisionsRequired = 0;
+      activeLoans.forEach(l => {
+        const outstanding = Number(l.outstanding_principal) || Number(l.principal) || 0;
+        if (!l.expected_end_date) {
+          provisionsRequired += outstanding * 0.01; // current
+          return;
+        }
+        const daysPast = Math.floor((now.getTime() - new Date(l.expected_end_date).getTime()) / (1000 * 60 * 60 * 24));
+        if (daysPast < 30) provisionsRequired += outstanding * 0.01;
+        else if (daysPast < 90) provisionsRequired += outstanding * 0.25;
+        else if (daysPast < 180) provisionsRequired += outstanding * 0.50;
+        else provisionsRequired += outstanding;
+      });
+      
+      return {
+        org_id: selectedOrgId,
+        gross_portfolio: grossPortfolio,
+        active_loans: activeLoans.length,
+        par_30_plus: par30Plus,
+        par_30_rate: Math.round(par30Rate * 100) / 100,
+        provisions_required: Math.round(provisionsRequired * 100) / 100,
+        total_disbursed: totalDisbursed,
+        total_repaid: totalRepaid,
+      } as ExecKPI;
     },
     enabled: !!selectedOrgId,
   });
@@ -113,17 +153,48 @@ export function useBogClassification() {
     queryFn: async () => {
       if (!selectedOrgId) return [];
       
-      try {
-        const { data, error } = await schemaQuery('mfi_reporting', 'v_bog_classification_of_advances')
-          .select('*')
-          .eq('org_id', selectedOrgId)
-          .order('bog_bucket');
-        
-        if (error) throw error;
-        return data as BogClassification[];
-      } catch {
-        return mockBogClassification.map(r => ({ ...r, org_id: selectedOrgId }));
-      }
+      // Compute from local loans table
+      const { data: loans } = await supabase
+        .from('loans')
+        .select('outstanding_principal, principal, disbursed_amount, expected_end_date, status')
+        .eq('org_id', selectedOrgId)
+        .in('status', ['ACTIVE', 'DISBURSED']);
+      
+      if (!loans || loans.length === 0) return [];
+      
+      const now = new Date();
+      const buckets: Record<string, { count: number; balance: number; rate: number }> = {
+        'Current': { count: 0, balance: 0, rate: 0.01 },
+        'Watch': { count: 0, balance: 0, rate: 0.05 },
+        'Substandard': { count: 0, balance: 0, rate: 0.25 },
+        'Doubtful': { count: 0, balance: 0, rate: 0.50 },
+        'Loss': { count: 0, balance: 0, rate: 1.00 },
+      };
+      
+      loans.forEach(l => {
+        const outstanding = Number(l.outstanding_principal) || Number(l.disbursed_amount) || Number(l.principal) || 0;
+        let bucket = 'Current';
+        if (l.expected_end_date) {
+          const daysPast = Math.floor((now.getTime() - new Date(l.expected_end_date).getTime()) / (1000 * 60 * 60 * 24));
+          if (daysPast >= 180) bucket = 'Loss';
+          else if (daysPast >= 90) bucket = 'Doubtful';
+          else if (daysPast >= 30) bucket = 'Substandard';
+          else if (daysPast >= 1) bucket = 'Watch';
+        }
+        buckets[bucket].count++;
+        buckets[bucket].balance += outstanding;
+      });
+      
+      return Object.entries(buckets)
+        .filter(([, v]) => v.count > 0)
+        .map(([name, v]) => ({
+          org_id: selectedOrgId,
+          bog_bucket: name,
+          loan_count: v.count,
+          outstanding_balance: v.balance,
+          provision_rate: v.rate,
+          provision_amount: Math.round(v.balance * v.rate * 100) / 100,
+        })) as BogClassification[];
     },
     enabled: !!selectedOrgId,
   });
@@ -137,17 +208,41 @@ export function usePortfolioAging() {
     queryFn: async () => {
       if (!selectedOrgId) return [];
       
-      try {
-        const { data, error } = await schemaQuery('mfi_reporting', 'v_portfolio_aging')
-          .select('*')
-          .eq('org_id', selectedOrgId)
-          .order('days_overdue', { ascending: false });
+      // Compute from local data
+      const { data: loans } = await supabase
+        .from('loans')
+        .select('loan_id, principal, outstanding_principal, disbursed_amount, expected_end_date, status, client_id, clients(first_name, last_name)')
+        .eq('org_id', selectedOrgId)
+        .in('status', ['ACTIVE', 'DISBURSED']);
+      
+      if (!loans) return [];
+      
+      const now = new Date();
+      return loans.map(l => {
+        const outstanding = Number(l.outstanding_principal) || Number(l.disbursed_amount) || Number(l.principal) || 0;
+        let daysOverdue = 0;
+        let bucket = 'Current';
         
-        if (error) throw error;
-        return data as PortfolioAging[];
-      } catch {
-        return mockPortfolioAging.map(r => ({ ...r, org_id: selectedOrgId }));
-      }
+        if (l.expected_end_date) {
+          daysOverdue = Math.max(0, Math.floor((now.getTime() - new Date(l.expected_end_date).getTime()) / (1000 * 60 * 60 * 24)));
+          if (daysOverdue >= 180) bucket = 'Loss';
+          else if (daysOverdue >= 90) bucket = 'Doubtful';
+          else if (daysOverdue >= 30) bucket = 'Substandard';
+          else if (daysOverdue >= 1) bucket = 'Watch';
+        }
+        
+        const client = l.clients as any;
+        return {
+          org_id: selectedOrgId,
+          loan_id: l.loan_id,
+          client_name: client ? `${client.first_name} ${client.last_name}` : 'Unknown',
+          principal: Number(l.principal),
+          outstanding_balance: outstanding,
+          days_overdue: daysOverdue,
+          bog_bucket: bucket,
+        };
+      }).filter(l => l.days_overdue > 0)
+        .sort((a, b) => b.days_overdue - a.days_overdue) as PortfolioAging[];
     },
     enabled: !!selectedOrgId,
   });
@@ -161,21 +256,33 @@ export function useRepaymentDaily() {
     queryFn: async () => {
       if (!selectedOrgId) return [];
       
-      try {
-        const sixtyDaysAgo = new Date();
-        sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
-        
-        const { data, error } = await schemaQuery('mfi_reporting', 'v_repayments_daily')
-          .select('*')
-          .eq('org_id', selectedOrgId)
-          .gte('payment_date', sixtyDaysAgo.toISOString().split('T')[0])
-          .order('payment_date', { ascending: true });
-        
-        if (error) throw error;
-        return data as RepaymentDaily[];
-      } catch {
-        return generateMockRepayments().map(r => ({ ...r, org_id: selectedOrgId }));
-      }
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+      
+      const { data: repayments } = await supabase
+        .from('repayments')
+        .select('amount, payment_date')
+        .eq('org_id', selectedOrgId)
+        .gte('payment_date', sixtyDaysAgo.toISOString().split('T')[0])
+        .order('payment_date', { ascending: true });
+      
+      if (!repayments || repayments.length === 0) return [];
+      
+      // Group by date
+      const grouped: Record<string, { total: number; count: number }> = {};
+      repayments.forEach(r => {
+        const date = r.payment_date;
+        if (!grouped[date]) grouped[date] = { total: 0, count: 0 };
+        grouped[date].total += Number(r.amount);
+        grouped[date].count++;
+      });
+      
+      return Object.entries(grouped).map(([date, v]) => ({
+        org_id: selectedOrgId,
+        payment_date: date,
+        total_amount: v.total,
+        payment_count: v.count,
+      })) as RepaymentDaily[];
     },
     enabled: !!selectedOrgId,
   });
@@ -189,6 +296,22 @@ export function useClients() {
     queryFn: async () => {
       if (!selectedOrgId) return [];
       
+      // Use local Supabase (public.clients table)
+      try {
+        const { data, error } = await supabase
+          .from('clients')
+          .select('*')
+          .eq('org_id', selectedOrgId)
+          .order('created_at', { ascending: false });
+        
+        if (!error && data) {
+          return data as Client[];
+        }
+      } catch {
+        // Fall through to external
+      }
+      
+      // Fallback to external mfi schema
       try {
         const { data, error } = await schemaQuery('mfi', 'clients')
           .select('*')
@@ -310,8 +433,29 @@ export function useCreateClient() {
   
   return useMutation({
     mutationFn: async (input: CreateClientInput) => {
-      const { data, error } = await schemaQuery('mfi', 'clients')
-        .insert(input)
+      // Use local Supabase (public.clients table)
+      const { data, error } = await supabase
+        .from('clients')
+        .insert({
+          org_id: input.org_id,
+          client_type: input.client_type || 'INDIVIDUAL',
+          first_name: input.first_name,
+          last_name: input.last_name,
+          ghana_card_number: input.ghana_card_number,
+          ghana_card_expiry: input.ghana_card_expiry,
+          date_of_birth: input.date_of_birth,
+          gender: input.gender,
+          nationality: input.nationality || 'Ghanaian',
+          occupation: input.occupation,
+          risk_category: input.risk_category,
+          source_of_funds: input.source_of_funds,
+          phone: input.phone,
+          email: input.email,
+          address: input.address,
+          group_name: input.group_name,
+          registration_number: input.registration_number,
+          proof_of_residence_type: input.proof_of_residence_type,
+        })
         .select()
         .single();
       
@@ -333,6 +477,14 @@ export function useCreateLoan() {
   
   return useMutation({
     mutationFn: async (input: CreateLoanInput) => {
+      // Calculate expected_end_date from disbursement_date + term_months
+      let expectedEndDate: string | null = null;
+      if (input.disbursement_date) {
+        const start = new Date(input.disbursement_date);
+        start.setMonth(start.getMonth() + input.term_months);
+        expectedEndDate = start.toISOString().split('T')[0];
+      }
+
       // Use local Supabase (public.loans table)
       const { data, error } = await supabase
         .from('loans')
@@ -351,9 +503,11 @@ export function useCreateLoan() {
           penalty_value: input.penalty_value || 0,
           penalty_grace_days: input.penalty_grace_days || 0,
           disbursement_date: input.disbursement_date,
+          expected_end_date: expectedEndDate,
           total_interest: input.total_interest,
           total_repayable: input.total_repayable,
           outstanding_principal: input.principal,
+          outstanding_interest: input.total_interest || 0,
           notes: input.notes,
           status: 'PENDING',
         })
@@ -367,6 +521,7 @@ export function useCreateLoan() {
       queryClient.invalidateQueries({ queryKey: ['active-loans'] });
       queryClient.invalidateQueries({ queryKey: ['client-exposure'] });
       queryClient.invalidateQueries({ queryKey: ['exec-kpis'] });
+      queryClient.invalidateQueries({ queryKey: ['bog-classification'] });
       toast.success('Loan created successfully');
     },
     onError: (error: Error) => {
@@ -380,7 +535,7 @@ export function usePostRepayment() {
   
   return useMutation({
     mutationFn: async (input: PostRepaymentInput) => {
-      // Use local Supabase (public.repayments table)
+      // Insert repayment
       const { data, error } = await supabase
         .from('repayments')
         .insert({
@@ -404,6 +559,41 @@ export function usePostRepayment() {
         }
         throw error;
       }
+
+      // Update loan outstanding balances
+      const principalPaid = input.principal_portion || input.amount;
+      const interestPaid = input.interest_portion || 0;
+      
+      const { data: loan } = await supabase
+        .from('loans')
+        .select('outstanding_principal, outstanding_interest')
+        .eq('loan_id', input.loan_id)
+        .single();
+      
+      if (loan) {
+        const newOutstandingPrincipal = Math.max(0, (Number(loan.outstanding_principal) || 0) - principalPaid);
+        const newOutstandingInterest = Math.max(0, (Number(loan.outstanding_interest) || 0) - interestPaid);
+        
+        const updateData: Record<string, any> = {
+          outstanding_principal: newOutstandingPrincipal,
+          outstanding_interest: newOutstandingInterest,
+        };
+        
+        // Mark as COMPLETED if fully repaid
+        if (newOutstandingPrincipal <= 0) {
+          updateData.status = 'COMPLETED';
+          updateData.actual_end_date = input.payment_date;
+        } else if (loan.outstanding_principal && Number(loan.outstanding_principal) === newOutstandingPrincipal + principalPaid) {
+          // Ensure loan is ACTIVE if not already
+          updateData.status = 'ACTIVE';
+        }
+        
+        await supabase
+          .from('loans')
+          .update(updateData)
+          .eq('loan_id', input.loan_id);
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -411,6 +601,8 @@ export function usePostRepayment() {
       queryClient.invalidateQueries({ queryKey: ['active-loans'] });
       queryClient.invalidateQueries({ queryKey: ['exec-kpis'] });
       queryClient.invalidateQueries({ queryKey: ['portfolio-aging'] });
+      queryClient.invalidateQueries({ queryKey: ['bog-classification'] });
+      queryClient.invalidateQueries({ queryKey: ['client-exposure'] });
       toast.success('Repayment posted successfully');
     },
     onError: (error: Error) => {
