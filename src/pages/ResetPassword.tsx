@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getExternalSupabase } from '@/integrations/external-supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,14 +34,7 @@ export default function ResetPassword() {
 
     setIsSubmitting(true);
 
-    const client = getExternalSupabase();
-    if (!client) {
-      setError('Authentication not configured');
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { error } = await client.auth.updateUser({ password });
+    const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
       setError(error.message);
