@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MFI Clarity — User Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f0f4f8; color:#1e293b; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .page { width:210mm; margin:20px auto; background:white; box-shadow:0 4px 30px rgba(0,0,0,0.1); overflow:hidden; }
+  .page-inner { padding:40px 48px; }
+  .page-number { text-align:right; padding:10px 48px 16px; font-size:0.66rem; color:#94a3b8; font-weight:600; }
+  .section-label { display:inline-block; background:rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.2); border-radius:20px; padding:5px 15px; font-size:0.68rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#1d4ed8; margin-bottom:16px; }
+  .section-title { font-size:1.8rem; font-weight:900; line-height:1.15; letter-spacing:-0.03em; color:#0f172a; margin-bottom:12px; }
+  .section-intro { font-size:0.82rem; color:#475569; line-height:1.7; margin-bottom:28px; }
+  .step-card { border:1px solid #e2e8f0; border-radius:14px; padding:20px; margin-bottom:12px; display:grid; grid-template-columns:50px 1fr; gap:16px; align-items:start; }
+  .step-num { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1rem; color:white; }
+  .step-title { font-size:0.88rem; font-weight:800; color:#0f172a; margin-bottom:4px; }
+  .step-desc { font-size:0.75rem; color:#475569; line-height:1.6; }
+  .tip-box { background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:16px 20px; margin-top:8px; }
+  .tip-box h5 { font-size:0.75rem; font-weight:700; color:#1d4ed8; margin-bottom:4px; }
+  .tip-box p { font-size:0.72rem; color:#1e40af; line-height:1.55; }
+  .role-badge { display:inline-block; padding:3px 10px; border-radius:6px; font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-right:6px; margin-bottom:4px; }
+  .print-btn { position:fixed; bottom:30px; right:30px; background:linear-gradient(135deg,#1d4ed8,#3b82f6); color:white; border:none; padding:14px 28px; border-radius:12px; font-size:0.9rem; font-weight:700; cursor:pointer; box-shadow:0 4px 20px rgba(29,78,216,0.4); z-index:9999; transition:transform 0.2s; }
+  .print-btn:hover { transform:scale(1.05); }
+  @media print {
+    body { background:white; }
+    .page { box-shadow:none; margin:0; width:100%; page-break-after:always; }
+    .no-print { display:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">⬇ Save as PDF</button>
+
+<!-- ══════════════ COVER ══════════════ -->
+<div class="page" style="background:linear-gradient(145deg,#0f172a 0%,#1e3a8a 55%,#1e40af 100%);display:flex;flex-direction:column;min-height:297mm;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-100px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(59,130,246,0.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;"></div>
+  <div style="position:absolute;bottom:-80px;left:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(96,165,250,0.08) 0%,transparent 70%);border-radius:50%;pointer-events:none;"></div>
+
+  <div style="padding:44px 48px 0;display:flex;align-items:center;gap:13px;position:relative;z-index:2;">
+    <div style="width:46px;height:46px;background:linear-gradient(135deg,#3b82f6,#60a5fa);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:white;">M</div>
+    <div style="font-size:1.35rem;font-weight:800;letter-spacing:-0.03em;color:white;">MFI Clarity<span style="color:#60a5fa;">.</span></div>
+    <div style="margin-left:auto;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:5px 13px;border-radius:20px;font-size:0.67rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#93c5fd;">User Guide 2025</div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:50px 48px;position:relative;z-index:2;">
+    <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.3);border-radius:20px;padding:5px 15px;font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#93c5fd;margin-bottom:26px;width:fit-content;">
+      📖 Complete Platform Guide
+    </div>
+    <h1 style="font-size:3rem;font-weight:900;line-height:1.08;letter-spacing:-0.04em;color:white;margin-bottom:12px;">
+      The Complete<br>
+      <span style="background:linear-gradient(90deg,#60a5fa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">User Guide</span>
+    </h1>
+    <p style="font-size:1.05rem;color:#93c5fd;line-height:1.55;max-width:460px;margin-bottom:30px;">
+      Everything you need to know to get started and become an expert user — whether you're a Teller, Field Officer, Manager, Admin, or Board Director.
+    </p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <span class="role-badge" style="background:rgba(239,68,68,0.2);color:#fca5a5;">Admin</span>
+      <span class="role-badge" style="background:rgba(59,130,246,0.2);color:#93c5fd;">Manager</span>
+      <span class="role-badge" style="background:rgba(34,197,94,0.2);color:#86efac;">Field Officer</span>
+      <span class="role-badge" style="background:rgba(234,179,8,0.2);color:#fde68a;">Teller</span>
+      <span class="role-badge" style="background:rgba(139,92,246,0.2);color:#c4b5fd;">Board Director</span>
+      <span class="role-badge" style="background:rgba(249,115,22,0.2);color:#fed7aa;">Regulator</span>
+    </div>
+  </div>
+
+  <div style="background:rgba(0,0,0,0.2);padding:18px 48px;border-top:1px solid rgba(255,255,255,0.08);position:relative;z-index:2;">
+    <div style="font-size:0.72rem;color:#64748b;">mfi-clarity.lovable.app — Version 1.0 — Last Updated: February 2025</div>
+  </div>
+</div>
+
+
+<!-- ══════════════ PAGE 2 — GETTING STARTED ══════════════ -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Getting Started</div>
+  <h2 class="section-title">Your First 10 Minutes with MFI Clarity</h2>
+  <p class="section-intro">Follow these steps to go from zero to fully operational. The entire setup takes less than 10 minutes — no IT expertise required.</p>
+
+  <div class="step-card">
+    <div class="step-num" style="background:linear-gradient(135deg,#dc2626,#ef4444);">1</div>
+    <div>
+      <div class="step-title">Register Your Account</div>
+      <div class="step-desc">Visit <strong>mfi-clarity.lovable.app</strong> and click "Staff Login" → "Register". Enter your email and a strong password. You'll receive a verification email — click the link to activate your account.</div>
+      <div class="tip-box">
+        <h5>💡 Tip</h5>
+        <p>Use your official work email address. This email will be linked to your role and all audit trail entries.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num" style="background:linear-gradient(135deg,#ea580c,#f97316);">2</div>
+    <div>
+      <div class="step-title">Create Your Organisation</div>
+      <div class="step-desc">After email verification, you'll be directed to the <strong>Organisation Onboarding</strong> screen. Enter your institution's legal name, trading name, registration number, BoG license number, physical address, and contact details. Select your <strong>BoG MFI Tier</strong> (Tier 1-4).</div>
+      <div class="tip-box">
+        <h5>💡 Why Tier Selection Matters</h5>
+        <p>Your tier determines capital requirements, lending limits, single obligor limits, and reporting frequency. The system enforces these automatically.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num" style="background:linear-gradient(135deg,#16a34a,#22c55e);">3</div>
+    <div>
+      <div class="step-title">Invite Your Team</div>
+      <div class="step-desc">Navigate to <strong>User Management</strong> from the sidebar. Click "Add User" and enter each team member's email. Assign them a role: Admin, Manager, Field Officer, Teller, or Board Director. They'll receive an invitation email with login instructions.</div>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num" style="background:linear-gradient(135deg,#2563eb,#3b82f6);">4</div>
+    <div>
+      <div class="step-title">Start Adding Clients</div>
+      <div class="step-desc">Go to <strong>Data Entry</strong> → "New Client". Fill in client details including Ghana Card number, date of birth, occupation, source of funds, and risk category. The system supports Individual, Group, Cooperative, and SME client types.</div>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);">5</div>
+    <div>
+      <div class="step-title">Create Your First Loan</div>
+      <div class="step-desc">Go to <strong>Data Entry</strong> → "New Loan Application". Search for a client, select loan type, enter principal amount, interest rate, term, and repayment frequency. The system will calculate the amortisation schedule and check affordability before submission.</div>
+    </div>
+  </div>
+</div>
+<div class="page-number">2 / 12</div>
+</div>
+
+
+<!-- ══════════════ PAGE 3 — NAVIGATION GUIDE ══════════════ -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Navigation</div>
+  <h2 class="section-title">Finding Your Way Around</h2>
+  <p class="section-intro">MFI Clarity uses a sidebar navigation on desktop and a collapsible menu on mobile. Here's what every menu item does and who can access it.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">📊 Executive Dashboard</div>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;margin-bottom:6px;">Real-time KPIs: total portfolio, PAR ratios, collection rates, active clients. Click any metric to drill down into loan-level data.</div>
+      <span class="role-badge" style="background:#dbeafe;color:#1d4ed8;">Manager</span>
+      <span class="role-badge" style="background:#fecaca;color:#dc2626;">Admin</span>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">🏛️ Board Dashboard</div>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;margin-bottom:6px;">Strategic KPIs, risk analysis, peer benchmarking, and trend analysis. Designed for governance oversight.</div>
+      <span class="role-badge" style="background:#e9d5ff;color:#7c3aed;">Board Director</span>
+      <span class="role-badge" style="background:#fecaca;color:#dc2626;">Admin</span>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">📈 Management Dashboard</div>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;margin-bottom:6px;">Daily operations, staff productivity, arrears activity, and performance charts for operational management.</div>
+      <span class="role-badge" style="background:#dbeafe;color:#1d4ed8;">Manager</span>
+      <span class="role-badge" style="background:#fecaca;color:#dc2626;">Admin</span>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">📋 Regulatory Reports</div>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;margin-bottom:6px;">CAR calculator, liquidity ratios, prudential returns tracker, AML reports, and BoG bucket classification.</div>
+      <span class="role-badge" style="background:#dbeafe;color:#1d4ed8;">Manager</span>
+      <span class="role-badge" style="background:#fecaca;color:#dc2626;">Admin</span>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">💰 Financial Reports</div>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;margin-bottom:6px;">Profitability metrics, deposit monitoring, PAR aging analysis, and governance risk panels.</div>
+      <span class="role-badge" style="background:#dbeafe;color:#1d4ed8;">Manager</span>
+      <span class="role-badge" style="background:#fecaca;color:#dc2626;">Admin</span>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">📱 Field Operations</div>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;margin-bottom:6px;">Collect repayments in the field with GPS, photos, and signatures. Works offline and syncs automatically.</div>
+      <span class="role-badge" style="background:#bbf7d0;color:#166534;">Field Officer</span>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">✏️ Data Entry</div>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;margin-bottom:6px;">Register clients, create loan applications, post repayments, and manage client documents.</div>
+      <span class="role-badge" style="background:#fef08a;color:#854d0e;">Teller</span>
+      <span class="role-badge" style="background:#dbeafe;color:#1d4ed8;">Manager</span>
+      <span class="role-badge" style="background:#fecaca;color:#dc2626;">Admin</span>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">💼 Shareholder Dashboard</div>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;margin-bottom:6px;">Investment tracking, share unit management, dividend payouts, and transaction history.</div>
+      <span class="role-badge" style="background:#dbeafe;color:#1d4ed8;">Manager</span>
+      <span class="role-badge" style="background:#fecaca;color:#dc2626;">Admin</span>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">🔍 Audit Log</div>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;margin-bottom:6px;">Complete audit trail of every action: who, what, when, where. Filterable by date, user, and action type.</div>
+      <span class="role-badge" style="background:#fecaca;color:#dc2626;">Admin</span>
+      <span class="role-badge" style="background:#dbeafe;color:#1d4ed8;">Manager</span>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+      <div style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">⚙️ Settings</div>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;margin-bottom:6px;">Organisation details, BoG tier configuration, license management, and system preferences.</div>
+      <span class="role-badge" style="background:#fecaca;color:#dc2626;">Admin</span>
+    </div>
+  </div>
+</div>
+<div class="page-number">3 / 12</div>
+</div>
+
+
+<!-- ══════════════ PAGE 4 — CLIENT MANAGEMENT ══════════════ -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Client Management</div>
+  <h2 class="section-title">Registering & Managing Clients</h2>
+  <p class="section-intro">MFI Clarity supports four client types: Individual, Group, Cooperative, and SME. Each type captures the specific KYC information required by BoG.</p>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:14px;">Registering a New Individual Client</h3>
+
+  <div class="step-card">
+    <div class="step-num" style="background:#3b82f6;">1</div>
+    <div>
+      <div class="step-title">Navigate to Data Entry → New Client</div>
+      <div class="step-desc">Select "Individual" as the client type. The form will adapt to show the required fields for individual KYC.</div>
+    </div>
+  </div>
+  <div class="step-card">
+    <div class="step-num" style="background:#3b82f6;">2</div>
+    <div>
+      <div class="step-title">Enter Personal Details</div>
+      <div class="step-desc"><strong>Required fields:</strong> First name, last name, date of birth, gender, nationality, Ghana Card number, Ghana Card expiry date, occupation, source of funds, and risk category (Low/Medium/High).</div>
+    </div>
+  </div>
+  <div class="step-card">
+    <div class="step-num" style="background:#3b82f6;">3</div>
+    <div>
+      <div class="step-title">Enter Financial Details</div>
+      <div class="step-desc">Monthly income and monthly expenses are used for loan affordability calculations. Enter accurate figures — the system will automatically assess debt-to-income ratios.</div>
+    </div>
+  </div>
+  <div class="step-card">
+    <div class="step-num" style="background:#3b82f6;">4</div>
+    <div>
+      <div class="step-title">Upload Documents</div>
+      <div class="step-desc">After creation, go to the client's profile and upload supporting documents: Ghana Card copy, proof of residence, business registration (for SMEs), and any other KYC documentation.</div>
+    </div>
+  </div>
+
+  <div style="height:1px;background:#e2e8f0;margin:24px 0;"></div>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:14px;">Group Clients</h3>
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:18px 22px;">
+    <p style="font-size:0.78rem;color:#166534;line-height:1.6;">For group lending, first register the group as a "Group" client type with a group name. Then add individual members using the <strong>Group Members</strong> modal. Each member has their own KYC details, and you can assign roles (Leader, Secretary, Member). The group's collective financials are calculated automatically.</p>
+  </div>
+
+  <div style="height:1px;background:#e2e8f0;margin:24px 0;"></div>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:14px;">Client Search & Assignment</h3>
+  <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:18px 22px;">
+    <p style="font-size:0.78rem;color:#1e40af;line-height:1.6;">Use the <strong>client search</strong> feature across the platform to find clients by name, ID, or phone number. Managers can assign clients to specific Field Officers via <strong>User Management → Client Assignments</strong>, ensuring each client has a designated relationship officer.</p>
+  </div>
+</div>
+<div class="page-number">4 / 12</div>
+</div>
+
+
+<!-- ══════════════ PAGE 5 — LOAN LIFECYCLE ══════════════ -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Loan Management</div>
+  <h2 class="section-title">The Complete Loan Lifecycle</h2>
+  <p class="section-intro">MFI Clarity manages the entire loan journey from application to completion, with built-in compliance checks at every stage.</p>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;">
+    <div style="flex:1;min-width:100px;text-align:center;padding:14px 8px;background:linear-gradient(135deg,#dbeafe,#eff6ff);border:1px solid #93c5fd;border-radius:10px;">
+      <div style="font-size:0.95rem;margin-bottom:4px;">📝</div>
+      <div style="font-size:0.68rem;font-weight:700;color:#1d4ed8;">PENDING</div>
+    </div>
+    <div style="display:flex;align-items:center;color:#94a3b8;font-size:0.8rem;">→</div>
+    <div style="flex:1;min-width:100px;text-align:center;padding:14px 8px;background:linear-gradient(135deg,#d1fae5,#ecfdf5);border:1px solid #6ee7b7;border-radius:10px;">
+      <div style="font-size:0.95rem;margin-bottom:4px;">✅</div>
+      <div style="font-size:0.68rem;font-weight:700;color:#059669;">APPROVED</div>
+    </div>
+    <div style="display:flex;align-items:center;color:#94a3b8;font-size:0.8rem;">→</div>
+    <div style="flex:1;min-width:100px;text-align:center;padding:14px 8px;background:linear-gradient(135deg,#fef3c7,#fffbeb);border:1px solid #fcd34d;border-radius:10px;">
+      <div style="font-size:0.95rem;margin-bottom:4px;">💵</div>
+      <div style="font-size:0.68rem;font-weight:700;color:#b45309;">DISBURSED</div>
+    </div>
+    <div style="display:flex;align-items:center;color:#94a3b8;font-size:0.8rem;">→</div>
+    <div style="flex:1;min-width:100px;text-align:center;padding:14px 8px;background:linear-gradient(135deg,#e0e7ff,#eef2ff);border:1px solid #a5b4fc;border-radius:10px;">
+      <div style="font-size:0.95rem;margin-bottom:4px;">🔄</div>
+      <div style="font-size:0.68rem;font-weight:700;color:#4338ca;">ACTIVE</div>
+    </div>
+    <div style="display:flex;align-items:center;color:#94a3b8;font-size:0.8rem;">→</div>
+    <div style="flex:1;min-width:100px;text-align:center;padding:14px 8px;background:linear-gradient(135deg,#d1fae5,#ecfdf5);border:1px solid #6ee7b7;border-radius:10px;">
+      <div style="font-size:0.95rem;margin-bottom:4px;">🎉</div>
+      <div style="font-size:0.68rem;font-weight:700;color:#059669;">COMPLETED</div>
+    </div>
+  </div>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:12px;">Creating a Loan Application</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+      <h4 style="font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:6px;">Loan Parameters</h4>
+      <ul style="list-style:none;padding:0;font-size:0.72rem;color:#475569;line-height:1.8;">
+        <li>• <strong>Loan Type:</strong> Personal, Business, Agricultural, etc.</li>
+        <li>• <strong>Principal:</strong> Amount in GH₵</li>
+        <li>• <strong>Interest Rate:</strong> Annual percentage</li>
+        <li>• <strong>Term:</strong> Duration in months</li>
+        <li>• <strong>Interest Method:</strong> Flat or Reducing Balance</li>
+      </ul>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+      <h4 style="font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:6px;">Repayment Configuration</h4>
+      <ul style="list-style:none;padding:0;font-size:0.72rem;color:#475569;line-height:1.8;">
+        <li>• <strong>Frequency:</strong> Daily, Weekly, Fortnightly, Monthly</li>
+        <li>• <strong>Penalty Type:</strong> None, Flat, % Overdue, Daily Rate</li>
+        <li>• <strong>Grace Days:</strong> Days before penalty applies</li>
+        <li>• <strong>Purpose:</strong> Reason for the loan</li>
+        <li>• <strong>Notes:</strong> Additional information</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <h5>🔒 Automatic Compliance Checks</h5>
+    <p>Before a loan can be approved, the system automatically checks: (1) Single obligor limit based on your BoG tier, (2) Maximum loan amount per borrower, (3) Client affordability based on income vs expenses, (4) Existing exposure to the same borrower.</p>
+  </div>
+
+  <div style="height:1px;background:#e2e8f0;margin:24px 0;"></div>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:12px;">Posting Repayments</h3>
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:18px 22px;">
+    <p style="font-size:0.78rem;color:#166534;line-height:1.65;">Navigate to <strong>Repayments</strong> from the sidebar. Search for the loan by client name or loan ID. Enter the payment amount, method (Cash, Mobile Money, Bank Transfer), and reference number. The system automatically splits the payment into principal, interest, and penalty portions based on the loan's amortisation schedule. Outstanding balances update in real time.</p>
+  </div>
+</div>
+<div class="page-number">5 / 12</div>
+</div>
+
+
+<!-- ══════════════ PAGE 6 — FIELD OPERATIONS ══════════════ -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Field Operations</div>
+  <h2 class="section-title">Collecting in the Field — Online or Offline</h2>
+  <p class="section-intro">Field Officers can collect loan repayments anywhere, even without internet connectivity. The app works on any smartphone browser.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;">
+    <div style="background:linear-gradient(135deg,#052e16,#166534);border-radius:14px;padding:24px;color:white;">
+      <div style="font-size:1.5rem;margin-bottom:10px;">📱</div>
+      <h4 style="font-size:0.9rem;font-weight:800;margin-bottom:8px;">Online Collection</h4>
+      <ol style="list-style:none;padding:0;counter-reset:step;font-size:0.75rem;color:#86efac;line-height:2;">
+        <li>1. Open Field Operations from sidebar</li>
+        <li>2. Search for client or loan</li>
+        <li>3. Enter amount collected</li>
+        <li>4. Select collection method</li>
+        <li>5. Capture GPS location (auto)</li>
+        <li>6. Photograph receipt (optional)</li>
+        <li>7. Get client signature</li>
+        <li>8. Submit — data saved instantly</li>
+      </ol>
+    </div>
+    <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:14px;padding:24px;color:white;">
+      <div style="font-size:1.5rem;margin-bottom:10px;">📴</div>
+      <h4 style="font-size:0.9rem;font-weight:800;margin-bottom:8px;">Offline Collection</h4>
+      <ol style="list-style:none;padding:0;counter-reset:step;font-size:0.75rem;color:#93c5fd;line-height:2;">
+        <li>1. Network indicator shows "Offline"</li>
+        <li>2. Continue collecting as normal</li>
+        <li>3. All data stored locally on device</li>
+        <li>4. GPS coordinates still captured</li>
+        <li>5. Photos stored locally</li>
+        <li>6. When network returns, auto-sync</li>
+        <li>7. Conflicts resolved in Sync panel</li>
+        <li>8. Manager reviews & approves</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <h5>🔍 Fraud Prevention</h5>
+    <p>Every field collection captures GPS coordinates, timestamp, and officer ID. Managers can verify that collections actually occurred at the client's location. If a Field Officer submits a collection from a different location, it's flagged for review.</p>
+  </div>
+
+  <div style="height:1px;background:#e2e8f0;margin:24px 0;"></div>
+
+  <div class="section-label">Regulatory Compliance</div>
+  <h2 class="section-title" style="font-size:1.4rem;">For Regulators: Security & Compliance Verification</h2>
+  <p class="section-intro">This section is specifically for BoG examiners and compliance officers evaluating MFI Clarity for regulatory approval.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+      <h4 style="font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:4px;">✅ Data Isolation</h4>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;">Row-Level Security (RLS) at PostgreSQL level ensures complete multi-tenant data isolation. No application-level filtering — enforced at the database engine.</div>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+      <h4 style="font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:4px;">✅ Audit Trail</h4>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;">Immutable activity_audit_log table records every action with user_id, timestamp, IP address, entity_type, old_values, and new_values. Cannot be modified or deleted.</div>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+      <h4 style="font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:4px;">✅ Access Control</h4>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;">Five RBAC roles enforced at API level via database security functions (has_role, is_executive, is_board_member). Policies check user_id + org_id on every query.</div>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+      <h4 style="font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:4px;">✅ Encryption</h4>
+      <div style="font-size:0.72rem;color:#475569;line-height:1.55;">AES-256 encryption at rest, TLS 1.3 in transit. All secrets managed via secure vault. No plaintext credentials in application code.</div>
+    </div>
+  </div>
+</div>
+<div class="page-number">6 / 12</div>
+</div>
+
+
+<!-- ══════════════ PAGE 7 — DASHBOARDS GUIDE ══════════════ -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Dashboards</div>
+  <h2 class="section-title">Understanding Your Dashboards</h2>
+  <p class="section-intro">MFI Clarity provides four tailored dashboard views. Each is designed for a specific audience and decision-making need.</p>
+
+  <div style="margin-bottom:24px;">
+    <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:14px;padding:26px;color:white;margin-bottom:14px;">
+      <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:10px;">📊 Executive Dashboard — "How is our MFI doing right now?"</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#93c5fd;margin-bottom:6px;">Key Metrics Shown:</div>
+          <ul style="list-style:none;padding:0;font-size:0.72rem;color:#bfdbfe;line-height:1.8;">
+            <li>• Total outstanding portfolio (GH₵)</li>
+            <li>• PAR > 30 days ratio</li>
+            <li>• Number of active loans</li>
+            <li>• Today's collection rate</li>
+            <li>• Disbursements this month</li>
+            <li>• Active client count</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:#93c5fd;margin-bottom:6px;">Drill-Down Capability:</div>
+          <p style="font-size:0.72rem;color:#bfdbfe;line-height:1.6;">Click any KPI card to see the underlying loan-level data. For example, clicking "PAR > 30 Days" shows every overdue loan with client name, days overdue, outstanding balance, and assigned officer.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+    <div style="border:1px solid #e2e8f0;border-radius:14px;padding:22px;">
+      <h4 style="font-size:0.9rem;font-weight:800;color:#0f172a;margin-bottom:8px;">🏛️ Board Dashboard</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;margin-bottom:10px;">Designed for quarterly board meetings and governance oversight:</p>
+      <ul style="list-style:none;padding:0;font-size:0.72rem;color:#475569;line-height:1.8;">
+        <li>• <strong>Executive Summary:</strong> High-level health snapshot</li>
+        <li>• <strong>Risk Analysis:</strong> Credit risk, concentration risk</li>
+        <li>• <strong>Strategic KPIs:</strong> Growth, efficiency, profitability</li>
+        <li>• <strong>Trends & Peers:</strong> Historical trends, benchmarking</li>
+      </ul>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:14px;padding:22px;">
+      <h4 style="font-size:0.9rem;font-weight:800;color:#0f172a;margin-bottom:8px;">📈 Management Dashboard</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;margin-bottom:10px;">Designed for daily operational decisions:</p>
+      <ul style="list-style:none;padding:0;font-size:0.72rem;color:#475569;line-height:1.8;">
+        <li>• <strong>Daily Operations:</strong> Today's targets vs actuals</li>
+        <li>• <strong>Staff Productivity:</strong> Officer scorecards</li>
+        <li>• <strong>Arrears Activity:</strong> Follow-up tracking</li>
+        <li>• <strong>Performance Charts:</strong> Trends over time</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:18px 22px;">
+    <h4 style="font-size:0.82rem;font-weight:700;color:#78350f;margin-bottom:6px;">💡 Pro Tip: BOG Classification Table</h4>
+    <p style="font-size:0.75rem;color:#92400e;line-height:1.6;">The Portfolio Aging page shows every loan classified into BoG buckets (Current, OLEM, Substandard, Doubtful, Loss) with provision amounts calculated automatically. Export this to CSV or PDF for your prudential returns.</p>
+  </div>
+</div>
+<div class="page-number">7 / 12</div>
+</div>
+
+
+<!-- ══════════════ PAGE 8 — REGULATORY REPORTS ══════════════ -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Regulatory Reports</div>
+  <h2 class="section-title">Automated BoG Compliance Reporting</h2>
+  <p class="section-intro">The Regulatory Reports module is the heart of MFI Clarity's compliance engine. Here's how to use each tool.</p>
+
+  <div style="margin-bottom:14px;border:2px solid #22c55e;border-radius:14px;padding:22px;">
+    <h4 style="font-size:0.95rem;font-weight:800;color:#052e16;margin-bottom:8px;">🏦 Capital Adequacy Ratio (CAR) Calculator</h4>
+    <p style="font-size:0.78rem;color:#166534;line-height:1.6;margin-bottom:12px;">The CAR calculator automatically computes your institution's capital adequacy ratio based on your risk-weighted assets and net worth. The threshold is set based on your BoG tier (typically 10%).</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div style="background:#f0fdf4;border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:0.68rem;color:#166534;font-weight:600;">Step 1</div>
+        <div style="font-size:0.72rem;color:#052e16;">Enter net worth in Settings</div>
+      </div>
+      <div style="background:#f0fdf4;border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:0.68rem;color:#166534;font-weight:600;">Step 2</div>
+        <div style="font-size:0.72rem;color:#052e16;">System calculates risk-weighted assets</div>
+      </div>
+      <div style="background:#f0fdf4;border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:0.68rem;color:#166534;font-weight:600;">Step 3</div>
+        <div style="font-size:0.72rem;color:#052e16;">CAR ratio displayed with compliance status</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:14px;border:1px solid #e2e8f0;border-radius:14px;padding:22px;">
+    <h4 style="font-size:0.95rem;font-weight:800;color:#0f172a;margin-bottom:8px;">💧 Liquidity Ratio Calculator</h4>
+    <p style="font-size:0.78rem;color:#475569;line-height:1.6;">Monitors your institution's liquid assets against short-term liabilities. Alerts you when you approach the minimum threshold, giving you time to take corrective action before BoG examination.</p>
+  </div>
+
+  <div style="margin-bottom:14px;border:1px solid #e2e8f0;border-radius:14px;padding:22px;">
+    <h4 style="font-size:0.95rem;font-weight:800;color:#0f172a;margin-bottom:8px;">📋 Prudential Returns Tracker</h4>
+    <p style="font-size:0.78rem;color:#475569;line-height:1.6;">Tracks your reporting deadlines based on your tier's frequency (daily, weekly, monthly, or quarterly). Shows what's due, what's been submitted, and what's overdue. Never miss a deadline again.</p>
+  </div>
+
+  <div style="margin-bottom:14px;border:1px solid #e2e8f0;border-radius:14px;padding:22px;">
+    <h4 style="font-size:0.95rem;font-weight:800;color:#0f172a;margin-bottom:8px;">🔍 AML Reports</h4>
+    <p style="font-size:0.78rem;color:#475569;line-height:1.6;">Anti-Money Laundering reports flag suspicious transactions, high-risk clients, and large cash movements. Supports Ghana's AML/CFT framework requirements.</p>
+  </div>
+
+  <div style="border:1px solid #e2e8f0;border-radius:14px;padding:22px;">
+    <h4 style="font-size:0.95rem;font-weight:800;color:#0f172a;margin-bottom:8px;">📊 BoG Bucket Classification</h4>
+    <p style="font-size:0.78rem;color:#475569;line-height:1.6;">Every loan is automatically classified into BoG buckets based on days overdue: <strong>Current</strong> (0 days), <strong>OLEM</strong> (1-30 days), <strong>Substandard</strong> (31-90 days), <strong>Doubtful</strong> (91-180 days), <strong>Loss</strong> (180+ days). Provision amounts are calculated using the standard rates.</p>
+  </div>
+</div>
+<div class="page-number">8 / 12</div>
+</div>
+
+
+<!-- ══════════════ PAGE 9 — SHAREHOLDER PORTAL ══════════════ -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Shareholder Management</div>
+  <h2 class="section-title">Managing Investors & Dividends</h2>
+  <p class="section-intro">The Shareholder Dashboard gives you complete visibility over your institution's ownership structure, investment tracking, and dividend management.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+    <div style="border:1px solid #e2e8f0;border-radius:14px;padding:22px;">
+      <div style="font-size:1.3rem;margin-bottom:8px;">👤</div>
+      <h4 style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">Adding Shareholders</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;">Register shareholders with their full name, contact details, initial share units, and unit value. The system tracks their total investment and share percentage automatically.</p>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:14px;padding:22px;">
+      <div style="font-size:1.3rem;margin-bottom:8px;">🔄</div>
+      <h4 style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">Recording Transactions</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;">Record share purchases, sales, and transfers. Each transaction updates the shareholder's unit count and total investment value. Full transaction history is maintained.</p>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:14px;padding:22px;">
+      <div style="font-size:1.3rem;margin-bottom:8px;">💰</div>
+      <h4 style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">Processing Dividends</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;">Set a dividend rate and the system calculates each shareholder's payout based on their share units. Process individual or bulk payments with reference numbers and payment methods.</p>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:14px;padding:22px;">
+      <div style="font-size:1.3rem;margin-bottom:8px;">📄</div>
+      <h4 style="font-size:0.88rem;font-weight:800;color:#0f172a;margin-bottom:6px;">Reports & Export</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;">Export shareholder lists, transaction histories, and dividend reports to CSV or PDF. Perfect for AGM presentations and regulatory filings.</p>
+    </div>
+  </div>
+
+  <div style="height:1px;background:#e2e8f0;margin:24px 0;"></div>
+
+  <div class="section-label">Data Export</div>
+  <h2 class="section-title" style="font-size:1.4rem;">Exporting Your Data</h2>
+  <p class="section-intro">Every report and table in MFI Clarity can be exported in two formats.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div style="background:linear-gradient(135deg,#ecfdf5,#f0fdf4);border:2px solid #86efac;border-radius:14px;padding:22px;">
+      <h4 style="font-size:0.9rem;font-weight:800;color:#052e16;margin-bottom:8px;">📊 CSV Export</h4>
+      <p style="font-size:0.75rem;color:#166534;line-height:1.6;">Click the "Export CSV" button on any table or report. Opens instantly in Excel, Google Sheets, or any spreadsheet application. Includes all visible data with proper formatting.</p>
+    </div>
+    <div style="background:linear-gradient(135deg,#eff6ff,#f0f9ff);border:2px solid #93c5fd;border-radius:14px;padding:22px;">
+      <h4 style="font-size:0.9rem;font-weight:800;color:#1e3a8a;margin-bottom:8px;">📄 PDF Export</h4>
+      <p style="font-size:0.75rem;color:#1e40af;line-height:1.6;">Click "Export PDF" to generate a formatted, printable report with your organisation's branding, date stamp, and professional layout. Perfect for board presentations and regulatory submissions.</p>
+    </div>
+  </div>
+</div>
+<div class="page-number">9 / 12</div>
+</div>
+
+
+<!-- ══════════════ PAGE 10 — USER MANAGEMENT ══════════════ -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Administration</div>
+  <h2 class="section-title">User Management & Settings</h2>
+  <p class="section-intro">Admins control who can access the system and what they can do. This section covers user roles, permissions, and organisation configuration.</p>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:14px;">Role Permissions Matrix</h3>
+
+  <table style="width:100%;border-collapse:collapse;font-size:0.72rem;margin-bottom:24px;">
+    <thead>
+      <tr style="background:#f1f5f9;">
+        <th style="text-align:left;padding:10px 14px;font-weight:700;color:#475569;border-bottom:2px solid #e2e8f0;">Feature</th>
+        <th style="text-align:center;padding:10px 8px;font-weight:700;color:#dc2626;border-bottom:2px solid #e2e8f0;">Admin</th>
+        <th style="text-align:center;padding:10px 8px;font-weight:700;color:#1d4ed8;border-bottom:2px solid #e2e8f0;">Manager</th>
+        <th style="text-align:center;padding:10px 8px;font-weight:700;color:#166534;border-bottom:2px solid #e2e8f0;">Field Officer</th>
+        <th style="text-align:center;padding:10px 8px;font-weight:700;color:#854d0e;border-bottom:2px solid #e2e8f0;">Teller</th>
+        <th style="text-align:center;padding:10px 8px;font-weight:700;color:#7c3aed;border-bottom:2px solid #e2e8f0;">Board Dir.</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;">Executive Dashboard</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td></tr>
+      <tr><td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;">Board Dashboard</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td></tr>
+      <tr><td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;">Regulatory Reports</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td></tr>
+      <tr><td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;">Create Loans</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td></tr>
+      <tr><td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;">Approve Loans</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td></tr>
+      <tr><td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;">Field Collections</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td></tr>
+      <tr><td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;">Post Repayments</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td></tr>
+      <tr><td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;">User Management</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td></tr>
+      <tr><td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;">Audit Log</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td></tr>
+      <tr><td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;">Settings</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#22c55e;">✓</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td><td style="text-align:center;padding:8px;border-bottom:1px solid #f1f5f9;color:#ef4444;">✗</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip-box">
+    <h5>🔐 Security Note for Regulators</h5>
+    <p>Role enforcement happens at the database level via PostgreSQL security functions, not just in the UI. Even if a user manipulates the frontend, the API will reject unauthorised operations. This is verifiable by examining the RLS policies on each table.</p>
+  </div>
+</div>
+<div class="page-number">10 / 12</div>
+</div>
+
+
+<!-- ══════════════ PAGE 11 — TROUBLESHOOTING ══════════════ -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Troubleshooting</div>
+  <h2 class="section-title">Common Questions & Solutions</h2>
+  <p class="section-intro">Quick answers to the most frequently asked questions from MFI Clarity users.</p>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:18px 22px;">
+      <h4 style="font-size:0.85rem;font-weight:800;color:#0f172a;margin-bottom:6px;">❓ I can't see any data after logging in</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;"><strong>Solution:</strong> Your account needs to be linked to an organisation. Contact your Admin to add you via User Management. If you're the first user, complete the Organisation Onboarding to create your institution.</p>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:18px 22px;">
+      <h4 style="font-size:0.85rem;font-weight:800;color:#0f172a;margin-bottom:6px;">❓ I can't approve a loan</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;"><strong>Solution:</strong> Only Admin and Manager roles can approve loans. If you're a Teller or Field Officer, the loan you created will appear in the manager's workflow for review and approval.</p>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:18px 22px;">
+      <h4 style="font-size:0.85rem;font-weight:800;color:#0f172a;margin-bottom:6px;">❓ My field collections aren't syncing</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;"><strong>Solution:</strong> Check the network indicator in the top bar. If it shows "Offline", your data is stored locally and will sync when connectivity returns. If you're online but sync isn't working, go to Sync Conflicts to check for and resolve any data conflicts.</p>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:18px 22px;">
+      <h4 style="font-size:0.85rem;font-weight:800;color:#0f172a;margin-bottom:6px;">❓ The CAR calculator shows "N/A"</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;"><strong>Solution:</strong> You need to enter your institution's net worth in Settings → Organisation → BoG Tier Settings. The CAR cannot be calculated without the net worth (equity) figure.</p>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:18px 22px;">
+      <h4 style="font-size:0.85rem;font-weight:800;color:#0f172a;margin-bottom:6px;">❓ How do I export a report for BoG?</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;"><strong>Solution:</strong> Navigate to the relevant report (e.g., Portfolio Aging, Regulatory Reports). Click the "Export CSV" or "Export PDF" button at the top of any table. The exported file includes all data with proper formatting for regulatory submission.</p>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:18px 22px;">
+      <h4 style="font-size:0.85rem;font-weight:800;color:#0f172a;margin-bottom:6px;">❓ Can multiple people use the system at the same time?</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;"><strong>Solution:</strong> Yes! MFI Clarity is a cloud-based system. Unlimited users can work simultaneously. Each person logs in with their own account, and all changes are reflected in real time for all users.</p>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:18px 22px;">
+      <h4 style="font-size:0.85rem;font-weight:800;color:#0f172a;margin-bottom:6px;">❓ What happens if I accidentally post the wrong repayment?</h4>
+      <p style="font-size:0.75rem;color:#475569;line-height:1.6;"><strong>Solution:</strong> Contact your Admin. All transactions are logged in the audit trail with the original values. The Admin can review the incorrect entry and the Manager can process a corrective transaction.</p>
+    </div>
+  </div>
+</div>
+<div class="page-number">11 / 12</div>
+</div>
+
+
+<!-- ══════════════ PAGE 12 — SUPPORT ══════════════ -->
+<div class="page" style="background:linear-gradient(145deg,#0f172a 0%,#1e3a8a 60%,#1e40af 100%);color:white;display:flex;flex-direction:column;min-height:297mm;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,0.07) 0%,transparent 70%);border-radius:50%;pointer-events:none;"></div>
+
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 48px;position:relative;z-index:2;">
+    <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:6px 18px;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#93c5fd;margin-bottom:26px;">Need Help?</div>
+
+    <h2 style="font-size:2.4rem;font-weight:900;line-height:1.1;letter-spacing:-0.04em;margin-bottom:14px;max-width:500px;">
+      We're Here to<br>
+      <span style="background:linear-gradient(90deg,#60a5fa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Support You</span>
+    </h2>
+
+    <p style="font-size:0.9rem;color:#93c5fd;line-height:1.65;max-width:480px;margin-bottom:36px;">
+      Whether you're stuck on a feature, need training for your team, or want to discuss custom requirements — our team is ready to help.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:460px;width:100%;margin-bottom:36px;">
+      <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:22px;text-align:center;">
+        <div style="font-size:1.4rem;margin-bottom:8px;">📧</div>
+        <div style="font-size:0.82rem;font-weight:700;color:white;margin-bottom:4px;">Email Support</div>
+        <div style="font-size:0.72rem;color:#93c5fd;">support@mfi-clarity.com</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:22px;text-align:center;">
+        <div style="font-size:1.4rem;margin-bottom:8px;">🖥️</div>
+        <div style="font-size:0.82rem;font-weight:700;color:white;margin-bottom:4px;">Live Demo</div>
+        <div style="font-size:0.72rem;color:#93c5fd;">mfi-clarity.lovable.app/demo</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:22px;text-align:center;">
+        <div style="font-size:1.4rem;margin-bottom:8px;">📱</div>
+        <div style="font-size:0.82rem;font-weight:700;color:white;margin-bottom:4px;">WhatsApp</div>
+        <div style="font-size:0.72rem;color:#93c5fd;">Message "HELP" to get started</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:22px;text-align:center;">
+        <div style="font-size:1.4rem;margin-bottom:8px;">🎓</div>
+        <div style="font-size:0.82rem;font-weight:700;color:white;margin-bottom:4px;">Training</div>
+        <div style="font-size:0.72rem;color:#93c5fd;">On-site & remote available</div>
+      </div>
+    </div>
+
+    <div style="font-size:0.75rem;color:#64748b;">MFI Clarity User Guide v1.0 — February 2025</div>
+  </div>
+</div>
+
+</body>
+</html>

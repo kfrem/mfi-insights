@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MFI Clarity — Usage Costing & Pricing Calculator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f0f4f8; color:#1e293b; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .page { width:210mm; margin:20px auto; background:white; box-shadow:0 4px 30px rgba(0,0,0,0.1); overflow:hidden; }
+  .page-inner { padding:40px 48px; }
+  .page-number { text-align:right; padding:10px 48px 16px; font-size:0.66rem; color:#94a3b8; font-weight:600; }
+  .section-label { display:inline-block; background:rgba(234,88,12,0.1); border:1px solid rgba(234,88,12,0.2); border-radius:20px; padding:5px 15px; font-size:0.68rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#c2410c; margin-bottom:16px; }
+  .section-title { font-size:1.8rem; font-weight:900; line-height:1.15; letter-spacing:-0.03em; color:#0f172a; margin-bottom:12px; }
+  .section-intro { font-size:0.82rem; color:#475569; line-height:1.7; margin-bottom:28px; }
+  .cost-row { display:grid; grid-template-columns:1fr 100px 100px 120px; gap:0; border-bottom:1px solid #f1f5f9; }
+  .cost-row.header { background:#f8fafc; border-bottom:2px solid #e2e8f0; font-weight:700; color:#475569; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; }
+  .cost-row div { padding:10px 14px; font-size:0.75rem; }
+  .cost-row .right { text-align:right; }
+  .print-btn { position:fixed; bottom:30px; right:30px; background:linear-gradient(135deg,#c2410c,#ea580c); color:white; border:none; padding:14px 28px; border-radius:12px; font-size:0.9rem; font-weight:700; cursor:pointer; box-shadow:0 4px 20px rgba(194,65,12,0.4); z-index:9999; }
+  .print-btn:hover { transform:scale(1.05); }
+  @media print { body{background:white} .page{box-shadow:none;margin:0;width:100%;page-break-after:always} .no-print{display:none!important} }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">⬇ Save as PDF</button>
+
+<!-- COVER -->
+<div class="page" style="background:linear-gradient(145deg,#431407 0%,#9a3412 55%,#c2410c 100%);display:flex;flex-direction:column;min-height:297mm;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-100px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(251,146,60,0.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;"></div>
+  <div style="padding:44px 48px 0;display:flex;align-items:center;gap:13px;position:relative;z-index:2;">
+    <div style="width:46px;height:46px;background:linear-gradient(135deg,#f97316,#facc15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#431407;">M</div>
+    <div style="font-size:1.35rem;font-weight:800;letter-spacing:-0.03em;color:white;">MFI Clarity<span style="color:#fb923c;">.</span></div>
+    <div style="margin-left:auto;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:5px 13px;border-radius:20px;font-size:0.67rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#fed7aa;">Internal Costing Document</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:50px 48px;position:relative;z-index:2;">
+    <h1 style="font-size:3rem;font-weight:900;line-height:1.08;letter-spacing:-0.04em;color:white;margin-bottom:12px;">
+      Usage Costing &<br><span style="background:linear-gradient(90deg,#fb923c,#facc15);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Pricing Calculator</span>
+    </h1>
+    <p style="font-size:1.05rem;color:#fed7aa;line-height:1.55;max-width:480px;margin-bottom:24px;">Complete breakdown of per-user running costs, infrastructure expenses, maintenance overhead, and recommended pricing tiers for MFI Clarity.</p>
+    <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:16px 22px;max-width:400px;">
+      <div style="font-size:0.72rem;font-weight:700;color:#fb923c;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">⚠️ Confidential — Internal Use Only</div>
+      <div style="font-size:0.75rem;color:#fed7aa;line-height:1.55;">This document contains proprietary cost structures and pricing strategy. Do not share with clients or competitors.</div>
+    </div>
+  </div>
+  <div style="background:rgba(0,0,0,0.2);padding:18px 48px;border-top:1px solid rgba(255,255,255,0.08);position:relative;z-index:2;">
+    <div style="font-size:0.72rem;color:#78350f;">Last Updated: February 2025 — All costs in USD unless stated</div>
+  </div>
+</div>
+
+
+<!-- PAGE 2 — INFRASTRUCTURE COSTS -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Infrastructure</div>
+  <h2 class="section-title">Monthly Platform Running Costs</h2>
+  <p class="section-intro">These are the fixed and variable costs to run MFI Clarity on Lovable Cloud infrastructure, covering database, authentication, edge functions, file storage, and the frontend hosting.</p>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:14px;">Fixed Monthly Costs (Regardless of Users)</h3>
+
+  <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+    <div class="cost-row header"><div>Item</div><div class="right">Unit Cost</div><div class="right">Qty</div><div class="right">Monthly Total</div></div>
+    <div class="cost-row"><div><strong>Lovable Platform</strong> (Pro plan — hosting, CI/CD, preview)</div><div class="right">$20/mo</div><div class="right">1</div><div class="right"><strong>$20.00</strong></div></div>
+    <div class="cost-row"><div><strong>Cloud Database</strong> (PostgreSQL — free tier up to 500MB)</div><div class="right">$0</div><div class="right">1</div><div class="right"><strong>$0.00</strong></div></div>
+    <div class="cost-row"><div><strong>Cloud Auth</strong> (50,000 MAUs included free)</div><div class="right">$0</div><div class="right">1</div><div class="right"><strong>$0.00</strong></div></div>
+    <div class="cost-row"><div><strong>Edge Functions</strong> (500K invocations/mo free)</div><div class="right">$0</div><div class="right">1</div><div class="right"><strong>$0.00</strong></div></div>
+    <div class="cost-row"><div><strong>File Storage</strong> (1GB free, $0.021/GB after)</div><div class="right">$0</div><div class="right">1</div><div class="right"><strong>$0.00</strong></div></div>
+    <div class="cost-row"><div><strong>Custom Domain</strong> (requires paid Lovable plan)</div><div class="right">$0</div><div class="right">1</div><div class="right"><strong>$0.00</strong></div></div>
+    <div class="cost-row" style="background:#f0fdf4;border-bottom:none;"><div><strong>TOTAL FIXED COSTS</strong></div><div class="right"></div><div class="right"></div><div class="right" style="font-weight:900;color:#166534;font-size:0.85rem;"><strong>$20.00/mo</strong></div></div>
+  </div>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:14px;">Variable Costs (Scale with Usage)</h3>
+
+  <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+    <div class="cost-row header"><div>Item</div><div class="right">Trigger</div><div class="right">Rate</div><div class="right">Est. Monthly</div></div>
+    <div class="cost-row"><div><strong>Database growth</strong> beyond 500MB</div><div class="right">>500MB</div><div class="right">$0.125/GB</div><div class="right">$0–$5</div></div>
+    <div class="cost-row"><div><strong>File Storage</strong> beyond 1GB (client docs)</div><div class="right">>1GB</div><div class="right">$0.021/GB</div><div class="right">$0–$2</div></div>
+    <div class="cost-row"><div><strong>Edge Functions</strong> beyond 500K calls</div><div class="right">>500K</div><div class="right">$2/million</div><div class="right">$0</div></div>
+    <div class="cost-row"><div><strong>Bandwidth</strong> beyond 250GB</div><div class="right">>250GB</div><div class="right">$0.09/GB</div><div class="right">$0–$3</div></div>
+    <div class="cost-row" style="background:#fffbeb;border-bottom:none;"><div><strong>EST. VARIABLE COSTS</strong> (per MFI client org)</div><div class="right"></div><div class="right"></div><div class="right" style="font-weight:900;color:#b45309;font-size:0.85rem;"><strong>$0–$10/mo</strong></div></div>
+  </div>
+
+  <div style="background:linear-gradient(135deg,#431407,#9a3412);border-radius:14px;padding:24px 28px;color:white;">
+    <h4 style="font-size:0.9rem;font-weight:800;margin-bottom:8px;">💡 Key Insight</h4>
+    <p style="font-size:0.78rem;color:#fed7aa;line-height:1.6;">For most MFIs with under 5,000 clients and 20 staff users, the total infrastructure cost is approximately <strong>$20–$30/month</strong>. The multi-tenant architecture means you pay ONCE for infrastructure and serve MANY client organisations — this is where margin comes from.</p>
+  </div>
+</div>
+<div class="page-number">2 / 6</div>
+</div>
+
+
+<!-- PAGE 3 — PER-USER COST ANALYSIS -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Per-User Analysis</div>
+  <h2 class="section-title">Cost Per User / Per Account Breakdown</h2>
+  <p class="section-intro">This analysis calculates the true cost to serve each user and each MFI organisation, helping you set profitable pricing.</p>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:14px;">Scenario: Single MFI Organisation (20 Staff Users, 2,000 Clients)</h3>
+
+  <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+    <div class="cost-row header"><div>Cost Category</div><div class="right">Monthly</div><div class="right">Per User</div><div class="right">Per Client</div></div>
+    <div class="cost-row"><div>Platform (Lovable Pro)</div><div class="right">$20.00</div><div class="right">$1.00</div><div class="right">$0.010</div></div>
+    <div class="cost-row"><div>Database (est. 200MB)</div><div class="right">$0.00</div><div class="right">$0.00</div><div class="right">$0.000</div></div>
+    <div class="cost-row"><div>File Storage (est. 500MB)</div><div class="right">$0.00</div><div class="right">$0.00</div><div class="right">$0.000</div></div>
+    <div class="cost-row"><div>Bandwidth (est. 10GB)</div><div class="right">$0.00</div><div class="right">$0.00</div><div class="right">$0.000</div></div>
+    <div class="cost-row" style="background:#f0fdf4;"><div><strong>TOTAL COST TO SERVE</strong></div><div class="right" style="font-weight:800;">$20.00</div><div class="right" style="font-weight:800;color:#166534;">$1.00</div><div class="right" style="font-weight:800;color:#166534;">$0.010</div></div>
+  </div>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:14px;">Scenario: 10 MFI Organisations (Multi-Tenant, Shared Infrastructure)</h3>
+
+  <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+    <div class="cost-row header"><div>Cost Category</div><div class="right">Monthly</div><div class="right">Per Org</div><div class="right">Per User</div></div>
+    <div class="cost-row"><div>Platform (Lovable Pro)</div><div class="right">$20.00</div><div class="right">$2.00</div><div class="right">$0.10</div></div>
+    <div class="cost-row"><div>Database (est. 2GB — upgrade needed)</div><div class="right">$25.00</div><div class="right">$2.50</div><div class="right">$0.13</div></div>
+    <div class="cost-row"><div>File Storage (est. 5GB)</div><div class="right">$0.08</div><div class="right">$0.01</div><div class="right">$0.00</div></div>
+    <div class="cost-row"><div>Bandwidth (est. 50GB)</div><div class="right">$0.00</div><div class="right">$0.00</div><div class="right">$0.00</div></div>
+    <div class="cost-row" style="background:#f0fdf4;"><div><strong>TOTAL (200 users, 20K clients)</strong></div><div class="right" style="font-weight:800;">$45.08</div><div class="right" style="font-weight:800;color:#166534;">$4.51</div><div class="right" style="font-weight:800;color:#166534;">$0.23</div></div>
+  </div>
+
+  <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:22px 28px;margin-bottom:20px;">
+    <h4 style="font-size:0.88rem;font-weight:800;color:#1e3a8a;margin-bottom:8px;">📊 Margin Analysis — If You Charge $49/mo Per Organisation</h4>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+      <div style="text-align:center;padding:14px;background:white;border-radius:10px;">
+        <div style="font-size:1.6rem;font-weight:900;color:#166534;">$4.51</div>
+        <div style="font-size:0.68rem;color:#475569;">Cost per org</div>
+      </div>
+      <div style="text-align:center;padding:14px;background:white;border-radius:10px;">
+        <div style="font-size:1.6rem;font-weight:900;color:#1d4ed8;">$44.49</div>
+        <div style="font-size:0.68rem;color:#475569;">Gross margin per org</div>
+      </div>
+      <div style="text-align:center;padding:14px;background:white;border-radius:10px;">
+        <div style="font-size:1.6rem;font-weight:900;color:#7c3aed;">90.8%</div>
+        <div style="font-size:0.68rem;color:#475569;">Gross margin %</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:12px;padding:16px 22px;">
+    <h5 style="font-size:0.78rem;font-weight:700;color:#78350f;margin-bottom:4px;">⚠️ Note on Scaling</h5>
+    <p style="font-size:0.72rem;color:#92400e;line-height:1.55;">When you exceed the free tier limits (500MB database, 1GB storage), you'll need to upgrade. At $25/mo for a larger database instance, the cost per org drops dramatically as you add more organisations. At 50 orgs, your cost per org drops to under $1.</p>
+  </div>
+</div>
+<div class="page-number">3 / 6</div>
+</div>
+
+
+<!-- PAGE 4 — OPERATIONAL COSTS -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Operational Costs</div>
+  <h2 class="section-title">Development, Maintenance & Support Costs</h2>
+  <p class="section-intro">Beyond infrastructure, you need to budget for ongoing development, bug fixes, customer support, and business operations.</p>
+
+  <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+    <div class="cost-row header"><div>Expense</div><div class="right">Frequency</div><div class="right">Est. Cost</div><div class="right">Monthly Equiv.</div></div>
+    <div class="cost-row"><div><strong>Lovable Pro Subscription</strong> (build & iterate)</div><div class="right">Monthly</div><div class="right">$20/mo</div><div class="right"><strong>$20</strong></div></div>
+    <div class="cost-row"><div><strong>Developer Maintenance</strong> (bug fixes, updates)</div><div class="right">Monthly</div><div class="right">$500–$1500</div><div class="right"><strong>$1,000</strong></div></div>
+    <div class="cost-row"><div><strong>Customer Support</strong> (1 part-time person)</div><div class="right">Monthly</div><div class="right">$300–$600</div><div class="right"><strong>$450</strong></div></div>
+    <div class="cost-row"><div><strong>SSL Certificate</strong> (included with hosting)</div><div class="right">Annual</div><div class="right">$0</div><div class="right"><strong>$0</strong></div></div>
+    <div class="cost-row"><div><strong>Domain Name</strong> (.com)</div><div class="right">Annual</div><div class="right">$12/yr</div><div class="right"><strong>$1</strong></div></div>
+    <div class="cost-row"><div><strong>Email Service</strong> (transactional emails)</div><div class="right">Monthly</div><div class="right">$0–$20</div><div class="right"><strong>$10</strong></div></div>
+    <div class="cost-row"><div><strong>Marketing & Sales</strong> (basic)</div><div class="right">Monthly</div><div class="right">$200–$500</div><div class="right"><strong>$350</strong></div></div>
+    <div class="cost-row"><div><strong>Legal & Compliance</strong></div><div class="right">Quarterly</div><div class="right">$300/qtr</div><div class="right"><strong>$100</strong></div></div>
+    <div class="cost-row" style="background:#fff7ed;border-bottom:none;"><div><strong>TOTAL MONTHLY OPERATING COSTS</strong></div><div class="right"></div><div class="right"></div><div class="right" style="font-weight:900;color:#c2410c;font-size:0.9rem;"><strong>~$1,931</strong></div></div>
+  </div>
+
+  <h3 style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:14px;">Break-Even Analysis</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px;">
+    <div style="background:linear-gradient(135deg,#431407,#9a3412);border-radius:14px;padding:22px;color:white;text-align:center;">
+      <div style="font-size:0.68rem;font-weight:700;color:#fed7aa;text-transform:uppercase;margin-bottom:8px;">At $49/org/month</div>
+      <div style="font-size:2.2rem;font-weight:900;margin-bottom:4px;">40</div>
+      <div style="font-size:0.75rem;color:#fed7aa;">organisations to break even</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#052e16,#166534);border-radius:14px;padding:22px;color:white;text-align:center;">
+      <div style="font-size:0.68rem;font-weight:700;color:#86efac;text-transform:uppercase;margin-bottom:8px;">At $149/org/month</div>
+      <div style="font-size:2.2rem;font-weight:900;margin-bottom:4px;">13</div>
+      <div style="font-size:0.75rem;color:#86efac;">organisations to break even</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:14px;padding:22px;color:white;text-align:center;">
+      <div style="font-size:0.68rem;font-weight:700;color:#93c5fd;text-transform:uppercase;margin-bottom:8px;">At $299/org/month</div>
+      <div style="font-size:2.2rem;font-weight:900;margin-bottom:4px;">7</div>
+      <div style="font-size:0.75rem;color:#93c5fd;">organisations to break even</div>
+    </div>
+  </div>
+
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:22px 28px;">
+    <h4 style="font-size:0.88rem;font-weight:800;color:#052e16;margin-bottom:8px;">🎯 Recommended Pricing Strategy</h4>
+    <p style="font-size:0.78rem;color:#166534;line-height:1.65;">Given the low infrastructure costs and high value delivered, a <strong>per-organisation subscription model</strong> is optimal. The multi-tenant architecture means your marginal cost per new organisation is nearly zero. Focus on landing 15–20 organisations at the Professional tier ($149/mo) to achieve profitability, then scale to 50+ for strong margins.</p>
+  </div>
+</div>
+<div class="page-number">4 / 6</div>
+</div>
+
+
+<!-- PAGE 5 — RECOMMENDED PRICING TIERS -->
+<div class="page" style="min-height:297mm;position:relative;">
+<div class="page-inner">
+  <div class="section-label">Pricing Tiers</div>
+  <h2 class="section-title">Recommended Pricing for MFI Clients</h2>
+  <p class="section-intro">Three tiers designed to capture the full market — from small MFCs to large S&Ls and apex bodies.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px;">
+    <div style="border:2px solid #e2e8f0;border-radius:16px;padding:26px;text-align:center;">
+      <div style="font-size:0.68rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Starter</div>
+      <div style="font-size:2.4rem;font-weight:900;color:#0f172a;margin-bottom:4px;">$49<span style="font-size:1rem;font-weight:500;color:#94a3b8;">/mo</span></div>
+      <div style="font-size:0.75rem;color:#64748b;margin-bottom:16px;">or $470/year (20% off)</div>
+      <div style="height:1px;background:#e2e8f0;margin-bottom:16px;"></div>
+      <ul style="list-style:none;padding:0;text-align:left;font-size:0.75rem;color:#475569;line-height:2.2;">
+        <li>✓ Up to <strong>500 clients</strong></li>
+        <li>✓ Up to <strong>5 staff users</strong></li>
+        <li>✓ Executive Dashboard</li>
+        <li>✓ Loan Lifecycle Management</li>
+        <li>✓ Basic Regulatory Reports</li>
+        <li>✓ CSV Export</li>
+        <li>✗ <span style="color:#94a3b8;">Board Dashboard</span></li>
+        <li>✗ <span style="color:#94a3b8;">Shareholder Portal</span></li>
+        <li>✗ <span style="color:#94a3b8;">Offline Field Ops</span></li>
+      </ul>
+      <div style="margin-top:14px;font-size:0.68rem;color:#64748b;">Best for: Small MFCs (Tier 4)</div>
+    </div>
+
+    <div style="border:2px solid #22c55e;border-radius:16px;padding:26px;text-align:center;position:relative;background:#f0fdf4;">
+      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#22c55e;color:white;padding:4px 16px;border-radius:20px;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;">Most Popular</div>
+      <div style="font-size:0.68rem;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Professional</div>
+      <div style="font-size:2.4rem;font-weight:900;color:#052e16;margin-bottom:4px;">$149<span style="font-size:1rem;font-weight:500;color:#166534;">/mo</span></div>
+      <div style="font-size:0.75rem;color:#166534;margin-bottom:16px;">or $1,430/year (20% off)</div>
+      <div style="height:1px;background:#86efac;margin-bottom:16px;"></div>
+      <ul style="list-style:none;padding:0;text-align:left;font-size:0.75rem;color:#166534;line-height:2.2;">
+        <li>✓ Up to <strong>5,000 clients</strong></li>
+        <li>✓ Up to <strong>25 staff users</strong></li>
+        <li>✓ All Dashboards (Exec, Mgmt, Board)</li>
+        <li>✓ Full Regulatory Reports + CAR</li>
+        <li>✓ Offline Field Operations</li>
+        <li>✓ Shareholder Portal</li>
+        <li>✓ Audit Log</li>
+        <li>✓ PDF + CSV Export</li>
+        <li>✓ Priority Support</li>
+      </ul>
+      <div style="margin-top:14px;font-size:0.68rem;color:#166534;font-weight:600;">Best for: RCBs, MFCs, Credit Unions</div>
+    </div>
+
+    <div style="border:2px solid #f59e0b;border-radius:16px;padding:26px;text-align:center;background:#fffbeb;">
+      <div style="font-size:0.68rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Enterprise</div>
+      <div style="font-size:2.4rem;font-weight:900;color:#78350f;margin-bottom:4px;">$299<span style="font-size:1rem;font-weight:500;color:#92400e;">/mo</span></div>
+      <div style="font-size:0.75rem;color:#92400e;margin-bottom:16px;">or $2,870/year (20% off)</div>
+      <div style="height:1px;background:#fde68a;margin-bottom:16px;"></div>
+      <ul style="list-style:none;padding:0;text-align:left;font-size:0.75rem;color:#92400e;line-height:2.2;">
+        <li>✓ <strong>Unlimited clients</strong></li>
+        <li>✓ <strong>Unlimited staff users</strong></li>
+        <li>✓ Everything in Professional</li>
+        <li>✓ White-label branding</li>
+        <li>✓ Custom reports</li>
+        <li>✓ API access</li>
+        <li>✓ Dedicated account manager</li>
+        <li>✓ On-site training</li>
+        <li>✓ SLA guarantee</li>
+      </ul>
+      <div style="margin-top:14px;font-size:0.68rem;color:#92400e;font-weight:600;">Best for: S&Ls, Finance Houses, Apex Bodies</div>
+    </div>
+  </div>
+
+  <div style="background:linear-gradient(135deg,#431407,#9a3412);border-radius:14px;padding:24px 28px;color:white;">
+    <h4 style="font-size:0.9rem;font-weight:800;margin-bottom:8px;">📊 Revenue Projection (Year 1)</h4>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:12px;">
+      <div style="text-align:center;"><div style="font-size:0.68rem;color:#fed7aa;margin-bottom:4px;">10 Starter</div><div style="font-size:1.2rem;font-weight:900;">$5,880</div><div style="font-size:0.65rem;color:#fed7aa;">/year</div></div>
+      <div style="text-align:center;"><div style="font-size:0.68rem;color:#fed7aa;margin-bottom:4px;">15 Professional</div><div style="font-size:1.2rem;font-weight:900;">$26,820</div><div style="font-size:0.65rem;color:#fed7aa;">/year</div></div>
+      <div style="text-align:center;"><div style="font-size:0.68rem;color:#fed7aa;margin-bottom:4px;">5 Enterprise</div><div style="font-size:1.2rem;font-weight:900;">$17,940</div><div style="font-size:0.65rem;color:#fed7aa;">/year</div></div>
+      <div style="text-align:center;background:rgba(255,255,255,0.1);border-radius:10px;padding:8px;"><div style="font-size:0.68rem;color:#facc15;margin-bottom:4px;font-weight:700;">TOTAL YEAR 1</div><div style="font-size:1.2rem;font-weight:900;color:#facc15;">$50,640</div><div style="font-size:0.65rem;color:#fed7aa;">30 organisations</div></div>
+    </div>
+  </div>
+</div>
+<div class="page-number">5 / 6</div>
+</div>
+
+
+<!-- PAGE 6 — SUMMARY -->
+<div class="page" style="background:linear-gradient(145deg,#431407 0%,#9a3412 60%,#c2410c 100%);color:white;display:flex;flex-direction:column;min-height:297mm;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(251,146,60,0.07) 0%,transparent 70%);border-radius:50%;pointer-events:none;"></div>
+
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 48px;position:relative;z-index:2;">
+    <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:6px 18px;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#fed7aa;margin-bottom:26px;">Summary</div>
+
+    <h2 style="font-size:2.4rem;font-weight:900;line-height:1.1;letter-spacing:-0.04em;margin-bottom:20px;max-width:500px;">
+      The Numbers<br>
+      <span style="background:linear-gradient(90deg,#fb923c,#facc15);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Make Sense</span>
+    </h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:500px;width:100%;margin-bottom:30px;">
+      <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:22px;text-align:center;">
+        <div style="font-size:1.6rem;font-weight:900;margin-bottom:4px;">$20</div>
+        <div style="font-size:0.72rem;color:#fed7aa;">Min. monthly infra cost</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:22px;text-align:center;">
+        <div style="font-size:1.6rem;font-weight:900;margin-bottom:4px;">90%+</div>
+        <div style="font-size:0.72rem;color:#fed7aa;">Gross margin at scale</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:22px;text-align:center;">
+        <div style="font-size:1.6rem;font-weight:900;margin-bottom:4px;">13</div>
+        <div style="font-size:0.72rem;color:#fed7aa;">Orgs to break even ($149)</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:22px;text-align:center;">
+        <div style="font-size:1.6rem;font-weight:900;margin-bottom:4px;">$50K+</div>
+        <div style="font-size:0.72rem;color:#fed7aa;">Year 1 revenue (30 orgs)</div>
+      </div>
+    </div>
+
+    <p style="font-size:0.85rem;color:#fed7aa;line-height:1.65;max-width:480px;margin-bottom:24px;">
+      MFI Clarity has <strong>near-zero marginal cost per organisation</strong> thanks to multi-tenant architecture. Every new client goes straight to the bottom line. With 684+ potential institutions in Ghana alone, the addressable market is massive.
+    </p>
+
+    <div style="font-size:0.72rem;color:#78350f;margin-top:20px;">Confidential — MFI Clarity Internal Use Only — February 2025</div>
+  </div>
+</div>
+
+</body>
+</html>
