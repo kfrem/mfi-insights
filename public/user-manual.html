@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MFI Clarity — Complete User Manual</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;475;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; }
+
+  .page {
+    width: 210mm; min-height: 297mm; margin: 0 auto 40px;
+    background: #fff; padding: 48px 50px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+    page-break-after: always; position: relative; overflow: hidden;
+  }
+  .page::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg,#0d1f3c,#1e40af,#06b6d4);
+  }
+
+  /* COVER PAGE */
+  .cover { display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; min-height:297mm; }
+  .cover-logo { width:72px; height:72px; border-radius:18px; background:linear-gradient(135deg,#1e40af,#0d1f3c); display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:900; color:#fff; margin:0 auto 24px; }
+  .cover h1 { font-size:2.8rem; font-weight:900; color:#0d1f3c; letter-spacing:-0.04em; line-height:1.1; margin-bottom:12px; }
+  .cover h2 { font-size:1.1rem; font-weight:400; color:#64748b; margin-bottom:32px; }
+  .cover-divider { width:60px; height:3px; background:linear-gradient(90deg,#1e40af,#06b6d4); border-radius:2px; margin:0 auto 32px; }
+  .cover-meta { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; width:100%; max-width:420px; }
+  .cover-meta-item { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; }
+  .cover-meta-item .lbl { font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#94a3b8; margin-bottom:3px; }
+  .cover-meta-item .val { font-size:0.78rem; font-weight:700; color:#0d1f3c; }
+  .cover-badge-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:28px; }
+  .cover-badge { background:#dbeafe; color:#1e40af; font-size:0.62rem; font-weight:700; padding:4px 12px; border-radius:999px; letter-spacing:0.08em; text-transform:uppercase; }
+
+  /* TOC */
+  .toc-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 28px; }
+  .toc-item { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px dotted #e2e8f0; font-size:0.78rem; }
+  .toc-item span:first-child { color:#334155; font-weight:500; }
+  .toc-item span:last-child { color:#94a3b8; font-weight:700; font-size:0.7rem; background:#f1f5f9; padding:1px 7px; border-radius:4px; }
+  .toc-section-label { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#1e40af; margin:14px 0 6px; }
+
+  /* TYPOGRAPHY */
+  .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; padding-bottom:12px; border-bottom:1.5px solid #e2e8f0; }
+  .page-header-left h3 { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#94a3b8; }
+  .page-header-left h2 { font-size:1.2rem; font-weight:800; color:#0d1f3c; letter-spacing:-0.02em; }
+  .section-num { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#1e40af,#0d1f3c); color:#fff; font-size:0.82rem; font-weight:800; display:flex; align-items:center; justify-content:center; }
+
+  .section-label {
+    font-size:0.67rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em;
+    color:#1e40af; display:flex; align-items:center; gap:10px; margin-bottom:10px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:#e2e8f0; }
+
+  h2.section-title { font-size:1.5rem; font-weight:900; color:#0d1f3c; letter-spacing:-0.03em; margin-bottom:8px; }
+  p.section-intro { font-size:0.82rem; color:#475569; line-height:1.7; margin-bottom:18px; }
+
+  /* STEP BOXES */
+  .steps { display:flex; flex-direction:column; gap:12px; margin:16px 0; }
+  .step { display:flex; gap:16px; align-items:flex-start; }
+  .step-num { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#1e40af,#0d1f3c); color:#fff; font-size:0.75rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .step-body { flex:1; }
+  .step-body h4 { font-size:0.85rem; font-weight:700; color:#0d1f3c; margin-bottom:4px; }
+  .step-body p  { font-size:0.76rem; color:#475569; line-height:1.65; }
+  .step-body ul { margin-top:6px; padding-left:14px; }
+  .step-body ul li { font-size:0.74rem; color:#475569; line-height:1.7; }
+
+  /* CALLOUT BOXES */
+  .callout { border-radius:10px; padding:14px 16px; margin:14px 0; border-left:4px solid; }
+  .callout-tip  { background:#f0fdf4; border-color:#10b981; }
+  .callout-warn { background:#fffbeb; border-color:#f59e0b; }
+  .callout-info { background:#eff6ff; border-color:#3b82f6; }
+  .callout-imp  { background:#fff1f2; border-color:#ef4444; }
+  .callout h5 { font-size:0.75rem; font-weight:700; margin-bottom:4px; }
+  .callout-tip h5  { color:#065f46; }
+  .callout-warn h5 { color:#92400e; }
+  .callout-info h5 { color:#1e40af; }
+  .callout-imp h5  { color:#991b1b; }
+  .callout p { font-size:0.73rem; line-height:1.65; color:#475569; }
+
+  /* CARDS */
+  .cards-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0; }
+  .cards-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:14px 0; }
+  .card { border:1.5px solid #e2e8f0; border-radius:12px; padding:16px; background:#fff; }
+  .card-blue  { background:linear-gradient(135deg,#eff6ff,#f0f9ff); border-color:#bfdbfe; }
+  .card-green { background:linear-gradient(135deg,#f0fdf4,#ecfdf5); border-color:#bbf7d0; }
+  .card-gold  { background:linear-gradient(135deg,#fffbeb,#fef9c3); border-color:#fde68a; }
+  .card-navy  { background:linear-gradient(135deg,#f0f4ff,#eef2ff); border-color:#c7d2fe; }
+  .card-cyan  { background:linear-gradient(135deg,#ecfeff,#f0fdff); border-color:#a5f3fc; }
+  .card-red   { background:linear-gradient(135deg,#fff1f2,#fef2f2); border-color:#fecaca; }
+  .card h4 { font-size:0.85rem; font-weight:700; color:#0d1f3c; margin-bottom:5px; }
+  .card p  { font-size:0.73rem; color:#475569; line-height:1.6; }
+  .card ul { margin-top:5px; padding-left:14px; }
+  .card ul li { font-size:0.71rem; color:#475569; line-height:1.7; }
+
+  /* FIELD TABLE */
+  .field-table { width:100%; border-collapse:collapse; font-size:0.73rem; margin:12px 0; }
+  .field-table thead tr { background:linear-gradient(90deg,#0d1f3c,#1e40af); color:#fff; }
+  .field-table th { padding:8px 10px; font-weight:700; text-align:left; font-size:0.68rem; letter-spacing:0.04em; }
+  .field-table tbody tr:nth-child(even) { background:#f8fafc; }
+  .field-table tbody tr:nth-child(odd)  { background:#fff; }
+  .field-table td { padding:8px 10px; color:#334155; border-bottom:1px solid #e2e8f0; vertical-align:top; }
+  .req { color:#ef4444; font-weight:700; font-size:0.65rem; }
+  .opt { color:#10b981; font-weight:700; font-size:0.65rem; }
+
+  /* ROLE BADGE */
+  .role-badge { display:inline-block; font-size:0.58rem; font-weight:700; padding:2px 8px; border-radius:999px; letter-spacing:0.08em; text-transform:uppercase; }
+  .rb-admin   { background:#dbeafe; color:#1e40af; }
+  .rb-manager { background:#d1fae5; color:#065f46; }
+  .rb-officer { background:#fef3c7; color:#92400e; }
+  .rb-teller  { background:#f3e8ff; color:#6b21a8; }
+  .rb-board   { background:#e0e7ff; color:#3730a3; }
+  .rb-shareholder { background:#fce7f3; color:#9d174d; }
+
+  /* BOG BADGE */
+  .bog-current     { background:#d1fae5; color:#065f46; }
+  .bog-olem        { background:#fef3c7; color:#92400e; }
+  .bog-substandard { background:#fed7aa; color:#9a3412; }
+  .bog-doubtful    { background:#fecaca; color:#991b1b; }
+  .bog-loss        { background:#fde8d8; color:#7c2d12; }
+
+  /* DIVIDER */
+  .divider { height:1px; background:linear-gradient(90deg,transparent,#e2e8f0,transparent); margin:18px 0; }
+
+  /* PAGE FOOTER */
+  .page-footer { margin-top:24px; padding-top:12px; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; }
+  .page-footer span { font-size:0.63rem; color:#94a3b8; }
+  .page-num { width:24px; height:24px; border-radius:50%; background:#0d1f3c; color:#fff; font-size:0.6rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+  /* PRINT BUTTON */
+  .print-btn {
+    position:fixed; bottom:28px; right:28px; z-index:999;
+    background:linear-gradient(135deg,#1e40af,#0d1f3c); color:#fff;
+    border:none; border-radius:50px; padding:12px 22px;
+    font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:700;
+    cursor:pointer; box-shadow:0 4px 20px rgba(30,64,175,0.4);
+    transition:transform 0.2s;
+  }
+  .print-btn:hover { transform:translateY(-2px); }
+
+  .kbd { display:inline-block; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; padding:1px 6px; font-size:0.68rem; font-family:monospace; color:#334155; }
+  .highlight { background:#fef9c3; padding:1px 4px; border-radius:3px; font-weight:600; }
+
+  @media print {
+    body { background:#fff; }
+    .print-btn { display:none; }
+    .page { box-shadow:none; margin:0; page-break-after:always; }
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+
+<!-- ══════════════════════ COVER PAGE ══════════════════════ -->
+<div class="page" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+  <div style="width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,#1e40af,#0d1f3c);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:900;color:#fff;margin:0 auto 24px;">M</div>
+  <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#94a3b8;margin-bottom:12px;">Complete User Manual</div>
+  <h1 style="font-size:3rem;font-weight:900;color:#0d1f3c;letter-spacing:-0.04em;line-height:1.1;margin-bottom:10px;">MFI Clarity</h1>
+  <h2 style="font-size:1.15rem;font-weight:400;color:#64748b;margin-bottom:30px;">Microfinance Management System<br>Step-by-Step Guide for All Users</h2>
+  <div style="width:60px;height:3px;background:linear-gradient(90deg,#1e40af,#06b6d4);border-radius:2px;margin:0 auto 30px;"></div>
+  <p style="font-size:0.82rem;color:#64748b;max-width:360px;line-height:1.7;margin-bottom:32px;">This manual guides you through every feature of MFI Clarity — from creating your first account to generating Bank of Ghana regulatory reports. No prior technical experience required.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:36px;">
+    <span style="background:#dbeafe;color:#1e40af;font-size:0.62rem;font-weight:700;padding:4px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;">Executives</span>
+    <span style="background:#d1fae5;color:#065f46;font-size:0.62rem;font-weight:700;padding:4px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;">Managers</span>
+    <span style="background:#fef3c7;color:#92400e;font-size:0.62rem;font-weight:700;padding:4px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;">Field Officers</span>
+    <span style="background:#f3e8ff;color:#6b21a8;font-size:0.62rem;font-weight:700;padding:4px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;">Tellers</span>
+    <span style="background:#e0e7ff;color:#3730a3;font-size:0.62rem;font-weight:700;padding:4px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;">Board Directors</span>
+    <span style="background:#fce7f3;color:#9d174d;font-size:0.62rem;font-weight:700;padding:4px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;">Shareholders</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;max-width:380px;width:100%;">
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;">
+      <div style="font-size:1.4rem;font-weight:900;color:#1e40af;">20</div>
+      <div style="font-size:0.62rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;">Sections</div>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;">
+      <div style="font-size:1.4rem;font-weight:900;color:#10b981;">6</div>
+      <div style="font-size:0.62rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;">User Roles</div>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;">
+      <div style="font-size:1.4rem;font-weight:900;color:#f59e0b;">BOG</div>
+      <div style="font-size:0.62rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;">Compliant</div>
+    </div>
+  </div>
+  <div class="page-footer" style="position:absolute;bottom:48px;left:50px;right:50px;">
+    <span>MFI Clarity — User Manual · Version 1.0 · 2025</span>
+    <span>Confidential — Internal Use</span>
+    <div class="page-num">1</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ TABLE OF CONTENTS ══════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left"><h3>User Manual</h3><h2>Table of Contents</h2></div>
+    <div class="section-num">📋</div>
+  </div>
+
+  <div class="section-label">Getting Started</div>
+  <div class="toc-grid">
+    <div class="toc-item"><span>§1 — Introduction &amp; Overview</span><span>3</span></div>
+    <div class="toc-item"><span>§2 — Getting Started: Registration &amp; Login</span><span>3</span></div>
+    <div class="toc-item"><span>§3 — Navigation &amp; Interface Overview</span><span>4</span></div>
+    <div class="toc-item"><span>§4 — User Roles &amp; Permissions</span><span>4</span></div>
+  </div>
+
+  <div class="section-label" style="margin-top:14px;">Core Operations</div>
+  <div class="toc-grid">
+    <div class="toc-item"><span>§5 — Executive Dashboard</span><span>5</span></div>
+    <div class="toc-item"><span>§6 — Managing Clients</span><span>5</span></div>
+    <div class="toc-item"><span>§7 — Creating &amp; Managing Loans</span><span>6</span></div>
+    <div class="toc-item"><span>§8 — Recording Repayments</span><span>7</span></div>
+    <div class="toc-item"><span>§9 — Field Operations (Mobile Collections)</span><span>7</span></div>
+    <div class="toc-item"><span>§10 — Portfolio Aging Analysis</span><span>8</span></div>
+  </div>
+
+  <div class="section-label" style="margin-top:14px;">Management &amp; Reporting</div>
+  <div class="toc-grid">
+    <div class="toc-item"><span>§11 — Repayment Trends</span><span>8</span></div>
+    <div class="toc-item"><span>§12 — Management Dashboard</span><span>9</span></div>
+    <div class="toc-item"><span>§13 — Board of Directors Dashboard</span><span>9</span></div>
+    <div class="toc-item"><span>§14 — Shareholder / Investor Portal</span><span>10</span></div>
+    <div class="toc-item"><span>§15 — Departmental Reports</span><span>10</span></div>
+    <div class="toc-item"><span>§16 — Financial Reports</span><span>11</span></div>
+  </div>
+
+  <div class="section-label" style="margin-top:14px;">Compliance &amp; Administration</div>
+  <div class="toc-grid">
+    <div class="toc-item"><span>§17 — Regulatory Reports (BOG)</span><span>11</span></div>
+    <div class="toc-item"><span>§18 — Audit Log</span><span>12</span></div>
+    <div class="toc-item"><span>§19 — User Management</span><span>12</span></div>
+    <div class="toc-item"><span>§20 — Settings &amp; Configuration</span><span>13</span></div>
+  </div>
+  <div class="toc-grid" style="margin-top:0;">
+    <div class="toc-item"><span>§21 — Troubleshooting &amp; FAQ</span><span>13</span></div>
+    <div class="toc-item"><span></span><span></span></div>
+  </div>
+
+  <div class="divider" style="margin-top:24px;"></div>
+  <div class="section-label" style="margin-top:18px;">Role Quick-Reference</div>
+  <div class="cards-3" style="margin-top:10px;">
+    <div class="card card-blue">
+      <h4><span class="role-badge rb-admin">Admin</span></h4>
+      <p style="margin-top:6px;">Full access to all modules. Creates users, assigns roles, configures settings. Responsible for system setup and compliance tier.</p>
+    </div>
+    <div class="card card-green">
+      <h4><span class="role-badge rb-manager">Manager</span></h4>
+      <p style="margin-top:6px;">Full CRUD on loans and clients. Accesses management &amp; board dashboards. Can process dividends and view all reports.</p>
+    </div>
+    <div class="card card-gold">
+      <h4><span class="role-badge rb-officer">Field Officer</span></h4>
+      <p style="margin-top:6px;">Manages assigned clients only. Records field collections with GPS. Cannot access financial or board reports.</p>
+    </div>
+    <div class="card card-navy">
+      <h4><span class="role-badge rb-teller">Teller</span></h4>
+      <p style="margin-top:6px;">Posts counter repayments for assigned clients. Limited to operational data entry. Cannot view management dashboards.</p>
+    </div>
+    <div class="card card-blue">
+      <h4><span class="role-badge rb-board">Board Director</span></h4>
+      <p style="margin-top:6px;">Read-only access to all org data. Board dashboard, strategic KPIs, risk analysis, and regulatory reports.</p>
+    </div>
+    <div class="card" style="border-color:#fce7f3;background:linear-gradient(135deg,#fdf2f8,#fce7f3);">
+      <h4><span class="role-badge rb-shareholder">Shareholder</span></h4>
+      <p style="margin-top:6px;">Access to own investment data only. Views portfolio, dividend history, and transaction records in the Investor Portal.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-tip" style="margin-top:16px;">
+    <h5>💡 Tip — Who Should Read What?</h5>
+    <p>All users should read Sections 1–4 (getting started). Then read the section for your role: Executives → §5, §12, §13 | Managers → §5–§16 | Field Officers → §6, §7, §9 | Tellers → §8 | Board Directors → §13, §15–§17 | Shareholders → §14</p>
+  </div>
+
+  <div class="page-footer">
+    <span>MFI Clarity — Complete User Manual</span>
+    <span>mficlarity.com</span>
+    <div class="page-num">2</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ SECTION 1 & 2 ══════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left"><h3>Sections 1 &amp; 2</h3><h2>Introduction &amp; Getting Started</h2></div>
+    <div class="section-num">1</div>
+  </div>
+
+  <div class="section-label">Section 1 — Introduction</div>
+  <h2 class="section-title">What is MFI Clarity?</h2>
+  <p class="section-intro">MFI Clarity is a complete <strong>Microfinance Management System</strong> designed specifically for Ghana's microfinance sector. It replaces paper-based records and error-prone spreadsheets with a secure, always-online platform that manages every aspect of your microfinance institution — from client registration to Bank of Ghana (BOG) regulatory reporting.</p>
+
+  <div class="cards-3" style="margin-bottom:16px;">
+    <div class="card card-blue"><h4>🌐 Access Anywhere</h4><p>Works in any modern web browser (Chrome, Firefox, Edge, Safari). No software installation needed. Works on desktop computers, laptops, and tablets.</p></div>
+    <div class="card card-green"><h4>🔒 Secure by Design</h4><p>Your data is encrypted and protected. Every user gets their own password. Sensitive data is never shared between organisations.</p></div>
+    <div class="card card-gold"><h4>📋 BOG Compliant</h4><p>Built to meet Bank of Ghana regulatory requirements. Classification of Advances, CAR, Liquidity, and AML reports are generated automatically.</p></div>
+  </div>
+
+  <div class="callout callout-info">
+    <h5>ℹ️ System Requirements</h5>
+    <p>A modern web browser (Google Chrome recommended) · Stable internet connection · Any device: desktop computer, laptop, or tablet · No software installation required</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 2 — Getting Started</div>
+  <h2 class="section-title">Registration, Email Verification &amp; Onboarding</h2>
+  <p class="section-intro">Before you can use MFI Clarity, the <strong>first person</strong> at your organisation must create an account and set up the organisation. This is usually the system administrator or the CEO/MD. All other staff will be added later.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Open MFI Clarity in your web browser</h4>
+        <p>Type the MFI Clarity web address in your browser. You will see the Welcome page. Click <span class="kbd">Get Started</span> or <span class="kbd">Register</span>. This takes you to the Registration page.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Fill in your Registration details</h4>
+        <ul>
+          <li><strong>Display Name</strong> — Your name as it will appear in the system (optional but recommended)</li>
+          <li><strong>Email Address</strong> — Must be a real email address you have access to. Example: john.mensah@mymfi.com</li>
+          <li><strong>Password</strong> — Choose a password with at least 6 characters. Use letters AND numbers for security</li>
+          <li><strong>Confirm Password</strong> — Type your password again exactly the same way</li>
+        </ul>
+        <p style="margin-top:6px;">When done, click the <span class="kbd">Create Account</span> button.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Verify your Email Address</h4>
+        <p>Check your email inbox. You will receive an email from MFI Clarity with a verification link. Click that link to confirm your email. If you do not see it, check your Spam/Junk folder. You must verify your email before you can log in.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Set Up Your Organisation (Onboarding)</h4>
+        <p>After email verification, you will be taken to the Organisation Setup page. Fill in all your organisation's details:</p>
+        <ul>
+          <li><strong>Legal Name</strong> (required) — The official registered name of your MFI. Example: Accra Microfinance Limited</li>
+          <li><strong>Trading Name</strong> — The name you trade as (if different from legal name)</li>
+          <li><strong>Registration Number</strong> — Your company registration number from the Registrar General's Department</li>
+          <li><strong>Tax ID (TIN)</strong> — Your Tax Identification Number from GRA</li>
+          <li><strong>Street Address</strong> — Your office physical address</li>
+          <li><strong>City/Town</strong> — The town or city where your office is located</li>
+          <li><strong>Region</strong> — Select from the dropdown (all 16 Ghana regions listed)</li>
+          <li><strong>Phone Number</strong> — Your main contact phone number</li>
+          <li><strong>Email Address</strong> — Your organisation's contact email</li>
+          <li><strong>Website</strong> — Optional: your website address</li>
+        </ul>
+        <p style="margin-top:6px;">Click <span class="kbd">Create Organisation</span> when done. You will be automatically assigned the ADMIN role.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>You Are Now Inside MFI Clarity!</h4>
+        <p>After setup, you will land on the Executive Dashboard — the main home screen. From here you can navigate to any part of the system using the sidebar menu on the left.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-warn" style="margin-top:4px;">
+    <h5>⚠️ Forgot Your Password?</h5>
+    <p>On the Login page, click <strong>"Forgot Password"</strong>. Enter your email address and click Send Reset Link. Check your email for a password reset link and follow the instructions. Your old password will no longer work after you set a new one.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>MFI Clarity — Complete User Manual · Sections 1–2</span>
+    <span>mficlarity.com</span>
+    <div class="page-num">3</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ SECTION 3 & 4 ══════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left"><h3>Sections 3 &amp; 4</h3><h2>Navigation &amp; User Roles</h2></div>
+    <div class="section-num">3</div>
+  </div>
+
+  <div class="section-label">Section 3 — Navigation Overview</div>
+  <h2 class="section-title">Finding Your Way Around MFI Clarity</h2>
+  <p class="section-intro">MFI Clarity has a sidebar navigation menu on the left side of the screen. Click on any item to go to that section. The menu items you can see depend on your role (Admins and Managers see the most options).</p>
+
+  <div class="cards-2" style="margin-bottom:14px;">
+    <div class="card card-blue">
+      <h4>📌 Sidebar Menu Items</h4>
+      <ul>
+        <li><strong>Dashboard</strong> — Executive KPI overview (home)</li>
+        <li><strong>Board</strong> — Board of Directors view</li>
+        <li><strong>Management</strong> — Daily operations dashboard</li>
+        <li><strong>Shareholders</strong> — Investor portal</li>
+        <li><strong>Departments</strong> — Accounts/Collections/Credit reports</li>
+        <li><strong>Financial Reports</strong> — Statements, profitability</li>
+        <li><strong>Regulatory Reports</strong> — BOG compliance reports</li>
+        <li><strong>Portfolio Aging</strong> — Loan overdue analysis</li>
+        <li><strong>Repayments</strong> — 60-day collection trends</li>
+        <li><strong>Field Operations</strong> — Mobile collections</li>
+        <li><strong>Data Entry</strong> — Add clients, loans, payments</li>
+        <li><strong>Audit Log</strong> — Activity trail</li>
+        <li><strong>User Management</strong> — Staff &amp; roles</li>
+        <li><strong>Settings</strong> — Organisation configuration</li>
+      </ul>
+    </div>
+    <div class="card card-green">
+      <h4>🔄 Key Interface Elements</h4>
+      <ul>
+        <li><strong>Organisation Name</strong> — Shown at top of sidebar. If you belong to multiple organisations, click to switch between them</li>
+        <li><strong>Refresh Button</strong> — Updates dashboard data to the latest figures. Look for the refresh icon on dashboards</li>
+        <li><strong>Export Buttons</strong> — Most tables have CSV and PDF export buttons. Click to download a copy of the data</li>
+        <li><strong>Tabs</strong> — Many pages have tabs (like "Clients | New Client | Templates"). Click a tab to switch between views</li>
+        <li><strong>Search Bar</strong> — Available on client and loan lists. Type a name or ID to filter results</li>
+        <li><strong>Drilldown</strong> — On the Executive Dashboard, click any metric card to see the underlying loan details</li>
+        <li><strong>Demo Mode</strong> — If you see "Demo Mode" at the top, you are viewing sample data. Real data entry is disabled in demo mode</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <h5>💡 Tip — Tabs on Pages</h5>
+    <p>Most pages in MFI Clarity have multiple tabs. For example, the Data Entry page has tabs: Clients · New Client · Templates · Loan · Workflow · Repayment · Upload · Find Docs · Settings. Always check all the tabs on a page — you may find what you need on a different tab.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 4 — User Roles &amp; Permissions</div>
+  <h2 class="section-title">Understanding What Each Role Can Do</h2>
+  <p class="section-intro">Every person who uses MFI Clarity is assigned a <strong>role</strong>. Your role determines what you can see and do. Roles are assigned by the Admin. Below is a summary of each role.</p>
+
+  <table class="field-table">
+    <thead>
+      <tr><th>Role</th><th>Who it is for</th><th>What they can do</th><th>What they cannot do</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="role-badge rb-admin">Admin</span></td>
+        <td>CEO, MD, IT Manager</td>
+        <td>Everything — full access to all modules, settings, user management, reports</td>
+        <td>Nothing — Admin has no restrictions</td>
+      </tr>
+      <tr>
+        <td><span class="role-badge rb-manager">Manager</span></td>
+        <td>Branch Manager, Operations Manager</td>
+        <td>Full CRUD on clients and loans, all dashboards, all reports, dividend processing</td>
+        <td>Cannot add/remove users, cannot change system settings</td>
+      </tr>
+      <tr>
+        <td><span class="role-badge rb-officer">Field Officer</span></td>
+        <td>Credit Officer, Field Agent</td>
+        <td>Manage assigned clients only, record field collections, view own performance</td>
+        <td>Cannot access financial reports, board dashboard, or other officers' clients</td>
+      </tr>
+      <tr>
+        <td><span class="role-badge rb-teller">Teller</span></td>
+        <td>Counter Staff, Cashier</td>
+        <td>Post repayments for assigned clients</td>
+        <td>Cannot create loans, cannot view dashboards or reports</td>
+      </tr>
+      <tr>
+        <td><span class="role-badge rb-board">Board Director</span></td>
+        <td>Board Members, Non-Executive Directors</td>
+        <td>Read-only view of all data, full board dashboard, all reports</td>
+        <td>Cannot create, edit, or delete any records</td>
+      </tr>
+      <tr>
+        <td><span class="role-badge rb-shareholder">Shareholder</span></td>
+        <td>Investors, Equity Holders</td>
+        <td>View own investment, portfolio allocation, dividend history, transactions</td>
+        <td>Cannot see any operational data (clients, loans, staff)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-info" style="margin-top:12px;">
+    <h5>ℹ️ How to Get a Role Assigned</h5>
+    <p>Only an <strong>Admin</strong> can assign roles to users. If you cannot see a menu item or page, it may be because your role does not have access. Ask your system administrator (Admin user) to adjust your role if needed.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>MFI Clarity — Complete User Manual · Sections 3–4</span>
+    <span>mficlarity.com</span>
+    <div class="page-num">4</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ SECTION 5 & 6 ══════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left"><h3>Sections 5 &amp; 6</h3><h2>Executive Dashboard &amp; Managing Clients</h2></div>
+    <div class="section-num">5</div>
+  </div>
+
+  <div class="section-label">Section 5 — Executive Dashboard</div>
+  <h2 class="section-title">Your Institution's Health at a Glance</h2>
+  <p class="section-intro">The Executive Dashboard is the first screen you see when you log in. It shows the most important numbers about your institution's loan portfolio in real-time. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span> <span class="role-badge rb-board">Board Director</span></p>
+
+  <div class="cards-2" style="margin-bottom:12px;">
+    <div class="card card-blue">
+      <h4>📊 The 4 Main KPI Cards</h4>
+      <ul>
+        <li><strong>Gross Portfolio</strong> — The total amount of money currently outstanding (owed to you) across all active loans. Shown in GHS.</li>
+        <li><strong>Active Loans</strong> — The number of loans that are currently being repaid. This counts individual loan accounts, not clients.</li>
+        <li><strong>PAR 30+</strong> — "Portfolio at Risk" — the percentage of your portfolio where payments are more than 30 days overdue. A healthy MFI keeps this below 5%. If the number is red, it is above the warning threshold.</li>
+        <li><strong>Provisions Required</strong> — How much money BOG requires you to set aside as a provision against potential loan losses, based on the classification of your loans.</li>
+      </ul>
+    </div>
+    <div class="card card-gold">
+      <h4>📋 BOG Classification Table</h4>
+      <p style="margin-bottom:8px;">Below the KPI cards is the BOG Classification Table. This shows all your loans grouped into 5 buckets:</p>
+      <ul>
+        <li><span class="role-badge bog-current">Current</span> — Payments up to date. Provision: 1%</li>
+        <li><span class="role-badge bog-olem">OLEM</span> — 1–30 days overdue. Provision: 5%</li>
+        <li><span class="role-badge bog-substandard">Substandard</span> — 31–90 days overdue. Provision: 25%</li>
+        <li><span class="role-badge bog-doubtful">Doubtful</span> — 91–180 days overdue. Provision: 50%</li>
+        <li><span class="role-badge bog-loss">Loss</span> — Over 180 days overdue. Provision: 100%</li>
+      </ul>
+      <p style="margin-top:6px;">Each row shows: number of loans in that bucket, total outstanding amount, provision rate %, and provision amount required.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <h5>💡 Tip — Using Drilldown</h5>
+    <p>Click on any KPI card (Gross Portfolio, Active Loans, PAR 30+, or Provisions) to open a <strong>Drilldown Modal</strong>. This shows you a detailed list of every loan that makes up that number — including the client name, outstanding balance, and days overdue. Great for investigating problem accounts.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 6 — Managing Clients</div>
+  <h2 class="section-title">Registering &amp; Managing Borrowers</h2>
+  <p class="section-intro">Go to <strong>Data Entry → New Client tab</strong> to register a new borrower. MFI Clarity supports four types of clients: Individual, Group, Cooperative, and SME. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span> <span class="role-badge rb-officer">Field Officer</span></p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Select Client Type</h4>
+        <p>At the top of the New Client form, choose: <strong>Individual</strong> (single person), <strong>Group</strong> (group lending), <strong>Cooperative</strong>, or <strong>SME</strong> (small business). The form changes slightly depending on what you choose. Most clients will be Individual.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Fill in Personal Details</h4>
+        <ul>
+          <li><strong>First Name &amp; Last Name</strong> — Client's full legal name as on ID</li>
+          <li><strong>Date of Birth</strong> — Click the date field and select from the calendar</li>
+          <li><strong>Gender</strong> — Select Male, Female, or Other</li>
+          <li><strong>Nationality</strong> — Usually Ghanaian</li>
+          <li><strong>Occupation</strong> — What the client does for a living (e.g., Trader, Farmer, Teacher)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Enter Identification Details (KYC)</h4>
+        <ul>
+          <li><strong>Ghana Card Number</strong> — Must be in the format: <span class="highlight">GHA-XXXXXXXXX-X</span> (e.g., GHA-123456789-0). The system will reject incorrect formats.</li>
+          <li><strong>Ghana Card Expiry Date</strong> — The date on the card when it expires</li>
+          <li><strong>Proof of Residence Type</strong> — Select the type of document used (Utility Bill, Tenancy Agreement, etc.)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Set Risk Category &amp; Source of Funds</h4>
+        <ul>
+          <li><strong>Risk Category</strong> — Select LOW, MEDIUM, or HIGH based on your institution's credit policy</li>
+          <li><strong>Source of Funds</strong> — Where the client earns their income (e.g., Business Income, Salary, Farming)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Enter Location Details</h4>
+        <ul>
+          <li><strong>Region</strong> — Select from the dropdown (all 16 Ghana regions)</li>
+          <li><strong>District</strong> — The district list updates automatically based on the selected region</li>
+          <li><strong>Town</strong> — The client's town or community</li>
+          <li><strong>Landmark</strong> — A recognisable nearby location to help field officers find the client</li>
+          <li><strong>GPS Address</strong> — The client's digital address (if known)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h4>Enter Contact Information &amp; Submit</h4>
+        <p>Fill in Phone Number, Email (optional). For SME or Business clients, fill in Business Name, Business Type, Years in Business, Monthly Income, and Monthly Expenses. For Group clients, add each group member using the "Add Member" button. When all fields are complete, click <span class="kbd">Create Client</span>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <h5>💡 Tip — Searching for Existing Clients</h5>
+    <p>Go to <strong>Data Entry → Clients tab</strong>. Use the search bar to find a client by name. You can also use the search when creating a loan — type a few letters of the client's name and matching results will appear in a dropdown.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>MFI Clarity — Complete User Manual · Sections 5–6</span>
+    <span>mficlarity.com</span>
+    <div class="page-num">5</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ SECTION 7 ══════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left"><h3>Section 7</h3><h2>Creating &amp; Managing Loans</h2></div>
+    <div class="section-num">7</div>
+  </div>
+
+  <div class="section-label">Section 7 — Creating Loans</div>
+  <h2 class="section-title">How to Create a New Loan</h2>
+  <p class="section-intro">Go to <strong>Data Entry → Loan tab</strong> to create a new loan for an existing client. The client must already be registered in the system before you can create a loan for them. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span> <span class="role-badge rb-officer">Field Officer</span></p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Select the Client</h4>
+        <p>In the Client field, start typing the client's name. A dropdown list will show matching clients. Click on the correct client to select them. Their details will appear for confirmation.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Choose Loan Product / Category</h4>
+        <p>Select the type of loan product from the dropdown list. Loan products are configured by your institution (e.g., Business Loan, Agricultural Loan, Emergency Loan). Each product may have different default interest rates and terms.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Enter Loan Financial Details</h4>
+        <ul>
+          <li><strong>Principal Amount</strong> — The amount of money the client is borrowing (in GHS). Minimum: GHS 100. Maximum: GHS 5,000,000 (subject to your BOG tier limits)</li>
+          <li><strong>Interest Rate (%)</strong> — The annual interest rate. Enter as a number (e.g., 24 for 24%)</li>
+          <li><strong>Interest Method</strong> — <strong>FLAT</strong>: Interest is calculated on the original principal for the full term. <strong>REDUCING BALANCE</strong>: Interest is calculated on the outstanding balance — reduces as payments are made. Reducing Balance is more client-friendly and is the international standard.</li>
+          <li><strong>Interest Calculation Frequency</strong> — How often interest is calculated: Daily, Weekly, Fortnightly, Monthly, Quarterly, or Annually</li>
+          <li><strong>Term (Months)</strong> — How long the client has to repay (1 to 240 months)</li>
+          <li><strong>Repayment Frequency</strong> — How often the client makes payments: Daily, Weekly, Fortnightly, or Monthly</li>
+          <li><strong>Disbursement Date</strong> — The date the money was or will be given to the client</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Enter Loan Purpose</h4>
+        <p>Describe what the client intends to use the money for. This is required for KYC compliance. Example: "Purchase of trading stock for retail shop" or "Farm inputs for maize cultivation". Must be between 10 and 500 characters.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Configure Penalty Settings (Optional)</h4>
+        <ul>
+          <li><strong>Grace Period</strong> — Number of days after a missed payment before penalties start (0–30 days)</li>
+          <li><strong>Penalty Type</strong> — None, Flat Amount, % of Overdue Amount, % of Installment, or Daily Rate</li>
+          <li><strong>Penalty Value</strong> — The amount or percentage to charge as penalty</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h4>Enter Collateral &amp; Guarantor Details (if applicable)</h4>
+        <ul>
+          <li><strong>Collateral Type</strong> — What asset the client is pledging (e.g., Land, Vehicle, Equipment)</li>
+          <li><strong>Collateral Value</strong> — Estimated value of the collateral in GHS</li>
+          <li><strong>Guarantor Name &amp; Phone</strong> — A person who guarantees the loan</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <h4>Review Affordability Check &amp; Amortisation Schedule</h4>
+        <p>The system will calculate the monthly payment amount and compare it to the client's income to perform an affordability check. Review the <strong>Amortisation Schedule</strong> — this table shows every payment the client needs to make, the date, the principal portion, the interest portion, and the remaining balance after each payment. Confirm it looks correct.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">8</div>
+      <div class="step-body">
+        <h4>Submit the Loan</h4>
+        <p>Click <span class="kbd">Create Loan</span>. The loan will be saved and will appear in the client's profile and the portfolio. The loan will initially show as <strong>ACTIVE</strong> once disbursed.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-warn">
+    <h5>⚠️ Important — BOG Loan Limit Check</h5>
+    <p>MFI Clarity automatically enforces the loan limits set by the Bank of Ghana for your institution's tier. If you try to create a loan above your tier's maximum, the system will show an error. Contact your Admin to review your compliance tier in Settings if you believe the limits are incorrect.</p>
+  </div>
+
+  <div class="callout callout-tip">
+    <h5>💡 Tip — Bulk Import</h5>
+    <p>If you have many clients or loans to add at once, go to <strong>Data Entry → Templates tab</strong>. Download the CSV template, fill in the data in Excel or Google Sheets, then upload the completed file. This is much faster than entering records one by one.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>MFI Clarity — Complete User Manual · Section 7</span>
+    <span>mficlarity.com</span>
+    <div class="page-num">6</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ SECTIONS 8 & 9 ══════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left"><h3>Sections 8 &amp; 9</h3><h2>Repayments &amp; Field Operations</h2></div>
+    <div class="section-num">8</div>
+  </div>
+
+  <div class="section-label">Section 8 — Recording Repayments</div>
+  <h2 class="section-title">How to Post a Customer Repayment</h2>
+  <p class="section-intro">When a client makes a loan payment at your counter or office, you must record it in MFI Clarity. Go to <strong>Data Entry → Repayment tab</strong>. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span> <span class="role-badge rb-teller">Teller</span></p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Select the Client</h4>
+        <p>Start typing the client's name in the Client field. Select the correct client from the dropdown. If the client has multiple active loans, a second dropdown will appear for loan selection.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Select the Loan</h4>
+        <p>Choose the specific loan the client is paying for. The current outstanding balance and next installment due will be shown for your reference.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Enter Repayment Details</h4>
+        <ul>
+          <li><strong>Amount</strong> — The exact amount the client is paying today (in GHS)</li>
+          <li><strong>Payment Date</strong> — The date the payment is being made (defaults to today)</li>
+          <li><strong>Payment Method</strong> — Cash, Mobile Money, or Bank Transfer</li>
+          <li><strong>Reference Number</strong> — If payment is by Mobile Money or bank transfer, enter the transaction reference number (e.g., GHA-XXXXXXXX)</li>
+          <li><strong>Notes</strong> — Any additional notes about this payment (optional)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Submit the Repayment</h4>
+        <p>Click <span class="kbd">Post Repayment</span>. The system immediately updates the loan's outstanding balance. If the payment clears the outstanding amount, the loan status changes to <strong>REPAID</strong>. A receipt can be printed from the confirmation screen.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <h5>💡 Tip — Partial Payments</h5>
+    <p>You can post any amount — even less than the full installment. The system will allocate the payment first to interest, then to principal, per standard accounting practice. The outstanding balance will update accordingly.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 9 — Field Operations</div>
+  <h2 class="section-title">Recording Collections in the Field (with GPS)</h2>
+  <p class="section-intro">Field Officers use this module to record loan payments collected outside the office — at a client's home, market, or farm. Go to <strong>Field Operations</strong> in the sidebar. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span> <span class="role-badge rb-officer">Field Officer</span></p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Go to Field Operations → New Collection</h4>
+        <p>Click on <strong>Field Operations</strong> in the sidebar, then click the <strong>New Collection</strong> tab at the top of the page.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Select Client and Loan</h4>
+        <p>Choose the client from the dropdown. Once a client is selected, their active loans will appear in the Loan dropdown. Select the loan being paid.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Enter Collection Amount and Method</h4>
+        <ul>
+          <li><strong>Amount Collected</strong> — How much cash or mobile money you received from the client</li>
+          <li><strong>Collection Method</strong> — Cash, Mobile Money, or Bank Transfer</li>
+          <li><strong>Mobile Money Reference</strong> — If paid via Mobile Money, enter the transaction code</li>
+          <li><strong>Notes</strong> — Any special notes (client refused to pay, partial reason, etc.)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Capture GPS Location <span style="color:#10b981;">(Important)</span></h4>
+        <p>Click the <span class="kbd">📍 Get My Location</span> button. Allow the browser to access your device's location. The system will capture your GPS coordinates (latitude, longitude) and accuracy reading. This proves you were physically at the collection site and protects you from disputes.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Upload Receipt Photo &amp; Capture Signature (Recommended)</h4>
+        <p>Take a photo of the receipt or any payment proof using your phone camera and upload it. Optionally, capture the client's digital signature on your phone screen as confirmation they received the service.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h4>Submit — Collection Goes to Pending Queue</h4>
+        <p>Click <span class="kbd">Submit Collection</span>. The collection is saved with status <strong>PENDING</strong>. It will appear in the Collections Queue tab for your supervisor (Manager or Admin) to review and approve. Once approved, it automatically updates the loan balance.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <h5>ℹ️ Collection Status Flow</h5>
+    <p><strong>PENDING</strong> → Field officer submitted, waiting for supervisor review &nbsp;|&nbsp; <strong>VERIFIED</strong> → Supervisor has confirmed the collection &nbsp;|&nbsp; <strong>APPROVED</strong> → Collection is fully approved and the loan balance has been updated</p>
+  </div>
+
+  <div class="page-footer">
+    <span>MFI Clarity — Complete User Manual · Sections 8–9</span>
+    <span>mficlarity.com</span>
+    <div class="page-num">7</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ SECTIONS 10, 11, 12 ══════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left"><h3>Sections 10, 11 &amp; 12</h3><h2>Portfolio Aging, Repayments &amp; Management Dashboard</h2></div>
+    <div class="section-num">10</div>
+  </div>
+
+  <div class="section-label">Section 10 — Portfolio Aging</div>
+  <h2 class="section-title">Analysing How Long Loans Are Overdue</h2>
+  <p class="section-intro">Go to <strong>Portfolio Aging</strong> in the sidebar. This page shows every active loan, how many days overdue it is, and its BOG classification. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span> <span class="role-badge rb-board">Board Director</span></p>
+
+  <table class="field-table" style="margin-bottom:10px;">
+    <thead><tr><th>Column</th><th>What it Means</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Loan ID</strong></td><td>A unique reference number for this loan</td></tr>
+      <tr><td><strong>Client Name</strong></td><td>The borrower's full name</td></tr>
+      <tr><td><strong>Principal</strong></td><td>The original amount borrowed (total disbursed)</td></tr>
+      <tr><td><strong>Outstanding</strong></td><td>How much the client still owes right now</td></tr>
+      <tr><td><strong>Days Overdue</strong></td><td>How many days past due the loan is (0 = on time)</td></tr>
+      <tr><td><strong>Classification</strong></td><td>The BOG bucket: Current / OLEM / Substandard / Doubtful / Loss</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip" style="margin-top:0;">
+    <h5>💡 Tip — Searching and Exporting</h5>
+    <p>Use the search bar at the top to find a specific client by name or loan ID. To download the full aging list, click <span class="kbd">Export CSV</span> for a spreadsheet or <span class="kbd">Export PDF</span> for a printable report. Loans 90+ days overdue are highlighted in a warning colour.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 11 — Repayment Trends</div>
+  <h2 class="section-title">Viewing 60-Day Collection Performance</h2>
+  <p class="section-intro">Go to <strong>Repayments</strong> in the sidebar. This page shows your institution's collection performance over the last 60 days. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span></p>
+
+  <div class="cards-3" style="margin-bottom:10px;">
+    <div class="card card-blue"><h4>Total Collected</h4><p>Total GHS amount collected across all loans in the last 60 days.</p></div>
+    <div class="card card-green"><h4>Total Payments</h4><p>The number of individual payment transactions posted in the period.</p></div>
+    <div class="card card-gold"><h4>Average Daily Collection</h4><p>Total collected divided by 60 days — your average daily inflow.</p></div>
+  </div>
+  <p style="font-size:0.78rem;color:#475569;margin-bottom:6px;">The <strong>area chart</strong> shows daily collections as a visual graph — peaks show days with high collections, dips show slow days. The table below the chart gives the exact figure for each date. Export as CSV or PDF for management meetings.</p>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 12 — Management Dashboard</div>
+  <h2 class="section-title">Daily Operational Control for Managers</h2>
+  <p class="section-intro">Go to <strong>Management</strong> in the sidebar. This dashboard is designed for Branch Managers and Operations Managers who need to monitor day-to-day performance. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span></p>
+
+  <div class="cards-2">
+    <div class="card card-blue">
+      <h4>📊 Dashboard Tabs</h4>
+      <ul>
+        <li><strong>Daily Operations</strong> — Today's summary KPIs and operational metrics. Activity log of recent transactions.</li>
+        <li><strong>Collections</strong> — Collections trend chart (Daily/Weekly/Monthly). Collection performance metrics showing how much has been recovered vs. what was expected.</li>
+        <li><strong>Disbursements</strong> — New loans disbursed in the period. Disbursement trends chart. Upcoming disbursement schedule.</li>
+        <li><strong>Staff Productivity</strong> — Individual officer performance. Number of loans processed, collections made, clients visited. Performance vs. targets.</li>
+        <li><strong>Arrears Tracker</strong> — Opening arrears balance, new arrears created, arrears recovered, closing arrears. Recovery rate percentage. Helps managers track whether arrears are improving or worsening.</li>
+      </ul>
+    </div>
+    <div class="card card-gold">
+      <h4>🎯 How to Use the Management Dashboard</h4>
+      <ul>
+        <li><strong>Daily Check-In</strong> — Start each morning on the Daily Operations tab to see what happened yesterday and what's due today</li>
+        <li><strong>Weekly Review</strong> — Use the Staff Productivity tab every Monday to review each officer's performance from the previous week</li>
+        <li><strong>Monthly Reporting</strong> — Switch the period selector to "Monthly" for month-end management reporting</li>
+        <li><strong>Arrears Meeting</strong> — Use the Arrears Tracker every week to identify which accounts need follow-up and measure recovery performance</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>MFI Clarity — Complete User Manual · Sections 10–12</span>
+    <span>mficlarity.com</span>
+    <div class="page-num">8</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ SECTIONS 13 & 14 ══════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left"><h3>Sections 13 &amp; 14</h3><h2>Board Dashboard &amp; Shareholder Portal</h2></div>
+    <div class="section-num">13</div>
+  </div>
+
+  <div class="section-label">Section 13 — Board of Directors Dashboard</div>
+  <h2 class="section-title">Strategic Governance for Board Members</h2>
+  <p class="section-intro">Go to <strong>Board</strong> in the sidebar. This dashboard is designed for non-executive board directors, chairpersons, and senior executives who need strategic oversight. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span> <span class="role-badge rb-board">Board Director</span></p>
+
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Select the Reporting Period</h4><p>At the top of the page, choose <strong>Weekly</strong>, <strong>Monthly</strong>, or <strong>Quarterly</strong>. For Monthly and Quarterly, select the specific period from the dropdown. All charts and numbers on the page will update to reflect the chosen period.</p></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Executive Summary Tab</h4><p>Shows the 4 headline KPIs (Portfolio, Active Loans, PAR 30+, Provisions) with trend arrows showing whether each metric is improving or worsening compared to the previous period. <strong>Compliance badges</strong> show whether your institution is Compliant, on Watch, or Non-Compliant with BOG requirements.</p></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Strategic KPIs Tab</h4><p>Shows growth metrics (portfolio growth rate, new loan disbursements), quality metrics (PAR trends, loan loss rates), and efficiency metrics (cost per loan, staff productivity). Helps the board evaluate whether the institution is growing sustainably.</p></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Risk Analysis Tab</h4><p>Shows risk stratification (how much of the portfolio is at various risk levels), concentration risk (are you too exposed to one sector or geography?), and geographic risk spread across regions.</p></div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Trends &amp; Peer Panel Tab</h4><p>Shows quarterly trends over multiple periods so the board can see long-term patterns. Peer comparison data benchmarks your institution's performance against sector averages.</p></div></div>
+  </div>
+
+  <div class="callout callout-info">
+    <h5>ℹ️ Board Director Access</h5>
+    <p>Board Directors have <strong>read-only</strong> access. They can see all data and click drilldowns to examine underlying loans, but they cannot create, edit, or delete any records. This ensures clean separation between governance and operational management.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 14 — Shareholder / Investor Portal</div>
+  <h2 class="section-title">Managing Investors and Tracking Returns</h2>
+  <p class="section-intro">Go to <strong>Shareholders</strong> in the sidebar. This portal manages your institution's equity investors and gives shareholders real-time visibility into their investments. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span> <span class="role-badge rb-shareholder">Shareholder (own data only)</span></p>
+
+  <div class="cards-2" style="margin-bottom:12px;">
+    <div class="card card-green">
+      <h4>📈 Key Investor Metrics (Top of Page)</h4>
+      <ul>
+        <li><strong>Total Investment</strong> — Sum of all capital contributed by shareholders</li>
+        <li><strong>Current Value</strong> — What the investment is worth today (with ROI %)</li>
+        <li><strong>Total Dividends Earned</strong> — All dividends paid to date (with any pending amount shown)</li>
+        <li><strong>Unit Value</strong> — Current GHS value of one share unit</li>
+      </ul>
+    </div>
+    <div class="card card-blue">
+      <h4>📊 Charts</h4>
+      <ul>
+        <li><strong>Portfolio Allocation Pie Chart</strong> — Shows how investor capital is split between active loans (Loaned Out) and cash held (In Reserve). Investors can see their money is working.</li>
+        <li><strong>Share Unit Performance Line Chart</strong> — Shows how the value of one share unit has grown over time. Based at 100 at the start for easy percentage reading.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Add a New Shareholder (Admin/Manager)</h4><p>Click the <span class="kbd">Add Shareholder</span> button. Fill in: Full Name, Email, Phone, and Initial Investment Amount. The system will create the shareholder record and record their first investment transaction.</p></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Record a Transaction</h4><p>Click <span class="kbd">Record Transaction</span>. Select the shareholder, transaction type (INVESTMENT = add more shares, DIVIDEND_REINVEST = convert dividend to shares, WITHDRAWAL = cash out), share units, and unit value. The transaction is permanently recorded.</p></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Process a Dividend</h4><p>Click <span class="kbd">Process Dividend</span>. Set the dividend rate (%). The system automatically calculates each shareholder's payout based on their units. Set the payout date and click confirm. Each payout is recorded and marked as PAID or PENDING.</p></div></div>
+  </div>
+
+  <div class="page-footer">
+    <span>MFI Clarity — Complete User Manual · Sections 13–14</span>
+    <span>mficlarity.com</span>
+    <div class="page-num">9</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ SECTIONS 15 & 16 ══════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left"><h3>Sections 15 &amp; 16</h3><h2>Departmental &amp; Financial Reports</h2></div>
+    <div class="section-num">15</div>
+  </div>
+
+  <div class="section-label">Section 15 — Departmental Reports</div>
+  <h2 class="section-title">Accounts, Collections &amp; Credit Department Analytics</h2>
+  <p class="section-intro">Go to <strong>Departments</strong> in the sidebar. This page has three main tabs covering three departments. Use the period selector (Daily / Weekly / Monthly / Quarterly) at the top. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span></p>
+
+  <div class="cards-3" style="margin-bottom:14px;">
+    <div class="card card-navy">
+      <h4>📒 Accounts Tab</h4>
+      <ul>
+        <li><strong>GL Summary</strong> — Total Assets, Liabilities, Equity, Income, Expenses, Net Income</li>
+        <li><strong>Trial Balance</strong> — Full trial balance table showing Account Code, Name, Type, Debit Balance, and Credit Balance. A status badge shows if the balance is Balanced or Unbalanced.</li>
+        <li>Export the trial balance to CSV for your accountant</li>
+      </ul>
+    </div>
+    <div class="card card-gold">
+      <h4>💼 Collections Tab</h4>
+      <ul>
+        <li><strong>Recovery Metrics</strong> — Opening Arrears, Recovered (green), New Arrears (red), Closing Arrears, Recovery Rate %</li>
+        <li><strong>Collector Performance Table</strong> — Each field officer/collector's performance: Arrears Assigned, Amount Collected, Collection Rate %, Clients Visited, Accounts Cured</li>
+        <li>Helps managers identify top performers and those needing support</li>
+      </ul>
+    </div>
+    <div class="card card-blue">
+      <h4>🎓 Credit Tab</h4>
+      <ul>
+        <li><strong>Approval Metrics</strong> — Applications Received, Approved (green), Rejected (red), Approval Rate %, Amount Disbursed, Average TAT (days to process)</li>
+        <li><strong>Loan Application Pipeline</strong> — Visual flow of applications through approval stages</li>
+        <li><strong>Rejection Analysis</strong> — Charts showing why loans were rejected</li>
+        <li><strong>Credit Officer Scorecard</strong> — Each officer graded A+ to D on: Approval Rate (20%), Target Achievement (30%), Quality Score (30%), Efficiency (20%)</li>
+        <li><strong>Product Performance</strong> — Which loan products have highest PAR</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <h5>💡 Tip — Monthly Management Meetings</h5>
+    <p>Run the Departmental Reports at the end of each month on the "Monthly" period setting. Export each tab (Accounts, Collections, Credit) to PDF. Use these exports as your standardised management pack for board and management meetings — consistent, professional, and always current.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 16 — Financial Reports</div>
+  <h2 class="section-title">Full Financial Statements &amp; Profitability Metrics</h2>
+  <p class="section-intro">Go to <strong>Financial Reports</strong> in the sidebar. This is your institution's complete financial reporting hub. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span> <span class="role-badge rb-board">Board Director</span></p>
+
+  <div class="cards-2">
+    <div class="card card-blue">
+      <h4>📑 Financial Statements Tab</h4>
+      <p>Three core statements:</p>
+      <ul>
+        <li><strong>Balance Sheet</strong> — Assets (loans, cash, property) vs. Liabilities (deposits, borrowings) vs. Equity (shareholders' funds)</li>
+        <li><strong>Income Statement</strong> — Interest income, fee income, operating expenses, loan loss provisions, and net income</li>
+        <li><strong>Cash Flow Statement</strong> — Where cash came from and where it went in the period</li>
+      </ul>
+    </div>
+    <div class="card card-gold">
+      <h4>📊 Profitability Metrics Tab</h4>
+      <p>Key international microfinance performance indicators:</p>
+      <ul>
+        <li><strong>NIM</strong> — Net Interest Margin: income earned on loans vs. cost of funds</li>
+        <li><strong>OSS</strong> — Operational Self-Sufficiency: are revenues covering all costs? (Target: above 100%)</li>
+        <li><strong>ROA</strong> — Return on Assets: profit as % of total assets</li>
+        <li><strong>ROE</strong> — Return on Equity: profit as % of shareholders' funds</li>
+        <li><strong>Cost-to-Income</strong> — Operating costs as % of income (lower is better)</li>
+      </ul>
+      <p style="margin-top:6px;">Each metric shows a status indicator: green (good), yellow (watch), red (critical).</p>
+    </div>
+    <div class="card card-green">
+      <h4>⚠️ PAR Analysis Tab</h4>
+      <p>Detailed Portfolio at Risk analysis. PAR aging breakdown (PAR 1, PAR 7, PAR 30, PAR 90, PAR 180). Trend line showing whether PAR is improving or worsening. Portfolio quality metrics.</p>
+    </div>
+    <div class="card card-cyan">
+      <h4>🏦 Deposits Monitoring Tab</h4>
+      <p>Deposit mobilisation trends over time. Deposit composition by type. Deposit stability metrics (volatile vs. stable deposits). Essential for institutions that take deposits from the public.</p>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>MFI Clarity — Complete User Manual · Sections 15–16</span>
+    <span>mficlarity.com</span>
+    <div class="page-num">10</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ SECTIONS 17, 18, 19, 20, 21 ══════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left"><h3>Sections 17–21</h3><h2>Regulatory Reports, Audit, Users, Settings &amp; FAQ</h2></div>
+    <div class="section-num">17</div>
+  </div>
+
+  <div class="section-label">Section 17 — Regulatory Reports (BOG)</div>
+  <h2 class="section-title">Bank of Ghana Compliance Reporting</h2>
+  <p class="section-intro">Go to <strong>Regulatory Reports</strong> in the sidebar. These reports are required by the Bank of Ghana. MFI Clarity generates them automatically from your live data. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span> <span class="role-badge rb-board">Board Director</span></p>
+
+  <div class="cards-2" style="margin-bottom:8px;">
+    <div class="card card-blue"><h4>📊 CAR Calculator Tab</h4><p>Calculates your Capital Adequacy Ratio (CAR) in real-time. Shows core capital, supplementary capital, risk-weighted assets, and your current CAR vs. the BOG minimum (10%). A green/red badge shows if you are compliant.</p></div>
+    <div class="card card-gold"><h4>💧 Liquidity Ratio Tab</h4><p>Shows your Liquidity Coverage Ratio (LCR) and Net Stable Funding Ratio (NSFR). Compares them to BOG minimums for your tier. Essential for passing liquidity examinations.</p></div>
+    <div class="card card-navy"><h4>📋 Classification Tab</h4><p>Full loan classification table (same as Executive Dashboard). Shows all loans in Current/OLEM/Substandard/Doubtful/Loss buckets with provision calculations. Print or export for BOG submission.</p></div>
+    <div class="card card-green"><h4>📄 Prudential Returns Tab</h4><p>All BOG-mandated prudential return forms. Status tracking shows which returns are due, submitted, or pending. Helps your compliance team stay on top of reporting deadlines.</p></div>
+  </div>
+  <div class="card card-red" style="margin-bottom:10px;"><h4>🔍 AML Reports Tab</h4><p>Anti-Money Laundering reports per the AML/CFT&P Act, 2022. Suspicious Transaction Report (STR) history. Customer Due Diligence summary. Helps you demonstrate AML compliance to BOG and FIC during examinations.</p></div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 18 — Audit Log</div>
+  <h2 class="section-title">Complete Activity Trail</h2>
+  <p class="section-intro">Go to <strong>Audit Log</strong> in the sidebar. Every action in MFI Clarity is recorded here automatically — you cannot delete or edit audit records. <span class="role-badge rb-admin">Admin</span> <span class="role-badge rb-manager">Manager</span></p>
+  <p style="font-size:0.78rem;color:#475569;margin-bottom:10px;">The audit log records: who did the action (user name and email), what action they took (created loan, edited client, posted repayment, approved collection, logged in/out), and exactly when it happened (date and time). Use the search bar to find specific events. Filter by date range, action type, or user. During a BOG examination, examiners can review this log to verify that operations were conducted correctly.</p>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 19 — User Management</div>
+  <h2 class="section-title">Managing Staff Accounts &amp; Roles</h2>
+  <p class="section-intro">Go to <strong>User Management</strong> in the sidebar. Only Admins can manage users. <span class="role-badge rb-admin">Admin only</span></p>
+  <div class="cards-2" style="margin-bottom:8px;">
+    <div class="card card-blue">
+      <h4>👥 Staff Roles Tab</h4>
+      <p>View all users in your organisation. Assign or change roles: ADMIN, MANAGER, FIELD_OFFICER, TELLER, BOARD_DIRECTOR. To assign a role, find the user, click the role dropdown, select the new role, and save. To remove a user's access, set their role to inactive or remove their role assignment.</p>
+    </div>
+    <div class="card card-gold">
+      <h4>📋 Client Assignments Tab</h4>
+      <p>Assign specific clients to specific credit officers or field officers. This ensures each field officer can only see and manage their assigned clients (enforcing data privacy). You can reassign clients between officers here, or do bulk assignments for a new officer joining.</p>
+    </div>
+  </div>
+  <div class="callout callout-warn" style="margin-bottom:8px;"><h5>⚠️ Important — Adding New Staff</h5><p>New staff must first register their own account (using the /register page) with their work email. Once they have registered and verified their email, the Admin goes to User Management and assigns them the correct role. The new user will then see the menus appropriate for their role when they log in.</p></div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 20 &amp; 21 — Settings &amp; Troubleshooting</div>
+  <div class="cards-2">
+    <div class="card card-navy">
+      <h4>⚙️ Settings (/settings) — Admin Only</h4>
+      <ul>
+        <li><strong>Organisation Tab</strong> — Update your legal name, trading name, address, phone, email, website, registration number, and TIN at any time</li>
+        <li><strong>Compliance Tab</strong> — Set your BOG Tier: Tier 1 (Rural Banks), Tier 2 (Savings &amp; Loans), Tier 3 (Finance Houses), Tier 4 (MFIs), MFC (Micro Finance Companies). Your tier determines loan limits and CAR requirements enforced by the system</li>
+      </ul>
+    </div>
+    <div class="card card-red">
+      <h4>❓ Troubleshooting &amp; FAQ</h4>
+      <ul>
+        <li><strong>Cannot log in?</strong> — Check your email and password. Use "Forgot Password" to reset. Make sure your email was verified.</li>
+        <li><strong>Data not loading?</strong> — Check your internet connection. Try refreshing the page (F5). Clear your browser cache if the problem persists.</li>
+        <li><strong>Cannot see a menu?</strong> — Your role may not have access. Ask your Admin to check your role assignment.</li>
+        <li><strong>Error when creating a loan?</strong> — Check that the principal amount does not exceed your BOG tier limit. Make sure the client exists and is active.</li>
+        <li><strong>GPS not working in field?</strong> — Allow location access in your browser when prompted. You must be outdoors for best GPS accuracy. If accuracy is poor, try moving to an open area.</li>
+        <li><strong>Ghana Card number rejected?</strong> — Must be in format GHA-XXXXXXXXX-X exactly (GHA, hyphen, 9 digits, hyphen, 1 digit).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>MFI Clarity — Complete User Manual · Sections 17–21</span>
+    <span>mficlarity.com · contact@mficlarity.com</span>
+    <div class="page-num">11</div>
+  </div>
+</div>
+
+</body>
+</html>
