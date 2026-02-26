@@ -22,6 +22,7 @@ RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
+SET row_security = off
 AS $$
 DECLARE
   _org_id uuid;
