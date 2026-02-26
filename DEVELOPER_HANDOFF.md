@@ -99,9 +99,11 @@ CREATE OR REPLACE FUNCTION public.create_organisation_with_admin(
   _address text DEFAULT NULL,
   _city text DEFAULT NULL,
   _region text DEFAULT NULL,
+  _postal_code text DEFAULT NULL,
   _country text DEFAULT 'Ghana',
   _phone text DEFAULT NULL,
   _email text DEFAULT NULL,
+  _website text DEFAULT NULL,
   _registration_number text DEFAULT NULL,
   _tax_id text DEFAULT NULL
 )
@@ -120,8 +122,8 @@ BEGIN
   END IF;
 
   -- Create organisation
-  INSERT INTO public.organisations (name, trading_name, address, city, region, country, phone, email, registration_number, tax_id, is_demo)
-  VALUES (_name, _trading_name, _address, _city, _region, _country, _phone, _email, _registration_number, _tax_id, false)
+  INSERT INTO public.organisations (name, trading_name, address, city, region, postal_code, country, phone, email, website, registration_number, tax_id, is_demo)
+  VALUES (_name, _trading_name, _address, _city, _region, _postal_code, _country, _phone, _email, _website, _registration_number, _tax_id, false)
   RETURNING org_id INTO _org_id;
 
   -- Link user to org
@@ -234,13 +236,13 @@ The project also has an external Supabase connection configured in:
 
 ## Environment Variables
 ```
-VITE_SUPABASE_URL=https://uutolexfqparpiftiekw.supabase.co
+VITE_SUPABASE_URL=https://udovvvksoemsmadaueqf.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=<anon key>
-VITE_SUPABASE_PROJECT_ID=uutolexfqparpiftiekw
+VITE_SUPABASE_PROJECT_ID=udovvvksoemsmadaueqf
 ```
 
 ## Supabase Project
-- **Project ID:** uutolexfqparpiftiekw
+- **Project ID:** udovvvksoemsmadaueqf
 - **Region:** Check Supabase dashboard
 
 ---
