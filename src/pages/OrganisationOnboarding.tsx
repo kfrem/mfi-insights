@@ -48,61 +48,25 @@ export default function OrganisationOnboarding() {
     setError(null);
 
     try {
-      // 1. Create the organisation
-      const { data: orgData, error: orgError } = await supabase
-        .from('organisations')
-        .insert({
-          name: formData.name,
-          trading_name: formData.trading_name || null,
-          address: formData.address || null,
-          city: formData.city || null,
-          region: formData.region || null,
-          postal_code: formData.postal_code || null,
-          country: formData.country,
-          phone: formData.phone || null,
-          email: formData.email || null,
-          website: formData.website || null,
-          registration_number: formData.registration_number || null,
-          tax_id: formData.tax_id || null,
-          is_demo: false,
-        })
-        .select('org_id')
-        .single();
+      // Single atomic RPC call — bypasses the RLS chicken-and-egg problem where
+      // the user has no org membership yet and therefore can't satisfy the
+      // user_belongs_to_org() check in the user_organizations SELECT policy.
+      const { error: rpcError } = await supabase.rpc('create_organisation_with_admin', {
+        _name: formData.name,
+        _trading_name: formData.trading_name || null,
+        _address: formData.address || null,
+        _city: formData.city || null,
+        _region: formData.region || null,
+        _postal_code: formData.postal_code || null,
+        _country: formData.country,
+        _phone: formData.phone || null,
+        _email: formData.email || null,
+        _website: formData.website || null,
+        _registration_number: formData.registration_number || null,
+        _tax_id: formData.tax_id || null,
+      });
 
-      if (orgError) throw orgError;
-
-      const orgId = orgData.org_id;
-
-      // 2. Add user to the organisation
-      const { error: membershipError } = await supabase
-        .from('user_organizations')
-        .insert({
-          user_id: user.id,
-          org_id: orgId,
-        });
-
-      if (membershipError) throw membershipError;
-
-      // 3. Assign ADMIN role to the creating user
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: user.id,
-          org_id: orgId,
-          role: 'ADMIN',
-        });
-
-      if (roleError) throw roleError;
-
-      // 4. Create default organisation settings
-      const { error: settingsError } = await supabase
-        .from('organisation_settings')
-        .insert({
-          org_id: orgId,
-          bog_tier: 'TIER_4_MFC',
-        });
-
-      if (settingsError) throw settingsError;
+      if (rpcError) throw rpcError;
 
       setStep('success');
     } catch (err: any) {
