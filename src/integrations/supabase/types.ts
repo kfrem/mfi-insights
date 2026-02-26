@@ -995,6 +995,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_organisation_with_admin: {
+        Args: {
+          _name: string
+          _trading_name?: string | null
+          _address?: string | null
+          _city?: string | null
+          _region?: string | null
+          _postal_code?: string | null
+          _country?: string
+          _phone?: string | null
+          _email?: string | null
+          _website?: string | null
+          _registration_number?: string | null
+          _tax_id?: string | null
+        }
+        Returns: string
+      }
       can_access_client: {
         Args: { _client_id: string; _org_id: string; _user_id: string }
         Returns: boolean
